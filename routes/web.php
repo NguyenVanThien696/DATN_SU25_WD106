@@ -13,3 +13,14 @@ Route::get('/admin', function () {
 
 // Route::get('/', [ClientController::class, 'index'])->name('client.index');
 
+Route::get('/category', function () {
+    return view('pages.category');
+});
+
+Route::get('/product', function () {
+    return view('pages.product');
+});
+
+Route::get('/cart', function () {
+    return view('pages.cart');
+});
