@@ -1,9 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Client\ClientController;
 
 
 Route::get('/', function () {
+    return view('client.index');
+});
+Route::get('/admin', function () {
     return view('admin.layouts.default');
 });
+
+// Route::get('/', [ClientController::class, 'index'])->name('client.index');
 

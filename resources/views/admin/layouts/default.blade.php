@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Admin</title>
-    <link rel="shortcut icon" href="{{ asset('assets.img/favicon/ico') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}" crossorigin="anonymous">
+    <link rel="shortcut icon" href="{{ asset('build.img/favicon/ico') }}">
+    <link rel="stylesheet" href="{{ asset('build/css/bootstrap.min.css') }}" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('build/css/style.css') }}">
 
 
 </head>
@@ -43,16 +43,16 @@
             </div>
         </div>
     </div>
-    <script src="{{ asset('assets/js/vendors.min.js') }}"></script>
+    <script src="{{ asset('build/js/vendors.min.js') }}"></script>
 
     <!-- Other Vendors JS -->
-    <script src="{{ asset('assets/vendors/apexcharts/apexcharts.js') }}"></script>
+    <script src="{{ asset('build/vendors/apexcharts/apexcharts.js') }}"></script>
 
     <!-- Page js -->
-    <script src="{{ asset('assets/js/pages/project-dashboard.js') }}"></script>
+    <script src="{{ asset('build/js/pages/project-dashboard.js') }}"></script>
 
     <!-- Core JS -->
-    <script src="{{ asset('assets/js/app.min.js') }}"></script>
+    <script src="{{ asset('build/js/app.min.js') }}"></script>
 </body>
 
 </html>
