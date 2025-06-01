@@ -5,10 +5,10 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class ClientController extends Controller
+class ProductController extends Controller
 {
         public function index()
     {
-        return view('client.index');
+        return view('client.products.index');
     }
 }
