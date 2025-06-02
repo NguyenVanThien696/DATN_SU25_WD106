@@ -18,14 +18,24 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Name Product</th>
+                                        <th>Description</th>
+                                        <th>Price</th>
                                         <th>Image</th>
-                                        <th>price</th>
-                                        <th>Số Lượng</th>
+										<th>Quantity</th>
+										<th>#</th>
                                     </tr>
-
                                 <tbody>
-                                    <?php
-                ?>
+									@foreach ($listProducts as $products)
+									<tr>
+										<td>{{ $products->id }}</td>
+										<td>{{ $products->name }}</td>
+										<td>{{ $products->description }}</td>
+										<td>{{ $products->price }}</td>
+										<td>{{ $products->image }}</td>
+										<td>{{ $products->quantity }}</td>
+									</tr>
+									
+									@endforeach
                                 </tbody>
                             </table>
                         </div>

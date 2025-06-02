@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('code', 50)->unique();
             $table->integer('discount_percent');
             $table->dateTime('expires_at')->nullable();
+            $table->timestamps();
         });
 
         // Thêm CHECK constraint cho discount_percent từ 1 đến 100
