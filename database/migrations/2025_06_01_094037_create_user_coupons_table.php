@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id')->nullable();
             $table->unsignedBigInteger('coupon_id')->nullable();
             $table->timestamp('used_at')->useCurrent();
+            $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users');
             $table->foreign('coupon_id')->references('id')->on('coupons');
