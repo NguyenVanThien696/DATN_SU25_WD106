@@ -7,8 +7,11 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-        public function index()
-    {
-        return view('admin.layouts.default');
+    public function index(){
+        return view('admin.index');
+    }
+
+    public function listProduct(){
+        return view('admin.products.index');
     }
 }
