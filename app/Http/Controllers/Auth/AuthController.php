@@ -24,7 +24,7 @@ class AuthController extends Controller
             if($user->role==1){
                 return redirect()->route('admin.dashboard');
             }
-            return redirect()->route('dashboard.form');
+            return redirect()->route('dashboard');
         }
         return redirect()->back()->withErrors([
             'email' => 'Thông tin đăng nhập không chính xác.',
@@ -42,6 +42,16 @@ class AuthController extends Controller
         }
         return view('dashboard', ['user' => $user]);
     }
+
+    public function adminDashboard()
+{
+    $user = Auth::user();
+    if (is_null($user) || $user->role != 1) {
+        // Nếu không phải admin hoặc chưa đăng nhập, chuyển về login hoặc trang khác
+        return redirect()->route('login.form');
+    }
+    return view('admin.dashboard', ['user' => $user]);
+}
 
     public function register(Request $request){
         $validatedData = $request->validate([

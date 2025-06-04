@@ -51,9 +51,15 @@ Route::get('/admin/product/index', [AdminProductController::class, 'listProduct'
 
 // Login
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login.form');
+Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register.form');
-Route::get('/dashboard', [AuthController::class, 'showDashboard'])->name('dashboard.form');
-Route::post('/register', [AuthController::class, 'register'])->name('register');
-Route::post('/login', [AuthController::class, 'login'])->name('login.form');
-Route::post('/change-password', [AuthController::class, 'changePassword'])->name('user.changePassword');
-Route::get('/dashboard', [AuthController::class, 'index'])->middleware('auth')->name('admin.dashboard');
+Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/admin/dashboard', [AuthController::class, 'adminDashboard'])->name('admin.dashboard');
+
+    Route::get('/dashboard', [AuthController::class, 'showDashboard'])->name('dashboard');
+
+    Route::post('/change-password', [AuthController::class, 'changePassword'])->name('user.changePassword');
+});
