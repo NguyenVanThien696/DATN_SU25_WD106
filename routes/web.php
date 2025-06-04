@@ -63,3 +63,4 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('user.changePassword');
 });
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

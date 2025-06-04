@@ -23,6 +23,13 @@
                 <a href="#" class="btn btn-primary w-100 mt-4 py-2" style="border-radius: 30px;">
                     + Nạp tiền tài khoản
                 </a>
+
+                <form method="POST" action="{{ route('logout') }}">
+    @csrf
+    <button type="submit" class="btn btn-danger w-100 mt-2 py-2" style="border-radius: 30px;">
+        Đăng xuất
+    </button>
+</form>
             </div>
             
         </div>

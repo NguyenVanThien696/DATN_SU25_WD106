@@ -90,4 +90,13 @@ class AuthController extends Controller
 
         return redirect()->route('dashboard')->with('status', 'Mật khẩu đã được thay đổi thành công.');
     }
+
+     public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/login');
+    }
 }

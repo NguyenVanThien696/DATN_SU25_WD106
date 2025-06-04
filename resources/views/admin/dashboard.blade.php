@@ -29,6 +29,13 @@
                         → Truy cập trang ADMIN
                     </a>
                 @endif
+
+                <form method="POST" action="{{ route('logout') }}">
+    @csrf
+    <button type="submit" class="btn btn-danger w-100 mt-2 py-2" style="border-radius: 30px;">
+        Đăng xuất
+    </button>
+</form>
             </div>
         </div>
 
