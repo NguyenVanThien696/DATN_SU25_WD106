@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\Client\ClientController;
 use App\Http\Controllers\Client\ProductController;
 use App\Http\Controllers\Client\PostController;
@@ -11,7 +12,7 @@ use App\Http\Controllers\Client\CheckoutController;
 
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 
-
+use App\Http\Controllers\Auth\AuthController;
 
 Route::get('/', [ClientController::class, 'index'])->name('client.index');
 
@@ -50,4 +51,8 @@ Route::get('/admin', [AdminProductController::class, 'index'])->name('admin.inde
 Route::get('/admin/product/index', [AdminProductController::class, 'listProduct'])->name('admin.products.index');
 
 
-
+// Login
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login.form');
+Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register.form');
+Route::get('/dashboard', [AuthController::class, 'showDashboard'])->name('dashboard.form');
+Route::post('/register', [AuthController::class, 'register'])->name('register');

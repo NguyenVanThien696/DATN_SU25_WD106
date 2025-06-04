@@ -46,7 +46,7 @@
     <!-- End Header/Navigation -->
 
     <!-- Start Hero Section -->
-    @include('client.layouts.banner')
+    <!-- @include('client.layouts.banner') -->
     <!-- End Hero Section -->
 
     @yield('content')
