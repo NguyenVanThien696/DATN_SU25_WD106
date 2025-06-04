@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
@@ -14,16 +16,20 @@ class AuthController extends Controller
         return view ('auth.login');
     }
 
-    // public function login(Request $request){
-    //     $credentials = $request->only('email', 'password');
+    public function login(Request $request){
+        $credentials = $request->only('email', 'password');
 
-    //     if(Auth::attempt($credentials)){
-    //         $user = Auth::user();
-    //         if($user->role==1){
-    //             return redirect()->route('client.index');
-    //         }
-    //     }
-    // }
+        if(Auth::attempt($credentials)){
+            $user = Auth::user();
+            if($user->role==1){
+                return redirect()->route('admin.dashboard');
+            }
+            return redirect()->route('dashboard.form');
+        }
+        return redirect()->back()->withErrors([
+            'email' => 'Thông tin đăng nhập không chính xác.',
+        ]);
+    }
 
     public function showRegisterForm(){
         return view ('auth.register');
@@ -56,5 +62,22 @@ class AuthController extends Controller
         ]);
 
         return redirect()->route('dashboard');
+    }
+
+    public function changePassword(Request $request){
+        $user = Auth::user();
+
+        Log::info('Mật khẩu cũ trong cơ sở dữ liệu:', ['stored_password' => $user->password]);
+        Log::info('Mật khẩu cũ người dùng nhập vào:', ['current_password' => $request->current_password]);
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Mật khẩu cũ không đúng.']);
+        }
+
+        DB::table('users')
+            ->where('id', $user->id)
+            ->update(['password' => Hash::make($request->new_password)]);
+
+        return redirect()->route('dashboard')->with('status', 'Mật khẩu đã được thay đổi thành công.');
     }
 }
