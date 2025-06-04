@@ -7,6 +7,13 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 
     <style>
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            font-size: 15px;
+            color: #212529;
+            background-color: #f8f9fa;
+        }
         body {
             background-color: #f8f9fa;
         }
@@ -36,12 +43,12 @@
         }
 
         .input-password {
-    position: relative;
-}
+            position: relative;
+        }
 
        .input-password input {
-    padding-right: 40px;
-}
+            padding-right: 40px;
+        }   
 
 .input-password button {
     position: absolute;
@@ -78,7 +85,7 @@
 <div class="login-container">
     <div class="login-form-section">
         <div class="w-100" style="max-width: 400px;">
-            <h3 class="mb-4 text-center">Đăng nhập tài khoản</h3>
+            <h3 class="mb-4 text-center"></h3>
 
             {{-- Nội dung động từ login.blade.php --}}
             @yield('content')
