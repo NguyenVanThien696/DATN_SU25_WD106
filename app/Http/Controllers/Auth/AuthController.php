@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -29,5 +31,26 @@ class AuthController extends Controller
 
     public function showDashboard(){
         return view ('dashboard');
+    }
+
+    public function register(Request $request){
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email:max:255|unique:users',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        User::create([
+            'name' => $validatedData['name'],
+            'email' => $validatedData['email'],
+            'password' => Hash::make($validatedData['password']),
+        ]);
+
+        Auth::attempt([
+            'email' => $validatedData['email'],
+            'password' => $validatedData['password'],
+        ]);
+
+        return redirect()->route('dashboard');
     }
 }

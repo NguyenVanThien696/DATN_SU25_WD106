@@ -53,3 +53,4 @@ Route::get('/admin/product/index', [AdminProductController::class, 'listProduct'
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login.form');
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register.form');
 Route::get('/dashboard', [AuthController::class, 'showDashboard'])->name('dashboard.form');
+Route::post('/register', [AuthController::class, 'register'])->name('register');
