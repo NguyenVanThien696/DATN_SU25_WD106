@@ -10,8 +10,7 @@ use App\Http\Controllers\Client\CartController;
 use App\Http\Controllers\Client\CheckoutController;
 
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
-
-
+use App\Http\Controllers\AuthController;
 
 Route::get('/', [ClientController::class, 'index'])->name('client.index');
 
@@ -49,5 +48,6 @@ Route::get('/admin', [AdminProductController::class, 'index'])->name('admin.inde
 
 Route::get('/admin/product/index', [AdminProductController::class, 'listProduct'])->name('admin.products.index');
 
-
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login.form');
+Route::get('/register', [AuthController::class, 'showLoginForm'])->name('register.form');
 
