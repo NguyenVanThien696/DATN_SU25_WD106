@@ -30,7 +30,11 @@ class AuthController extends Controller
     }
 
     public function showDashboard(){
-        return view ('dashboard');
+        $user = Auth::user();
+        if(is_null($user)){
+            return redirect()->route('login.form');
+        }
+        return view('dashboard', ['user' => $user]);
     }
 
     public function register(Request $request){

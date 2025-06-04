@@ -9,7 +9,7 @@
                 <div class="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 text-sm">
                     100x100
                 </div>
-                <h2 class="text-lg font-semibold">{{ $user->username }}</h2>
+                <h2 class="text-lg font-semibold">{{ $user->name }}</h2>
             </div>
             <div class="mt-6 space-y-2 text-sm">
                 <div><strong>Email:</strong> {{ $user->email }}</div>
