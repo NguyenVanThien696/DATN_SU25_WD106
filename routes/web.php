@@ -22,7 +22,6 @@ Route::get('/', [ClientController::class, 'index'])->name('client.index');
 
 // Trang product phía user 
 Route::prefix('products')->group(function () {
-
     Route::get('/', [ProductController::class, 'index'])->name('client.products.index');
 
 });

@@ -43,15 +43,6 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Số lượng </label>
-                <input type="number" class="form-control" id="quantity" name="quantity" rows="3"
-                    value="{{ old('quantity', $product->quantity) }}">
-                @error('quantity')
-                <small class="text-danger">{{ $message }}</small>
-                @enderror
-            </div>
-
-            <div class="mb-3">
                 <label class="form-label">Ảnh sản phẩm</label>
                 @if (!empty($product->image))
                 <div class="mb-2">

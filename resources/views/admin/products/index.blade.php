@@ -33,7 +33,6 @@
                                         <th>Description</th>
                                         <th>Price</th>
                                         <th>Image</th>
-                                        <th>Quantity</th>
                                         <th>#</th>
                                     </tr>
                                 <tbody>
@@ -49,14 +48,13 @@
                                                 width="150px">
                                             @endif
                                         </td>
-                                        <td>{{ $products->quantity }}</td>
                                         <td>
                                             <a href="{{ route('admin.products.show', $products->id) }}"
                                                 class="btn btn-secondary">Detail </a>
                                             <!-- <a href="{{ route('admin.products.edit', $products->id) }}"
                                                 class="btn btn-warning">Edit</a> -->
-                                            <form action="{{ route('admin.products.delete', $products->id) }} " class="d-inline"
-                                                method="POST">
+                                            <form action="{{ route('admin.products.delete', $products->id) }} "
+                                                class="d-inline" method="POST">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button class="btn btn-danger"

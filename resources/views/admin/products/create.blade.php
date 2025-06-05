@@ -1,84 +1,117 @@
-@extends('admin.layouts.default')
+    @extends('admin.layouts.default')
 
-@section('content')
-<div class="p-4" style="min-height: 800px;">
-    <h4 class="text-primary mb-4">Thêm mới sản phẩm</h4>
-    <div class="container mt-5">
+    @section('content')
+    <div class="p-4">
+        <h4 class="text-primary mb-4">Thêm sản phẩm</h4>
+
         @if (session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
+        <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
-        <form action="{{ route('admin.products.store') }}" method="post" enctype="multipart/form-data">
+        <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
+            {{-- Tên, mô tả, giá, danh mục, thương hiệu --}}
             <div class="mb-3">
                 <label class="form-label">Tên sản phẩm</label>
-                <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}">
-                @error('name')
-                <small class="text-danger">{{ $message }}</small>
-                @enderror
+                <input type="text" class="form-control" name="name" required value="{{ old('name') }}">
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Mô tả</label>
-                <textarea class="form-control" id="description" name="description"
-                    rows="3">{{ old('description') }}</textarea>
-                @error('description')
-                <small class="text-danger">{{ $message }}</small>
-                @enderror
+                <textarea class="form-control" name="description" rows="3" value="{{ old('description') }}"></textarea>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Giá</label>
-                <input type="number" class="form-control" id="price" name="price" value="{{ old('price') }}">
-                @error('price')
-                <small class="text-danger">{{ $message }}</small>
-                @enderror
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Số lượng </label>
-                <input type="number" class="form-control" id="quantity" name="quantity" rows="3"
-                    value="{{ old('quantity') }}">
-                @error('quantity')
-                <small class="text-danger">{{ $message }}</small>
-                @enderror
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Ảnh </label>
-                <input type="file" class="form-control" id="image" name="image">
-                @error('image')
-                <small class="text-danger">{{ $message }}</small>
-                @enderror
+                <input type="number" class="form-control" name="price" required value="{{ old('price') }}">
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Danh mục</label>
-                <select name="category_id" id="category_id" class="form-control">
-                    @foreach ($category as $value)
-                    <option value="{{ $value->id }}" {{ old('category_id') == $value->id ? 'selected' : '' }}>
-                        {{ $value->name }}
-                    </option>
+                <select name="category_id" class="form-control" required>
+                    @foreach ($category as $cat)
+                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                     @endforeach
                 </select>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Thương hiệu </label>
-                <select name="brand_id" id="brand_id" class="form-control">
-                    @foreach ($brand as $value)
-                    <option value="{{ $value->id }}" {{ old('brand_id') == $value->id ? 'selected' : '' }}>
-                        {{ $value->name }}
-                    </option>
+                <label class="form-label">Thương hiệu</label>
+                <select name="brand_id" class="form-control" required>
+                    @foreach ($brand as $br)
+                    <option value="{{ $br->id }}">{{ $br->name }}</option>
                     @endforeach
                 </select>
             </div>
 
-            <button type="submit" class="btn btn-primary">Thêm mới </button>
+            <div class="mb-3">
+                <label class="form-label">Ảnh sản phẩm</label>
+                <input type="file" class="form-control" name="image">
+            </div>
+
+            {{-- Biến thể sản phẩm --}}
+            <table class="table table-bordered" id="variantTable">
+                <thead>
+                    <tr>
+                        <th>Size</th>
+                        <th>Màu sắc</th>
+                        <th>Số lượng</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <select name="variants[0][size_id]" class="form-control" required>
+                                @foreach ($sizes as $size)
+                                <option value="{{ $size->id }}">{{ $size->name }}</option>
+                                @endforeach
+                            </select>
+                        </td>
+                        <td>
+                            <select name="variants[0][color_id]" class="form-control" required>
+                                @foreach ($colors as $color)
+                                <option value="{{ $color->id }}">{{ $color->name }}</option>
+                                @endforeach
+                            </select>
+                        </td>
+                        <td><input type="number" name="variants[0][stock]" class="form-control" required></td>
+                        <td><button type="button" class="btn btn-danger remove-variant">Xóa</button></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-secondary" id="addVariant">Thêm biến thể</button>
+
+            <script>
+            let variantIndex = 1;
+
+            document.getElementById('addVariant').addEventListener('click', function() {
+                const sizesOptions =
+                    `@foreach ($sizes as $size) <option value="{{ $size->id }}">{{ $size->name }}</option> @endforeach`;
+                const colorsOptions =
+                    `@foreach ($colors as $color) <option value="{{ $color->id }}">{{ $color->name }}</option> @endforeach`;
+
+                const table = document.querySelector('#variantTable tbody');
+                const row = document.createElement('tr');
+                row.innerHTML = `
+            <td><select name="variants[${variantIndex}][size_id]" class="form-control" required>${sizesOptions}</select></td>
+            <td><select name="variants[${variantIndex}][color_id]" class="form-control" required>${colorsOptions}</select></td>
+            <td><input type="number" name="variants[${variantIndex}][stock]" class="form-control" required></td>
+            <td><button type="button" class="btn btn-danger remove-variant">Xóa</button></td>
+        `;
+                table.appendChild(row);
+                variantIndex++;
+            });
+
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('remove-variant')) {
+                    e.target.closest('tr').remove();
+                }
+            });
+            </script>
+            <button type="submit" class="btn btn-primary">Thêm sản phẩm</button>
         </form>
     </div>
-</div>
-@endsection
+
+    @endsection
