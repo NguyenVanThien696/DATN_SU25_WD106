@@ -56,6 +56,9 @@ Route::prefix('cart')->group(function () {
 // Trang checkout phía user  
 Route::prefix('checkout')->group(function () {
     Route::get('/', [CheckoutController::class, 'index'])->name('client.checkout.index');
+    Route::get('/thankyou', function(){
+        return view('client.checkout.thankyou');
+    })->name('client.checkout.thankyou');
 });
 
 
