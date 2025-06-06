@@ -8,6 +8,7 @@ use App\Http\Controllers\Client\ContactController;
 use App\Http\Controllers\Client\AboutController;
 use App\Http\Controllers\Client\CartController;
 use App\Http\Controllers\Client\CheckoutController;
+use App\Http\Controllers\Admin\UserController;
 
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Auth\AuthController;
@@ -64,3 +65,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('user.changePassword');
 });
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+
+// Route Admin
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/user', [UserController::class, 'index'])->name('admin.users');
+});
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/users', [UserController::class, 'index'])->name('users');
+    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+});

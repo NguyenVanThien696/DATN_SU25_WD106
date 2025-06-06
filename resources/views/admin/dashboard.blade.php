@@ -25,7 +25,7 @@
                 </a>
 
                 @if (Auth::user()->role == 1)
-                    <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-danger w-100 mt-2 py-2" style="border-radius: 30px;">
+                    <a href="{{ route('admin.index') }}" class="btn btn-outline-danger w-100 mt-2 py-2" style="border-radius: 30px;">
                         → Truy cập trang ADMIN
                     </a>
                 @endif
