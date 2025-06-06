@@ -73,7 +73,8 @@
                 <tbody>
                     @foreach ($product->variants as $i => $variant)
                     <tr>
-                        <input type="hidden" name="variants[0][id]" value="{{ $variant->id }}">
+                        <input type="hidden" name="variants[{{ $i }}][id]" value="{{ $variant->id }}">
+
                         <td>
                             <select name="variants[{{ $i }}][size_id]" class="form-control" required>
                                 @foreach ($sizes as $size)
@@ -92,6 +93,12 @@
                         </td>
                         <td><input type="number" name="variants[{{ $i }}][stock]" class="form-control" required
                                 value="{{ $variant->stock }}"></td>
+                        <td>
+                            <input type="file" name="variants[{{ $i }}][image]" class="form-control mb-2">
+                            @if ($variant->image)
+                            <img src="{{ asset('storage/' . $variant->image) }}" style="width: 60px;">
+                            @endif
+                        </td>
                         <td><button type="button" class="btn btn-danger remove-variant">Xóa</button></td>
                     </tr>
                     @endforeach
@@ -115,6 +122,7 @@
             <td><select name="variants[${variantIndex}][size_id]" class="form-control" required>${sizesOptions}</select></td>
             <td><select name="variants[${variantIndex}][color_id]" class="form-control" required>${colorsOptions}</select></td>
             <td><input type="number" name="variants[${variantIndex}][stock]" class="form-control" required></td>
+            <td><input type="file" name="variants[${variantIndex}][image]" class="form-control"></td>
             <td><button type="button" class="btn btn-danger remove-variant">Xóa</button></td>
         `;
                 table.appendChild(row);

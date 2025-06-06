@@ -7,9 +7,10 @@
         <div class="row">
             <div class="col-md-4">
                 @if ($product->image)
-                    <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="img-fluid rounded shadow">
+                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
+                    class="img-fluid rounded shadow">
                 @else
-                    <p>Không có ảnh sản phẩm.</p>
+                <p>Không có ảnh sản phẩm.</p>
                 @endif
             </div>
 
@@ -40,26 +41,35 @@
                 {{-- Danh sách biến thể --}}
                 <h5 class="mt-4 text-success">Biến thể sản phẩm</h5>
                 @if ($product->variants->count())
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Size</th>
-                                <th>Màu sắc</th>
-                                <th>Số lượng</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($product->variants as $variant)
-                                <tr>
-                                    <td>{{ $variant->size->name ?? '---' }}</td>
-                                    <td>{{ $variant->color->name ?? '---' }}</td>
-                                    <td>{{ $variant->stock }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Size</th>
+                            <th>Màu sắc</th>
+                            <th>Số lượng</th>
+                            <th>Ảnh biến thể</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($product->variants as $variant)
+                        <tr>
+                            <td>{{ $variant->size->name ?? '---' }}</td>
+                            <td>{{ $variant->color->name ?? '---' }}</td>
+                            <td>{{ $variant->stock }}</td>
+                            <td>
+                                @if ($variant->image)
+                                <img src="{{ asset('storage/' . $variant->image) }}" alt="Ảnh biến thể" width="80"
+                                    class="rounded shadow">
+                                @else
+                                Không có ảnh
+                                @endif
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
                 @else
-                    <p>Không có biến thể nào.</p>
+                <p>Không có biến thể nào.</p>
                 @endif
 
                 <a href="{{ route('admin.products.index') }}" class="btn btn-secondary">Quay lại</a>
