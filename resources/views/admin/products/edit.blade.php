@@ -2,35 +2,39 @@
 
     @section('content')
     <div class="p-4">
-        <h4 class="text-primary mb-4">Thêm sản phẩm</h4>
+        <h4 class="text-primary mb-4">Cập nhật sản phẩm</h4>
 
         @if (session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
-        <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('admin.products.update', $product->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
+            @method('PUT')
 
             <div class="mb-3">
                 <label class="form-label">Tên sản phẩm</label>
-                <input type="text" class="form-control" name="name" required value="{{ old('name') }}">
+                <input type="text" class="form-control" name="name" required value="{{ old('name', $product->name) }}">
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Mô tả</label>
-                <textarea class="form-control" name="description" rows="3" value="{{ old('description') }}"></textarea>
+                <textarea class="form-control" name="description" rows="3"
+                    value="{{ old('description') }}">{{ old('description', $product->description) }}</textarea>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Giá</label>
-                <input type="number" class="form-control" name="price" required value="{{ old('price') }}">
+                <input type="number" class="form-control" name="price" required
+                    value="{{ old('price', $product->price) }}">
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Danh mục</label>
                 <select name="category_id" class="form-control" required>
                     @foreach ($category as $cat)
-                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                    <option value="{{ $cat->id }}" {{ $product->category_id == $cat->id ? 'selected' : '' }}>
+                        {{ $cat->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -39,7 +43,8 @@
                 <label class="form-label">Thương hiệu</label>
                 <select name="brand_id" class="form-control" required>
                     @foreach ($brand as $br)
-                    <option value="{{ $br->id }}">{{ $br->name }}</option>
+                    <option value="{{ $br->id }}" {{ $product->brand_id == $br->id ? 'selected' : '' }}>{{ $br->name }}
+                    </option>
                     @endforeach
                 </select>
             </div>
@@ -47,8 +52,15 @@
             <div class="mb-3">
                 <label class="form-label">Ảnh sản phẩm</label>
                 <input type="file" class="form-control" name="image">
+                @if ($product->image)
+                <div class="mb-3">
+                    <img src="{{ asset('storage/' . $product->image) }}" alt="" style="max-width: 150px;">
+                </div>
+                @endif
+
             </div>
 
+            {{-- Biến thể sản phẩm --}}
             <table class="table table-bordered" id="variantTable">
                 <thead>
                     <tr>
@@ -59,25 +71,32 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @foreach ($product->variants as $i => $variant)
                     <tr>
+                        <input type="hidden" name="variants[0][id]" value="{{ $variant->id }}">
                         <td>
-                            <select name="variants[0][size_id]" class="form-control" required>
+                            <select name="variants[{{ $i }}][size_id]" class="form-control" required>
                                 @foreach ($sizes as $size)
-                                <option value="{{ $size->id }}">{{ $size->name }}</option>
+                                <option value="{{ $size->id }}" {{ $variant->size_id == $size->id ? 'selected' : '' }}>
+                                    {{ $size->name }}</option>
                                 @endforeach
                             </select>
                         </td>
                         <td>
-                            <select name="variants[0][color_id]" class="form-control" required>
+                            <select name="variants[{{ $i }}][color_id]" class="form-control" required>
                                 @foreach ($colors as $color)
-                                <option value="{{ $color->id }}">{{ $color->name }}</option>
+                                <option value="{{ $color->id }}"
+                                    {{ $variant->color_id == $color->id ? 'selected' : '' }}>{{ $color->name }}</option>
                                 @endforeach
                             </select>
                         </td>
-                        <td><input type="number" name="variants[0][stock]" class="form-control" required></td>
+                        <td><input type="number" name="variants[{{ $i }}][stock]" class="form-control" required
+                                value="{{ $variant->stock }}"></td>
                         <td><button type="button" class="btn btn-danger remove-variant">Xóa</button></td>
                     </tr>
+                    @endforeach
                 </tbody>
+
             </table>
             <button type="button" class="btn btn-secondary" id="addVariant">Thêm biến thể</button>
 
@@ -108,7 +127,7 @@
                 }
             });
             </script>
-            <button type="submit" class="btn btn-primary">Thêm sản phẩm</button>
+            <button type="submit" class="btn btn-primary">Cập nhật sản phẩm</button>
         </form>
     </div>
 

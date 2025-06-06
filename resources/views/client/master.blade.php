@@ -26,6 +26,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 
+    
+
+
 
     <!-- <link rel="stylesheet" href="{{ asset('assets/css1/linearicons.css') }}">
 	<link rel="stylesheet" href="{{ asset('assets/css1/font-awesome.min.css') }}">
@@ -48,7 +51,9 @@
     <!-- End Header/Navigation -->
 
     <!-- Start Hero Section -->
+
     {{-- @include('client.layouts.banner') --}}
+
     <!-- End Hero Section -->
 
     @yield('content')

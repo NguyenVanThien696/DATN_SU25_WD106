@@ -18,6 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('color_id')->nullable();
             $table->integer('stock')->default(0);
             $table->decimal('price', 10, 2)->nullable();
+            $table->timestamps();
 
             $table->foreign('product_id')->references('id')->on('products');
             $table->foreign('size_id')->references('id')->on('sizes');

@@ -62,7 +62,7 @@
 
                             <li data-menu-item="modern-new-product" class="menu-item">
                                 <i class="fa-solid fa-square-plus fa-sm"></i>
-                                <a class="h-full w-full flex items-center" href="">
+                                <a class="h-full w-full flex items-center" href="{{ route('admin.products.create') }}">
                                     <span>Thêm Sản Phẩm</span>
                                 </a>
                             </li>
