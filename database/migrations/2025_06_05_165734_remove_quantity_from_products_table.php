@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sizes', function (Blueprint $table) {
-            $table->id();
-            $table->string('name', 10);
-            $table->timestamps();
-        });
+    Schema::table('products', function (Blueprint $table) {
+        $table->dropColumn('quantity');
+    });
     }
 
     /**
@@ -23,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sizes');
+    Schema::table('products', function (Blueprint $table) {
+        $table->integer('quantity')->default(0);
+    });
     }
 };

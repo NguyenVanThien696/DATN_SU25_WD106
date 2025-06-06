@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('cart_id')->nullable();
             $table->unsignedBigInteger('product_variant_id')->nullable();
             $table->integer('quantity')->default(1);
+            $table->timestamps();
 
             $table->foreign('cart_id')->references('id')->on('carts');
             $table->foreign('product_variant_id')->references('id')->on('product_variants');
