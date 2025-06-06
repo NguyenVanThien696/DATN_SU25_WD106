@@ -1,6 +1,26 @@
 @extends('client.master')
 
 @section('content')
+<div class="hero">
+    <div class="container">
+        <div class="row justify-content-between">
+            <div class="col-lg-5">
+                <div class="intro-excerpt">
+                    <h1>Modern Interior <span clsas="d-block">Design Studio</span></h1>
+                    <p class="mb-4">Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam
+                        vulputate velit imperdiet dolor tempor tristique.</p>
+                    <p><a href="{{ route('client.products.index') }}" class="btn btn-secondary me-2">Shop Now</a><a
+                            href="{{ route('client.products.index') }}" class="btn btn-white-outline">Explore</a></p>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="hero-img-wrap">
+                    <img src="{{ asset('assets/images/couch.png')}}" class="img-fluid">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- Start Product Section -->
 <div class="product-section">
     <div class="container">
@@ -11,7 +31,7 @@
                 <h2 class="mb-4 section-title">Crafted with excellent material.</h2>
                 <p class="mb-4">Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate
                     velit imperdiet dolor tempor tristique. </p>
-                <p><a href="shop.html" class="btn">Explore</a></p>
+                <p><a href="{{ route('client.products.index') }}" class="btn">Explore</a></p>
             </div>
             <!-- End Column 1 -->
 
@@ -244,7 +264,8 @@
 
                                         <div class="author-info">
                                             <div class="author-pic">
-                                                <img src="{{ asset('assets/images/person-1.png')}}" alt="Maria Jones" class="img-fluid">
+                                                <img src="{{ asset('assets/images/person-1.png')}}" alt="Maria Jones"
+                                                    class="img-fluid">
                                             </div>
                                             <h3 class="font-weight-bold">Maria Jones</h3>
                                             <span class="position d-block mb-3">CEO, Co-Founder, XYZ Inc.</span>
@@ -271,7 +292,8 @@
 
                                         <div class="author-info">
                                             <div class="author-pic">
-                                                <img src="{{ asset('assets/images/person-1.png')}}" alt="Maria Jones" class="img-fluid">
+                                                <img src="{{ asset('assets/images/person-1.png')}}" alt="Maria Jones"
+                                                    class="img-fluid">
                                             </div>
                                             <h3 class="font-weight-bold">Maria Jones</h3>
                                             <span class="position d-block mb-3">CEO, Co-Founder, XYZ Inc.</span>
@@ -298,7 +320,8 @@
 
                                         <div class="author-info">
                                             <div class="author-pic">
-                                                <img src="{{asset('assets/images/person-1.png')}}" alt="Maria Jones" class="img-fluid">
+                                                <img src="{{asset('assets/images/person-1.png')}}" alt="Maria Jones"
+                                                    class="img-fluid">
                                             </div>
                                             <h3 class="font-weight-bold">Maria Jones</h3>
                                             <span class="position d-block mb-3">CEO, Co-Founder, XYZ Inc.</span>
@@ -335,7 +358,8 @@
 
             <div class="col-12 col-sm-6 col-md-4 mb-4 mb-md-0">
                 <div class="post-entry">
-                    <a href="#" class="post-thumbnail"><img src="{{ asset('assets/images/post-1.jpg')}}" alt="Image" class="img-fluid"></a>
+                    <a href="#" class="post-thumbnail"><img src="{{ asset('assets/images/post-1.jpg')}}" alt="Image"
+                            class="img-fluid"></a>
                     <div class="post-content-entry">
                         <h3><a href="#">First Time Home Owner Ideas</a></h3>
                         <div class="meta">
@@ -347,7 +371,8 @@
 
             <div class="col-12 col-sm-6 col-md-4 mb-4 mb-md-0">
                 <div class="post-entry">
-                    <a href="#" class="post-thumbnail"><img src="{{ asset('assets/images/post-2.jpg')}}" alt="Image" class="img-fluid"></a>
+                    <a href="#" class="post-thumbnail"><img src="{{ asset('assets/images/post-2.jpg')}}" alt="Image"
+                            class="img-fluid"></a>
                     <div class="post-content-entry">
                         <h3><a href="#">How To Keep Your Furniture Clean</a></h3>
                         <div class="meta">
@@ -359,7 +384,8 @@
 
             <div class="col-12 col-sm-6 col-md-4 mb-4 mb-md-0">
                 <div class="post-entry">
-                    <a href="#" class="post-thumbnail"><img src="{{ asset('assets/images/post-3.jpg')}}" alt="Image" class="img-fluid"></a>
+                    <a href="#" class="post-thumbnail"><img src="{{ asset('assets/images/post-3.jpg')}}" alt="Image"
+                            class="img-fluid"></a>
                     <div class="post-content-entry">
                         <h3><a href="#">Small Space Furniture Apartment Ideas</a></h3>
                         <div class="meta">

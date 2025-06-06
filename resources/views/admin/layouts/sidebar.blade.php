@@ -5,7 +5,7 @@
     <div class="side-nav-content relative side-nav-scroll">
         <nav class="menu menu-transparent px-4 pb-4">
             <div class="menu-group">
-            <span class="nav-link mt-5">Xin chào, </span>
+                <span class="nav-link mt-5">Xin chào, </span>
                 <div class="menu-title"><a href="">Menu</a></div>
                 <ul>
                     <li class="menu-collapse">
@@ -16,7 +16,7 @@
                                     d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
                                 </path>
                             </svg>
-                            <span class="menu-item-text">Trang Chủ</span>
+                            <a href="{{ route('admin.index') }}"><span class="menu-item-text">Trang Chủ</span></a>
                         </div>
                         <ul>
                             <li data-menu-item="modern-project-dashboard" class="menu-item">
@@ -55,14 +55,14 @@
                         <ul>
                             <li data-menu-item="modern-product-list" class="menu-item">
                                 <i class="fa-solid fa-list-ul fa-sm"></i>
-                                <a class="h-full w-full flex items-center" href="">
+                                <a class="h-full w-full flex items-center" href="{{ route('admin.products.index') }}">
                                     <span>Danh Sách Sản Phẩm</span>
                                 </a>
                             </li>
 
                             <li data-menu-item="modern-new-product" class="menu-item">
                                 <i class="fa-solid fa-square-plus fa-sm"></i>
-                                <a class="h-full w-full flex items-center" href="">
+                                <a class="h-full w-full flex items-center" href="{{ route('admin.products.create') }}">
                                     <span>Thêm Sản Phẩm</span>
                                 </a>
                             </li>
@@ -132,7 +132,7 @@
                         </ul>
                     </li>
 
-                    <ul class="navbar-nav ms-auto">
+                    <!-- <ul class="navbar-nav ms-auto">
                         @guest
                         <li class="nav-item"><a class="nav-link" href="">Đăng nhập</a></li>
                         @else
@@ -143,7 +143,7 @@
                             </form>
                         </li>
                         @endguest
-                    </ul>
+                    </ul> -->
                     </li>
                 </ul>
             </div>
