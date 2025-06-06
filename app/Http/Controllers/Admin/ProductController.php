@@ -74,7 +74,6 @@ public function store(Request $request) {
         'variants.*.stock' => 'required|integer|min:0',
     ]);
 
-    // Lưu product
     $product = new Product();
     $product->name = $request->name;
     $product->description = $request->description;
@@ -85,8 +84,6 @@ public function store(Request $request) {
         $product->image = $request->file('image')->store('products', 'public');
     }
     $product->save();
-
-    // Lưu biến thể
     foreach ($request->variants as $variant) {
         $product->variants()->create([
             'size_id' => $variant['size_id'],
@@ -102,48 +99,79 @@ public function store(Request $request) {
         $product = Product::where('id', $id)->first();
         $category = Category::select('id', 'name')->get();
         $brand = Brand::select('id', 'name')->get();
-        return view('admin.products.edit', compact('product', 'category', 'brand'));
+        $sizes = Size::select('id', 'name')->get();
+        $colors = Color::select('id', 'name')->get();
+        return view('admin.products.edit', compact('product', 'category', 'brand', 'sizes', 'colors'));
     }
 
-        public function update(Request $request, $id) {
-
-        $request->validate([
+public function update(Request $request, $id) {
+    $request->validate([
         'category_id' =>'required',
         'brand_id' =>'required',
         'name' =>'required|min:3|max:100',
         'description' =>'nullable|string|max:255',
-        'image' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         'price' =>'required|numeric|min:0',
-    ], [
-        'name' => 'Tên sản phẩm dài từ 3 đến 100 kí tự.',
-        // 'image' => 'Ảnh là bắt buộc.',
-        'price' => 'Giá sản phẩm không được để trống.',
+
+        'variants' => 'required|array|min:1',
+        'variants.*.size_id' => 'required|exists:sizes,id',
+        'variants.*.color_id' => 'required|exists:colors,id',
+        'variants.*.stock' => 'required|integer|min:0',
     ]);
-        
-        $product = Product::findOrFail($id);
-        $path = $product->image;
 
+    $product = Product::findOrFail($id);
 
-        if ($request->hasFile('image')) {
-            if ($product->image && Storage::disk('public')->exists($product->image)) {
-                Storage::disk('public')->delete($product->image);
-            }
-            $path = $request->file('image')->store('uploads', 'public');
+    // Cập nhật ảnh nếu có
+    $path = $product->image;
+    if ($request->hasFile('image')) {
+        if ($path && Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
         }
-    
-    
-        $product->update([
-            'category_id' => $request->category_id,
-            'brand_id' => $request->brand_id,
-            'name' => $request->name,
-            'description' => $request->description,
-            'price' => $request->price,
-            'image' => $path,
-        ]);
+        $path = $request->file('image')->store('uploads', 'public');
+    }
 
+    // Cập nhật sản phẩm
+    $product->update([
+        'category_id' => $request->category_id,
+        'brand_id' => $request->brand_id,
+        'name' => $request->name,
+        'description' => $request->description,
+        'price' => $request->price,
+        'image' => $path,
+    ]);
 
-        return redirect()->route('admin.products.index')->with('success', 'Cập nhật sản phẩm thành công!');
+    // Danh sách ID các variant có trong request
+    $requestVariantIds = [];
+
+    foreach ($request->variants as $variant) {
+        if (!empty($variant['id'])) {
+            // Nếu có ID → update
+            $productVariant = $product->variants()->find($variant['id']);
+            if ($productVariant) {
+                $productVariant->update([
+                    'size_id' => $variant['size_id'],
+                    'color_id' => $variant['color_id'],
+                    'stock' => $variant['stock'],
+                ]);
+                $requestVariantIds[] = $variant['id'];
+            }
+        } else {
+            // Không có ID → thêm mới
+            $newVariant = $product->variants()->create([
+                'size_id' => $variant['size_id'],
+                'color_id' => $variant['color_id'],
+                'stock' => $variant['stock'],
+            ]);
+            $requestVariantIds[] = $newVariant->id;
+        }
+    }
+
+    // XÓA những variant KHÔNG còn trong request
+    $product->variants()->whereNotIn('id', $requestVariantIds)->delete();
+
+    return redirect()->route('admin.products.index')->with('success', 'Cập nhật sản phẩm thành công!');
 }
+
 
     public function delete($id) {
 

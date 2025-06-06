@@ -41,11 +41,11 @@
                                         <td>{{ $products->id }}</td>
                                         <td>{{ $products->name }}</td>
                                         <td>{{ $products->description }}</td>
-                                        <td>{{ number_format($products->price, 0, ',', '.') }} ₫</td>
+                                        <td>{{ number_format($products->price, 0, ',', '.') }} VNĐ </td>
                                         <td>
                                             @if ($products->image != null)
                                             <img src="{{ asset('storage/' . $products->image) }}" alt="Ảnh sản phẩm"
-                                                width="150px">
+                                                width="120px">
                                             @endif
                                         </td>
                                         <td>

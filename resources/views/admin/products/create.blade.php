@@ -11,7 +11,6 @@
         <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
-            {{-- Tên, mô tả, giá, danh mục, thương hiệu --}}
             <div class="mb-3">
                 <label class="form-label">Tên sản phẩm</label>
                 <input type="text" class="form-control" name="name" required value="{{ old('name') }}">
@@ -50,7 +49,6 @@
                 <input type="file" class="form-control" name="image">
             </div>
 
-            {{-- Biến thể sản phẩm --}}
             <table class="table table-bordered" id="variantTable">
                 <thead>
                     <tr>
