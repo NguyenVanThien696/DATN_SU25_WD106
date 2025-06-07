@@ -11,6 +11,7 @@ use App\Http\Controllers\Client\CartController;
 use App\Http\Controllers\Client\CheckoutController;
 
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 
 use App\Http\Controllers\Auth\AuthController;
 
@@ -86,6 +87,17 @@ Route::get('/', [AdminProductController::class, 'index'])->name('admin.index');
         Route::put('/update/{id}', [AdminProductController::class, 'update'])->name('admin.products.update');
         Route::delete('/delete/{id}', [AdminProductController::class, 'delete'])->name('admin.products.delete');
         Route::get('/detail/{id}', [AdminProductController::class, 'show'])->name('admin.products.show');
+
+    });
+
+    Route::prefix('categories')->group(function(){
+        Route::get('/index', [AdminCategoryController::class, 'listCate'])->name('admin.categories.index');
+        Route::get('/create', [AdminCategoryController::class, 'create'])->name('admin.categories.create');
+        Route::post('/store', [AdminCategoryController::class, 'store'])->name('admin.categories.store');
+        Route::get('/edit/{id}', [AdminCategoryController::class, 'edit'])->name('admin.categories.edit');
+        Route::put('/update/{id}', [AdminCategoryController::class, 'update'])->name('admin.categories.update');
+        Route::delete('/delete/{id}', [AdminCategoryController::class, 'delete'])->name('admin.categories.delete');
+        Route::get('/detail/{id}', [AdminCategoryController::class, 'show'])->name('admin.categories.show');
 
     });
 });
