@@ -16,20 +16,20 @@ class AuthController extends Controller
         return view ('auth.login');
     }
 
-    public function login(Request $request){
-        $credentials = $request->only('email', 'password');
+        public function login(Request $request){
+            $credentials = $request->only('email', 'password');
 
-        if(Auth::attempt($credentials)){
-            $user = Auth::user();
-            if($user->role==1){
-                return redirect()->route('admin.dashboard');
+            if(Auth::attempt($credentials)){
+                $user = Auth::user();
+                if($user->role==1){
+                    return redirect()->route('admin.dashboard');
+                }
+                return redirect()->route('dashboard');
             }
-            return redirect()->route('dashboard');
+            return redirect()->back()->withErrors([
+                'email' => 'Thông tin đăng nhập không chính xác.',
+            ]);
         }
-        return redirect()->back()->withErrors([
-            'email' => 'Thông tin đăng nhập không chính xác.',
-        ]);
-    }
 
     public function showRegisterForm(){
         return view ('auth.register');
@@ -74,22 +74,27 @@ class AuthController extends Controller
         return redirect()->route('dashboard');
     }
 
-    public function changePassword(Request $request){
-        $user = Auth::user();
+    public function changePassword(Request $request)
+{
+    $request->validate([
+        'current_password' => 'required',
+        'new_password' => 'required|min:6|confirmed',
+    ]);
 
-        Log::info('Mật khẩu cũ trong cơ sở dữ liệu:', ['stored_password' => $user->password]);
-        Log::info('Mật khẩu cũ người dùng nhập vào:', ['current_password' => $request->current_password]);
+    $user = Auth::user();
 
-        if (!Hash::check($request->current_password, $user->password)) {
-            return back()->withErrors(['current_password' => 'Mật khẩu cũ không đúng.']);
-        }
-
-        DB::table('users')
-            ->where('id', $user->id)
-            ->update(['password' => Hash::make($request->new_password)]);
-
-        return redirect()->route('dashboard')->with('status', 'Mật khẩu đã được thay đổi thành công.');
+    if (!Hash::check($request->current_password, $user->password)) {
+        return back()->withErrors(['current_password' => 'Mật khẩu cũ không đúng.'])->withInput();
     }
+
+    $user->password = Hash::make($request->new_password);
+    $user->save();
+    session()->put('status', 'Đổi mật khẩu thành công. Vui lòng đăng nhập lại.');
+    Auth::logout();
+
+    return redirect()->route('login.form')->with('status', 'Đổi mật khẩu thành công, vui lòng đăng nhập lại.');
+}
+
 
      public function logout(Request $request)
     {
