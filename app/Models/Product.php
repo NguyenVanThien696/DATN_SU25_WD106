@@ -29,6 +29,14 @@ class Product extends Model
         return $this->belongsTo(Brand::class, 'brand_id');
     }
         public function variants() {
-        return $this->hasMany(ProductVariant::class);
+            return $this->hasMany(ProductVariant::class, 'product_id');
+    }
+
+    public function getSize(){
+        return $this->variants->pluck('size')->unique('id')->values();
+    }
+
+    public function getColor(){
+        return $this->variants->pluck('color')->unique('id')->values();
     }
 }

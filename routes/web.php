@@ -29,6 +29,17 @@ Route::prefix('products')->group(function () {
 
 });
 
+Route::get('/category', function () {
+    return view('pages.category');
+});
+
+Route::get('/product', function () {
+    return view('pages.product');
+});
+
+Route::get('/cart', function () {
+    return view('pages.cart');
+});
 
 // Trang blog phía user  
 Route::prefix('blog')->group(function () {
@@ -57,6 +68,9 @@ Route::prefix('cart')->group(function () {
 // Trang checkout phía user  
 Route::prefix('checkout')->group(function () {
     Route::get('/', [CheckoutController::class, 'index'])->name('client.checkout.index');
+    Route::get('/thankyou', function(){
+        return view('client.checkout.thankyou');
+    })->name('client.checkout.thankyou');
 });
 
 
@@ -83,6 +97,7 @@ Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login.form
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register.form');
+
 Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
 
 Route::middleware('auth')->group(function () {
@@ -105,3 +120,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 });
+
+// Route::get('/dashboard', [AuthController::class, 'showDashboard'])->name('dashboard.form');
+// Route::post('/register', [AuthController::class, 'register'])->name('register');

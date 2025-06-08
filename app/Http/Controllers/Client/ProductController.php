@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -19,8 +20,12 @@ public function index()
 // ShopController
 public function show($id)
 {
-    $product = Product::with(['variants.size', 'variants.color'])->findOrFail($id);
-    return view('client.products.detail', compact('product'));
+        $product = Product::with(['variants.size', 'variants.color'])->findOrFail($id);
+
+    $sizes = ProductVariant::getSizesByProduct($id);
+    $colors = ProductVariant::getColorsByProduct($id);
+    $product_variants = $product->variants;
+    return view('client.products.detail', compact('product', 'sizes', 'colors'));
 }
 
 
