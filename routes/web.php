@@ -9,6 +9,7 @@ use App\Http\Controllers\Client\ContactController;
 use App\Http\Controllers\Client\AboutController;
 use App\Http\Controllers\Client\CartController;
 use App\Http\Controllers\Client\CheckoutController;
+use App\Http\Controllers\Admin\UserController;
 
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 
@@ -93,7 +94,31 @@ Route::get('/', [AdminProductController::class, 'index'])->name('admin.index');
 
 // Login
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login.form');
+Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register.form');
 Route::get('/dashboard', [AuthController::class, 'showDashboard'])->name('dashboard.form');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 
+Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/admin/dashboard', [AuthController::class, 'adminDashboard'])->name('admin.dashboard');
+
+    Route::get('/dashboard', [AuthController::class, 'showDashboard'])->name('dashboard');
+
+    Route::post('/change-password', [AuthController::class, 'changePassword'])->name('user.changePassword');
+});
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+
+// Route Admin
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/user', [UserController::class, 'index'])->name('admin.users');
+});
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/users', [UserController::class, 'index'])->name('users');
+    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+});

@@ -41,7 +41,7 @@
                         <ul>
                             <li data-menu-item="modern-customers" class="menu-item">
                                 <i class="fa-solid fa-list-ul fa-sm"></i>
-                                <a class="h-full w-full flex items-center" href="">
+                                <a class="h-full w-full flex items-center" href="{{ route('admin.users') }}">
                                     <span>Danh sách tài khoản</span>
                                 </a>
                             </li>

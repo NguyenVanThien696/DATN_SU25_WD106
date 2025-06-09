@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
@@ -14,16 +16,20 @@ class AuthController extends Controller
         return view ('auth.login');
     }
 
-    // public function login(Request $request){
-    //     $credentials = $request->only('email', 'password');
+        public function login(Request $request){
+            $credentials = $request->only('email', 'password');
 
-    //     if(Auth::attempt($credentials)){
-    //         $user = Auth::user();
-    //         if($user->role==1){
-    //             return redirect()->route('client.index');
-    //         }
-    //     }
-    // }
+            if(Auth::attempt($credentials)){
+                $user = Auth::user();
+                if($user->role==1){
+                    return redirect()->route('admin.dashboard');
+                }
+                return redirect()->route('dashboard');
+            }
+            return redirect()->back()->withErrors([
+                'email' => 'Thông tin đăng nhập không chính xác.',
+            ]);
+        }
 
     public function showRegisterForm(){
         return view ('auth.register');
@@ -36,6 +42,16 @@ class AuthController extends Controller
         }
         return view('dashboard', ['user' => $user]);
     }
+
+    public function adminDashboard()
+{
+    $user = Auth::user();
+    if (is_null($user) || $user->role != 1) {
+        // Nếu không phải admin hoặc chưa đăng nhập, chuyển về login hoặc trang khác
+        return redirect()->route('login.form');
+    }
+    return view('admin.dashboard', ['user' => $user]);
+}
 
     public function register(Request $request){
         $validatedData = $request->validate([
@@ -56,5 +72,36 @@ class AuthController extends Controller
         ]);
 
         return redirect()->route('dashboard');
+    }
+
+    public function changePassword(Request $request)
+{
+    $request->validate([
+        'current_password' => 'required',
+        'new_password' => 'required|min:6|confirmed',
+    ]);
+
+    $user = Auth::user();
+
+    if (!Hash::check($request->current_password, $user->password)) {
+        return back()->withErrors(['current_password' => 'Mật khẩu cũ không đúng.'])->withInput();
+    }
+
+    $user->password = Hash::make($request->new_password);
+    $user->save();
+    session()->put('status', 'Đổi mật khẩu thành công. Vui lòng đăng nhập lại.');
+    Auth::logout();
+
+    return redirect()->route('login.form')->with('status', 'Đổi mật khẩu thành công, vui lòng đăng nhập lại.');
+}
+
+
+     public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/login');
     }
 }
