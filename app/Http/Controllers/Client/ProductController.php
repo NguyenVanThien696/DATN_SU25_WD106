@@ -19,8 +19,18 @@ public function index()
 // ShopController
 public function show($id)
 {
-    $product = Product::with(['variants.size', 'variants.color'])->findOrFail($id);
-    return view('client.products.detail', compact('product'));
+    $product = Product::with(['variants.size', 'variants.color', 'category', 'brand'])->findOrFail($id);
+
+    $variants = $product->variants->map(function($variant){
+        return [
+            'id' => $variant->id,
+            'size_id' => $variant->size_id,
+            'color_id' => $variant->color_id,
+            'stock' => $variant->stock,
+        ];
+    });
+    $stock = $variants->sum('stock');
+    return view('client.products.detail', compact('product', 'variants', 'stock'));
 }
 
 
