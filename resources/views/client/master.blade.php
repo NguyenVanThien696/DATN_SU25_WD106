@@ -77,6 +77,7 @@
 	<!-- <script src="{{ asset('assets/js1/owl.carousel.min.js') }}"></script> -->
 
 	<script src="{{ asset('assets/js1/main.js') }}"></script>
+    <script src="{{ asset('assets/js/products.js')}}"></script>
 </body>
 
 </html>
