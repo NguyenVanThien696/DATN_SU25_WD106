@@ -10,7 +10,7 @@ class ProductVariant extends Model {
     use HasFactory;
 
     protected $table = 'product_variants';
-    protected $fillable = ['product_id', 'size_id', 'color_id', 'stock'];
+    protected $fillable = ['product_id', 'size_id', 'color_id', 'stock', 'image'];
 
     public function product() {
         return $this->belongsTo(Product::class, 'product_id');

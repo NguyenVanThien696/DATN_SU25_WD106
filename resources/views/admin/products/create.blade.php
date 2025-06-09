@@ -55,6 +55,7 @@
                         <th>Size</th>
                         <th>Màu sắc</th>
                         <th>Số lượng</th>
+                        <th>Ảnh</th>
                         <th>Hành động</th>
                     </tr>
                 </thead>
@@ -75,6 +76,7 @@
                             </select>
                         </td>
                         <td><input type="number" name="variants[0][stock]" class="form-control" required></td>
+                        <td><input type="file" name="variants[0][image]" class="form-control"></td>
                         <td><button type="button" class="btn btn-danger remove-variant">Xóa</button></td>
                     </tr>
                 </tbody>
@@ -96,6 +98,7 @@
             <td><select name="variants[${variantIndex}][size_id]" class="form-control" required>${sizesOptions}</select></td>
             <td><select name="variants[${variantIndex}][color_id]" class="form-control" required>${colorsOptions}</select></td>
             <td><input type="number" name="variants[${variantIndex}][stock]" class="form-control" required></td>
+            <td><input type="file" name="variants[${variantIndex}][image]" class="form-control"></td>
             <td><button type="button" class="btn btn-danger remove-variant">Xóa</button></td>
         `;
                 table.appendChild(row);
