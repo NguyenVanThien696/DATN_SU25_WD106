@@ -94,7 +94,6 @@
             </label>
           @endforeach
         </div>
-        <p class="mb-4">{{$product->stock}}</p>
         <p class="mb-4">{{$product->category->name}}</p>
         <p class="mb-4">{{$product->brand->name}}</p>
         <p><strong class="text-primary h4">{{number_format($product->price)}}</strong></p>
