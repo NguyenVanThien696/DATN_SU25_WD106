@@ -36,6 +36,15 @@
             </div>
 
             <div class="mb-3">
+                <label class="form-label">Tags </label>
+                <select name="tag_id" class="form-control" required>
+                    @foreach ($tags as $tag)
+                    <option value="{{ $tag->id }}">{{ $tag->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="mb-3">
                 <label class="form-label">Thương hiệu</label>
                 <select name="brand_id" class="form-control" required>
                     @foreach ($brand as $br)

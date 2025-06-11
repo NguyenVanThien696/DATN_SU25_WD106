@@ -9,6 +9,8 @@ use App\Models\Category;
 use App\Models\Color;
 use App\Models\Product;
 use App\Models\Size;
+use App\Models\Tag;
+
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,6 +27,7 @@ public function listProduct()
 {
     $listProducts = Product::join('categories', 'products.category_id', '=', 'categories.id')
         ->join('brands', 'products.brand_id', '=', 'brands.id')
+        // ->join('tags', 'products.tag_id', '=', 'tags.id')
         ->leftJoin('product_variants', 'products.id', '=', 'product_variants.product_id')
         ->select(
             'products.id',
@@ -34,6 +37,7 @@ public function listProduct()
             'products.image',
             'categories.name as category_name',
             'brands.name as brand_name',
+            // 'tags.name as tag_name',
             DB::raw('SUM(product_variants.stock) as total_stock')
         )
         ->groupBy(
@@ -43,7 +47,8 @@ public function listProduct()
             'products.price',
             'products.image',
             'categories.name',
-            'brands.name'
+            'brands.name',
+            // 'tags.name'
         )
         ->orderBy('products.created_at', 'desc')
         ->paginate(10);
@@ -57,7 +62,8 @@ public function listProduct()
     $brand = Brand::select('id', 'name')->get();
     $sizes = Size::select('id', 'name')->get();
     $colors = Color::select('id', 'name')->get();
-    return view('admin.products.create', compact('category', 'brand', 'sizes', 'colors'));
+    $tags = Tag::select('id', 'name')->get();
+    return view('admin.products.create', compact('category', 'brand', 'sizes', 'colors', 'tags'));
     }
 
 public function store(Request $request) {
@@ -68,6 +74,7 @@ public function store(Request $request) {
         'price' => 'required|numeric|min:0',
         'category_id' => 'required|exists:categories,id',
         'brand_id' => 'required|exists:brands,id',
+        'tag_id' => 'required|exists:tags,id',
         'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         'variants' => 'required|array|min:1',
         'variants.*.size_id' => 'required|exists:sizes,id',
@@ -82,6 +89,7 @@ public function store(Request $request) {
     $product->price = $request->price;
     $product->category_id = $request->category_id;
     $product->brand_id = $request->brand_id;
+    $product->tag_id = $request->tag_id;
 
     if ($request->hasFile('image')) {
         $product->image = $request->file('image')->store('products', 'public');
@@ -113,7 +121,8 @@ public function store(Request $request) {
         $brand = Brand::select('id', 'name')->get();
         $sizes = Size::select('id', 'name')->get();
         $colors = Color::select('id', 'name')->get();
-        return view('admin.products.edit', compact('product', 'category', 'brand', 'sizes', 'colors'));
+        $tag = Tag::select('id', 'name')->get();
+        return view('admin.products.edit', compact('product', 'category', 'brand', 'sizes', 'colors', 'tag'));
     }
 
 public function update(Request $request, $id) {
@@ -121,6 +130,7 @@ public function update(Request $request, $id) {
     $request->validate([
         'category_id' =>'required',
         'brand_id' =>'required',
+        'tag_id' =>'required',
         'name' =>'required|min:3|max:100',
         'description' =>'nullable|string|max:500',
         'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -145,6 +155,7 @@ public function update(Request $request, $id) {
     $product->update([
         'category_id' => $request->category_id,
         'brand_id' => $request->brand_id,
+        'tag_id' => $request->tag_id,
         'name' => $request->name,
         'description' => $request->description,
         'price' => $request->price,
@@ -222,6 +233,7 @@ public function update(Request $request, $id) {
         $product = Product::with([
             'category',
             'brand',
+            'tag',
             'variants.size',
             'variants.color'
         ])->findOrFail($id);

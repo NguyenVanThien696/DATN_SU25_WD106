@@ -50,6 +50,16 @@
             </div>
 
             <div class="mb-3">
+                <label class="form-label">Tags </label>
+                <select name="tag_id" class="form-control" required>
+                    @foreach ($tag as $t)
+                    <option value="{{ $t->id }}" {{ $product->tag_id == $t->id ? 'selected' : '' }}>{{ $t->name }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="mb-3">
                 <label class="form-label">Ảnh sản phẩm</label>
                 <input type="file" class="form-control" name="image">
                 @if ($product->image)
