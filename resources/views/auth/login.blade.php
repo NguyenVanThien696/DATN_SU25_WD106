@@ -6,6 +6,18 @@
         {{-- Tiêu đề --}}
         <h3 class="text-center mb-4">Đăng nhập tài khoản</h3>
 
+        @if ($errors->has('email'))
+    <div class="alert alert-danger">
+        {{ $errors->first('email') }}
+    </div>
+@endif
+
+         @if (session('status'))
+                    <div class="alert alert-success">
+                        {{ session('status') }}
+                    </div>
+                @endif
+
         <form method="POST" action="{{ route('login.form') }}">
             @csrf
 
