@@ -9,8 +9,10 @@ use App\Http\Controllers\Client\ContactController;
 use App\Http\Controllers\Client\AboutController;
 use App\Http\Controllers\Client\CartController;
 use App\Http\Controllers\Client\CheckoutController;
+use App\Http\Controllers\Admin\UserController;
 
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 
 use App\Http\Controllers\Auth\AuthController;
 
@@ -28,6 +30,17 @@ Route::prefix('products')->group(function () {
 
 });
 
+Route::get('/category', function () {
+    return view('pages.category');
+});
+
+Route::get('/product', function () {
+    return view('pages.product');
+});
+
+Route::get('/cart', function () {
+    return view('pages.cart');
+});
 
 // Trang blog phía user  
 Route::prefix('blog')->group(function () {
@@ -56,6 +69,9 @@ Route::prefix('cart')->group(function () {
 // Trang checkout phía user  
 Route::prefix('checkout')->group(function () {
     Route::get('/', [CheckoutController::class, 'index'])->name('client.checkout.index');
+    Route::get('/thankyou', function(){
+        return view('client.checkout.thankyou');
+    })->name('client.checkout.thankyou');
 });
 
 
@@ -74,11 +90,47 @@ Route::get('/', [AdminProductController::class, 'index'])->name('admin.index');
         Route::get('/detail/{id}', [AdminProductController::class, 'show'])->name('admin.products.show');
 
     });
+
+    Route::prefix('categories')->group(function(){
+        Route::get('/index', [AdminCategoryController::class, 'listCate'])->name('admin.categories.index');
+        Route::get('/create', [AdminCategoryController::class, 'create'])->name('admin.categories.create');
+        Route::post('/store', [AdminCategoryController::class, 'store'])->name('admin.categories.store');
+        Route::get('/edit/{id}', [AdminCategoryController::class, 'edit'])->name('admin.categories.edit');
+        Route::put('/update/{id}', [AdminCategoryController::class, 'update'])->name('admin.categories.update');
+        Route::delete('/delete/{id}', [AdminCategoryController::class, 'delete'])->name('admin.categories.delete');
+        Route::get('/detail/{id}', [AdminCategoryController::class, 'show'])->name('admin.categories.show');
+
+    });
 });
 
 
 // Login
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login.form');
+Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register.form');
 Route::get('/dashboard', [AuthController::class, 'showDashboard'])->name('dashboard.form');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
+
+Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/admin/dashboard', [AuthController::class, 'adminDashboard'])->name('admin.dashboard');
+
+    Route::get('/dashboard', [AuthController::class, 'showDashboard'])->name('dashboard');
+
+    Route::post('/change-password', [AuthController::class, 'changePassword'])->name('user.changePassword');
+});
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+
+// Route Admin
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/user', [UserController::class, 'index'])->name('admin.users');
+});
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/users', [UserController::class, 'index'])->name('users');
+    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+});

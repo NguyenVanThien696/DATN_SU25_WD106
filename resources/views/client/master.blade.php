@@ -23,7 +23,9 @@
     <link rel="stylesheet" href="{{ asset('assets/css/tiny-slider.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 
 
     <!-- <link rel="stylesheet" href="{{ asset('assets/css1/linearicons.css') }}">
@@ -48,6 +50,7 @@
 
     <!-- Start Hero Section -->
     <!-- @include('client.layouts.banner') -->
+    {{-- @include('client.layouts.banner') --}}
     <!-- End Hero Section -->
 
     @yield('content')
@@ -74,6 +77,7 @@
 	<!-- <script src="{{ asset('assets/js1/owl.carousel.min.js') }}"></script> -->
 
 	<script src="{{ asset('assets/js1/main.js') }}"></script>
+    <script src="{{ asset('assets/js/products.js')}}"></script>
 </body>
 
 </html>
