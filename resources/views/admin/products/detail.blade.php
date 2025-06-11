@@ -36,6 +36,10 @@
                         <th>Thương hiệu</th>
                         <td>{{ $product->brand->name ?? 'Không có' }}</td>
                     </tr>
+                    <tr>
+                        <th>Tags</th>
+                        <td>{{ $product->tag->name ?? 'Không có' }}</td>
+                    </tr>
                 </table>
 
                 {{-- Danh sách biến thể --}}
