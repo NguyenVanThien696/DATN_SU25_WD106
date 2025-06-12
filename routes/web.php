@@ -62,7 +62,11 @@ Route::prefix('about')->group(function () {
 
 // Trang cart phía user  
 Route::prefix('cart')->group(function () {
-    Route::get('/', [CartController::class, 'index'])->name('client.cart.index');
+    Route::get('/cart', [CartController::class, 'index'])->name('client.cart.index');
+    Route::post('/cart/add', [CartController::class, 'add'])->name('client.cart.add');
+    Route::post('/cart/update', [CartController::class, 'update'])->name('client.cart.update');
+    Route::get('/cart/delete/{id}', [CartController::class, 'delete'])->name('client.cart.delete');
+    Route::get('/cart/clear', [CartController::class, 'clear'])->name('client.cart.clear');
 });
 
 

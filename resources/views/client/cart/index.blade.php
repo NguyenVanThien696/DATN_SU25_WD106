@@ -1,11 +1,19 @@
 @extends('client.master')
 
 @section('content')
+@if (session('success'))
+  <div class="alert alert-success">{{session('success')}}</div>
+@endif
 
+@if(count($cart) > 0)
+@php
+  $total = 0;
+@endphp
 <div class="untree_co-section before-footer-section">
             <div class="container">
               <div class="row mb-5">
-                <form class="col-md-12" method="post">
+                <form class="col-md-12" method="post" action="{{route('client.cart.update')}}">
+                  @csrf
                   <div class="site-blocks-table">
                     <table class="table">
                       <thead>
@@ -13,122 +21,129 @@
                           <th class="product-thumbnail">Image</th>
                           <th class="product-name">Product</th>
                           <th class="product-price">Price</th>
-                          <th class="product-quantity">Quantity8888</th>
+                          <th class="product-quantity">Quantity</th>
                           <th class="product-total">Total</th>
                           <th class="product-remove">Remove</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
+                        @foreach ($cart as $id => $item)
+                        @php
+                          $subtotal = $item['price'] * $item['quantity'];
+                          $total += $subtotal;
+                        @endphp
+                        {{-- @dd($item); --}}
+                          <tr>
                           <td class="product-thumbnail">
-                            <img src="images/product-1.png" alt="Image" class="img-fluid">
+
+                            <img src="{{asset('storage/'.$item['options']['image'])}}" alt="Image" class="img-fluid">
                           </td>
                           <td class="product-name">
-                            <h2 class="h5 text-black">Product 1</h2>
+                            <h2 class="h5 text-black">{{$item['name']}}</h2>
                           </td>
-                          <td>$49.00</td>
+                          <td>{{number_format($item['price'])}}</td>
                           <td>
                             <div class="input-group mb-3 d-flex align-items-center quantity-container" style="max-width: 120px;">
-                              <div class="input-group-prepend">
-                                <button class="btn btn-outline-black decrease" type="button">&minus;</button>
-                              </div>
-                              <input type="text" class="form-control text-center quantity-amount" value="1" placeholder="" aria-label="Example text with button addon" aria-describedby="button-addon1">
-                              <div class="input-group-append">
-                                <button class="btn btn-outline-black increase" type="button">&plus;</button>
-                              </div>
+                              <input type="number" name="quantity[{{$id}}]" class="form-control text-center quantity-amount" value="{{$item['quantity']}}" min="1" placeholder="" aria-label="Example text with button addon" aria-describedby="button-addon1">
                             </div>
         
                           </td>
-                          <td>$49.00</td>
-                          <td><a href="#" class="btn btn-black btn-sm">X</a></td>
+                          <td class="item-total">{{number_format($subtotal)}}</td>
+                          <td><a href="{{route('client.cart.delete', $id)}}" class="btn btn-black btn-sm">X</a></td>
                         </tr>
-        
-                        <tr>
-                          <td class="product-thumbnail">
-                            <img src="images/product-2.png" alt="Image" class="img-fluid">
-                          </td>
-                          <td class="product-name">
-                            <h2 class="h5 text-black">Product 2</h2>
-                          </td>
-                          <td>$49.00</td>
-                          <td>
-                            <div class="input-group mb-3 d-flex align-items-center quantity-container" style="max-width: 120px;">
-                              <div class="input-group-prepend">
-                                <button class="btn btn-outline-black decrease" type="button">&minus;</button>
-                              </div>
-                              <input type="text" class="form-control text-center quantity-amount" value="1" placeholder="" aria-label="Example text with button addon" aria-describedby="button-addon1">
-                              <div class="input-group-append">
-                                <button class="btn btn-outline-black increase" type="button">&plus;</button>
-                              </div>
-                            </div>
-        
-                          </td>
-                          <td>$49.00</td>
-                          <td><a href="#" class="btn btn-black btn-sm">X</a></td>
-                        </tr>
+                        @endforeach
+                        <button type="submit">Cập nhật giỏ hàng</button>
                       </tbody>
+                      <tfoot>
+                        <tr>
+                          <td colspan="4" class="text-right"><strong>Tổng cộng:</strong></td>
+                          <td colspan="2" id="cart-total" class="font-weight-bold"></td>
+                        </tr>
+                      </tfoot>
+
                     </table>
                   </div>
                 </form>
-              </div>
-        
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="row mb-5">
-                    <div class="col-md-6 mb-3 mb-md-0">
-                      <button class="btn btn-black btn-sm btn-block">Update Cart</button>
-                    </div>
-                    <div class="col-md-6">
-                      <button class="btn btn-outline-black btn-sm btn-block">Continue Shopping</button>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-md-12">
-                      <label class="text-black h4" for="coupon">Coupon</label>
-                      <p>Enter your coupon code if you have one.</p>
-                    </div>
-                    <div class="col-md-8 mb-3 mb-md-0">
-                      <input type="text" class="form-control py-3" id="coupon" placeholder="Coupon Code">
-                    </div>
-                    <div class="col-md-4">
-                      <button class="btn btn-black">Apply Coupon</button>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6 pl-5">
-                  <div class="row justify-content-end">
-                    <div class="col-md-7">
-                      <div class="row">
-                        <div class="col-md-12 text-right border-bottom mb-5">
-                          <h3 class="text-black h4 text-uppercase">Cart Totals</h3>
-                        </div>
-                      </div>
-                      <div class="row mb-3">
-                        <div class="col-md-6">
-                          <span class="text-black">Subtotal</span>
-                        </div>
-                        <div class="col-md-6 text-right">
-                          <strong class="text-black">$230.00</strong>
-                        </div>
-                      </div>
-                      <div class="row mb-5">
-                        <div class="col-md-6">
-                          <span class="text-black">Total</span>
-                        </div>
-                        <div class="col-md-6 text-right">
-                          <strong class="text-black">$230.00</strong>
-                        </div>
-                      </div>
-        
                       <div class="row">
                         <div class="col-md-12">
-                          <a href="{{ route('client.checkout.index') }}" class="btn btn-black btn-lg py-3 btn-block" onclick="window.location='checkout.html'">Proceed To Checkout</a>
+                          <a href="{{ route('client.checkout.index') }}" class="btn btn-black btn-lg py-3 btn-block" onclick="submitCartAndGoToCheckout()">Proceed To Checkout</a>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
+
               </div>
             </div>
           </div>
+          @else
+            <p>Giỏ hàng trống</p>
+          @endif
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const quantityContainers = document.querySelectorAll('.quantity-container');
+  const totalDisplay = document.getElementById('cart-total');
+
+  const formatCurrency = (num) => {
+    return num.toLocaleString('vi-VN') + '₫';
+  };
+
+  const updateRowSubtotal = (row) => {
+    const priceText = row.querySelector('td:nth-child(3)').textContent;
+    const price = parseInt(priceText.replace(/[^\d]/g, '')) || 0;
+    const quantity = parseInt(row.querySelector('.quantity-amount').value) || 1;
+    const subtotal = price * quantity;
+    const subtotalCell = row.querySelector('.item-subtotal');
+    if (subtotalCell) {
+      subtotalCell.textContent = formatCurrency(subtotal);
+    }
+    return subtotal;
+  };
+
+  const updateCartTotal = () => {
+    let total = 0;
+    document.querySelectorAll('tbody tr').forEach(row => {
+      total += updateRowSubtotal(row);
+    });
+    if (totalDisplay) {
+      totalDisplay.textContent = formatCurrency(total);
+    }
+  };
+
+  quantityContainers.forEach(container => {
+    const input = container.querySelector('.quantity-amount');
+    const btnIncrease = container.querySelector('.increase');
+    const btnDecrease = container.querySelector('.decrease');
+
+    if (btnIncrease) {
+      btnIncrease.addEventListener('click', (e) => {
+        e.preventDefault();
+        let value = parseInt(input.value) || 1;
+        input.value = value + 1;
+        updateCartTotal();
+      });
+    }
+
+    if (btnDecrease) {
+      btnDecrease.addEventListener('click', (e) => {
+        e.preventDefault();
+        let value = parseInt(input.value) || 1;
+        input.value = Math.max(1, value - 1);
+        updateCartTotal();
+      });
+    }
+
+    input.addEventListener('change', () => {
+      let value = parseInt(input.value);
+      if (!value || value < 1) input.value = 1;
+      updateCartTotal();
+    });
+  });
+
+  updateCartTotal();
+});
+
+</script>
+
+
 @endsection
