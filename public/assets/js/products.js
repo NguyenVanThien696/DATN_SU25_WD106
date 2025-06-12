@@ -14,3 +14,24 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const input = document.querySelector('#quantity');
+    const plus = document.querySelector('.increase');
+    const minus = document.querySelector('.decrease');
+
+    if (plus) {
+      plus.addEventListener('click', () => {
+        let val = parseInt(input.value) || 1;
+        input.value = val + 1;
+      });
+    }
+
+    if (minus) {
+      minus.addEventListener('click', () => {
+        let val = parseInt(input.value) || 1;
+        input.value = Math.max(1, val - 1);
+      });
+    }
+  });
+

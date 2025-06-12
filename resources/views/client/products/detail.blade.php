@@ -32,6 +32,8 @@
         <h2 class="text-black">{{$product->name}}</h2>
         <p class="mb-4">{{$product->description}}</p>
       <p>{{$stock}} sản phẩm</p>
+      <form action="{{route('client.cart.add')}}" method="POST">
+          @csrf
         {{-- <table class="table mt-2">
           <thead>
             <tr>
@@ -99,11 +101,13 @@
         <p><strong class="text-primary h4">{{number_format($product->price)}}</strong></p>
         <div class="mb-1 d-flex">
           <label for="quantity" class="form-label">Số lượng</label>
-          <input type="number" id="quantity" class="form-control text-center mx-2" value="1" min="1" style="width: 100px;">
+          <input type="number" name="quantity" id="quantity" class="form-control text-center mx-2" value="1" min="1" style="width: 100px;">
         </div>
-        {{-- <form action="{{route('cart.add', $product->id)}}" method="POST"> --}}
+        
+          <input type="hidden" name="product_id" value="{{$product->id}}">
         <button type="submit" class="btn btn-primary mt-3">Thêm vào giỏ hàng</button>
       </div>
+      </form>
       <div class="mt-5">
     <h4>Đánh giá sản phẩm</h4>
     <form>
@@ -118,7 +122,7 @@
   </div>
 </div>
 
-{{-- </form> --}}
+
 <style>
   input[type="radio"]:checked + span{
     background-color: black;
