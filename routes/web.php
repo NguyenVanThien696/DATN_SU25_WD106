@@ -80,61 +80,52 @@ Route::prefix('checkout')->group(function () {
 
 
 // Trang product phía admin
-Route::prefix('admin')->group(function () {
-
-Route::get('/', [AdminProductController::class, 'index'])->name('admin.index');
-
-    Route::prefix('product')->group(function () {
-        Route::get('/index', [AdminProductController::class, 'listProduct'])->name('admin.products.index');
-        Route::get('/create', [AdminProductController::class, 'create'])->name('admin.products.create');
-        Route::post('/store', [AdminProductController::class,'store'])->name('admin.products.store');
-        Route::get('/edit/{id}', [AdminProductController::class, 'edit'])->name('admin.products.edit');
-        Route::put('/update/{id}', [AdminProductController::class, 'update'])->name('admin.products.update');
-        Route::delete('/delete/{id}', [AdminProductController::class, 'delete'])->name('admin.products.delete');
-        Route::get('/detail/{id}', [AdminProductController::class, 'show'])->name('admin.products.show');
-
-    });
-
-    Route::prefix('categories')->group(function(){
-        Route::get('/index', [AdminCategoryController::class, 'listCate'])->name('admin.categories.index');
-        Route::get('/create', [AdminCategoryController::class, 'create'])->name('admin.categories.create');
-        Route::post('/store', [AdminCategoryController::class, 'store'])->name('admin.categories.store');
-        Route::get('/edit/{id}', [AdminCategoryController::class, 'edit'])->name('admin.categories.edit');
-        Route::put('/update/{id}', [AdminCategoryController::class, 'update'])->name('admin.categories.update');
-        Route::delete('/delete/{id}', [AdminCategoryController::class, 'delete'])->name('admin.categories.delete');
-        Route::get('/detail/{id}', [AdminCategoryController::class, 'show'])->name('admin.categories.show');
-
-    });
-});
 
 
-// Login
+// Login routes (không cần auth)
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login.form');
-Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
-
+Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register.form');
-Route::get('/dashboard', [AuthController::class, 'showDashboard'])->name('dashboard.form');
-Route::post('/register', [AuthController::class, 'register'])->name('register');
-
 Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/admin/dashboard', [AuthController::class, 'adminDashboard'])->name('admin.dashboard');
-
-    Route::get('/dashboard', [AuthController::class, 'showDashboard'])->name('dashboard');
-
+// Routes dành cho người dùng đã đăng nhập
+Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', [AuthController::class, 'showDashboard'])->name('dashboard.form');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('user.changePassword');
 });
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Admin Routes (yêu cầu đăng nhập + admin)
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', [AuthController::class, 'adminIndex'])->name('home');
+    Route::get('/dashboard', [AuthController::class, 'adminDashboard'])->name('dashboard');
+    Route::post('/change-password', [AuthController::class, 'changePassword'])->name('changePassword');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Route Admin
-Route::middleware(['auth'])->group(function () {
-    Route::get('/admin/user', [UserController::class, 'index'])->name('admin.users');
-});
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/users', [UserController::class, 'index'])->name('users');
-    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
-    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
-    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    Route::prefix('users')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('users');
+        Route::get('/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+        Route::put('/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    });
+
+    Route::prefix('product')->group(function () {
+        Route::get('/index', [AdminProductController::class, 'listProduct'])->name('products.index');
+        Route::get('/create', [AdminProductController::class, 'create'])->name('products.create');
+        Route::post('/store', [AdminProductController::class, 'store'])->name('products.store');
+        Route::get('/edit/{id}', [AdminProductController::class, 'edit'])->name('products.edit');
+        Route::put('/update/{id}', [AdminProductController::class, 'update'])->name('products.update');
+        Route::delete('/delete/{id}', [AdminProductController::class, 'delete'])->name('products.delete');
+        Route::get('/detail/{id}', [AdminProductController::class, 'show'])->name('products.show');
+    });
+
+    Route::prefix('categories')->group(function () {
+        Route::get('/index', [AdminCategoryController::class, 'listCate'])->name('categories.index');
+        Route::get('/create', [AdminCategoryController::class, 'create'])->name('categories.create');
+        Route::post('/store', [AdminCategoryController::class, 'store'])->name('categories.store');
+        Route::get('/edit/{id}', [AdminCategoryController::class, 'edit'])->name('categories.edit');
+        Route::put('/update/{id}', [AdminCategoryController::class, 'update'])->name('categories.update');
+        Route::delete('/delete/{id}', [AdminCategoryController::class, 'delete'])->name('categories.delete');
+        Route::get('/detail/{id}', [AdminCategoryController::class, 'show'])->name('categories.show');
+    });
 });
