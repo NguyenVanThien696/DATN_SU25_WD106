@@ -11,9 +11,13 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        // Kiểm tra nếu user chưa đăng nhập hoặc không phải admin
-        if (!Auth::check() || Auth::user()->role != 1) {
-            abort(403, 'Bạn không có quyền truy cập trang này.');
+        $user = Auth::user();
+           dump("Đang chạy middleware Admin");
+    dump('Role:', $user?->role);
+    dump('So sánh:', (int)trim($user?->role) === 1);
+
+        if (!$user || (int)trim($user->role) !== 1) {
+            return redirect()->route('login.form')->withErrors(['Bạn không có quyền truy cập trang này.']);
         }
 
         return $next($request);
