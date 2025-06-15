@@ -131,4 +131,20 @@
   }
 </style>
 
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('form[action="{{route('client.cart.add')}}"]');
+    form.addEventListener('submit', function (e) {
+      const sizeChecked = document.querySelector('input[name="size_id"]:checked');
+      const colorChecked = document.querySelector('input[name="color_id"]:checked');
+
+      if (!sizeChecked || !colorChecked) {
+        e.preventDefault();
+        alert('Vui lòng chọn size và màu sắc trước khi thêm vào giỏ hàng.');
+      }
+    });
+  });
+</script>
+
+
 @endsection
