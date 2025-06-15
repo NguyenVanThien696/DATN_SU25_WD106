@@ -12,7 +12,6 @@ return new class extends Migration
     public function up(): void
     {
     Schema::table('products', function (Blueprint $table) {
-        $table->id();
         $table->string('tag_id')->nullable()->after('category_id');
         $table->foreign('tag_id')->references('id')->on('tags');
     });
