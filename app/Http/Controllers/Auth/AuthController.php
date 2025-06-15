@@ -20,11 +20,12 @@ class AuthController extends Controller
             $credentials = $request->only('email', 'password');
 
             if(Auth::attempt($credentials)){
+                $request->session()->regenerate();
                 $user = Auth::user();
-                if($user->role==1){
+                if((int)$user->role===1){
                     return redirect()->route('admin.dashboard');
                 }
-                return redirect()->route('dashboard');
+                return redirect()->route('dashboard.form');
             }
             return redirect()->back()->withErrors([
                 'email' => 'Thông tin đăng nhập không chính xác.',
@@ -46,7 +47,7 @@ class AuthController extends Controller
     public function adminDashboard()
 {
     $user = Auth::user();
-    if (is_null($user) || $user->role != 1) {
+    if (is_null($user) ||(int) $user->role != 1) {
         // Nếu không phải admin hoặc chưa đăng nhập, chuyển về login hoặc trang khác
         return redirect()->route('login.form');
     }
@@ -71,7 +72,7 @@ class AuthController extends Controller
             'password' => $validatedData['password'],
         ]);
 
-        return redirect()->route('dashboard');
+        return redirect()->route('dashboard.form');
     }
 
     public function changePassword(Request $request)
@@ -104,4 +105,14 @@ class AuthController extends Controller
 
         return redirect('/login');
     }
+
+    public function adminIndex()
+{
+    $user = Auth::user();
+    if (is_null($user) ||(int) $user->role !== 1) {
+        return redirect()->route('login.form');
+    }
+
+    return view('admin.index', ['user' => $user]);
+}
 }
