@@ -9,14 +9,14 @@ use App\Http\Controllers\Client\ContactController;
 use App\Http\Controllers\Client\AboutController;
 use App\Http\Controllers\Client\CartController;
 use App\Http\Controllers\Client\CheckoutController;
-use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Client\CouponController;
 
+
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 
 use App\Http\Controllers\Auth\AuthController;
-
-
 // Trang chu
 Route::get('/', [ClientController::class, 'index'])->name('client.index');
 
@@ -30,17 +30,6 @@ Route::prefix('products')->group(function () {
 
 });
 
-Route::get('/category', function () {
-    return view('pages.category');
-});
-
-Route::get('/product', function () {
-    return view('pages.product');
-});
-
-Route::get('/cart', function () {
-    return view('pages.cart');
-});
 
 // Trang blog phía user  
 Route::prefix('blog')->group(function () {
@@ -72,11 +61,19 @@ Route::prefix('cart')->group(function () {
 
 // Trang checkout phía user  
 Route::prefix('checkout')->group(function () {
-    Route::get('/', [CheckoutController::class, 'index'])->name('client.checkout.index');
-    Route::get('/thankyou', function(){
-        return view('client.checkout.thankyou');
-    })->name('client.checkout.thankyou');
+    Route::get('/{id}', [CheckoutController::class, 'index'])->name('client.checkout.index');
+    Route::post('/{id}', [CheckoutController::class, 'process'])->name('client.checkout.process');
+    Route::get('/thankyou', [CheckoutController::class, 'thankyou'])->name('client.checkout.thankyou');
+
 });
+
+// route phiếu giảm giá
+
+// route này dùng cho lúc nào có auth (giờ chưa có nên chưa làm)
+Route::post('/apply-coupon', [CouponController::class, 'apply'])->name('coupon.apply');
+
+// Route::post('/coupon/apply/{user_id}', [CouponController::class, 'apply'])->name('coupon.apply');
+
 
 
 // Trang product phía admin

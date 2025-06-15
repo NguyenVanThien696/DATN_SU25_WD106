@@ -3,8 +3,33 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Order extends Model
 {
-    //
+    use HasFactory;
+
+    protected $table = 'orders';
+
+    protected $fillable = [
+        'user_id',
+        'total_price',
+        'status',
+        'note',  
+        'payment_method',
+        'payment_status',       
+        'discount',    
+    ];
+
+    // Quan hệ với User
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    // Quan hệ với các order item
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
 }
