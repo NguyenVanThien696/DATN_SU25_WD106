@@ -55,8 +55,6 @@ public function thankyou(){
 
 public function process(Request $request)
 {
-    // dd($request->all());
-
     $request->validate([
         'name'    => 'required|string|max:255',
         'email'   => 'required|email|max:255',
@@ -77,51 +75,16 @@ public function process(Request $request)
         }
 
         // Tính tổng tiền
-        $total = $cart->items->sum(function ($item) {
+        $finalTotal = $cart->items->sum(function ($item) {
             return $item->variant->product->price * $item->quantity;
         });
 
-        // Mã giảm giá
-    $coupon = null;
-    $discount = 0;
-
-    if (session()->has('coupon')) {
-    $couponData = session('coupon');
-
-    $coupon = Coupon::where('code', $couponData['code'])
-        ->where(function ($q) {
-            $q->whereNull('expires_at')->orWhere('expires_at', '>=', now());
-        })
-        ->first();
-
-    if ($coupon) {
-        $used = UserCoupon::where('user_id', $userId)
-            ->where('coupon_id', $coupon->id)
-            ->exists();
-
-        if (!$used) {
-            $discount = ($total * $coupon->discount_percent) / 100;
-
-            // lưu vào bảng user_coupons
-            UserCoupon::create([
-                'user_id'   => $userId,
-                'coupon_id' => $coupon->id,
-                'used_at'   => now(),
-            ]);
-            }
-        }
-
-        // Xoá sau khi áp dụng
-        session()->forget('coupon');
-    }
-        $finalTotal = max(0, $total - $discount);
-
         // Tạo đơn hàng
         $order = Order::create([
-            'user_id'     => $userId,
-            'total_price' => $finalTotal,
-            'status'      => 'pending',
-            'note'        => $request->input('c_order_notes'),
+            'user_id'        => $userId,
+            'total_price'    => $finalTotal,
+            'status'         => 'pending',
+            'note'           => $request->input('c_order_notes'),
             'payment_method' => $request->input('payment_method') ?? 'cod',
             'payment_status' => 'unpaid'
         ]);
@@ -156,60 +119,7 @@ public function process(Request $request)
             ]);
         }
 
-        // Đánh dấu mã giảm giá đã dùng
-        if ($coupon) {
-            UserCoupon::create([
-                'user_id'   => $userId,
-                'coupon_id' => $coupon->id,
-                'used_at'   => now(),
-            ]);
-        }
-
-        // Thanh toán MoMo
-        if ($request->payment_method === 'momo') {
-            $endpoint    = "https://test-payment.momo.vn/v2/gateway/api/create";
-            $partnerCode = 'MOMOBKUN20180529';
-            $accessKey   = 'klm05TvNBzhg7h7j';
-            $secretKey   = 'at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa';
-
-            $orderId     = $order->id . '_' . time();
-            $requestId   = time() . '';
-            $orderInfo   = "Thanh toán đơn hàng #" . $order->id;
-            $redirectUrl = route('client.checkout.momoReturn');
-            $ipnUrl      = route('client.checkout.momoIPN');
-            $extraData   = '';
-
-            $rawHash = "accessKey={$accessKey}&amount={$finalTotal}&extraData={$extraData}&ipnUrl={$ipnUrl}&orderId={$orderId}&orderInfo={$orderInfo}&partnerCode={$partnerCode}&redirectUrl={$redirectUrl}&requestId={$requestId}&requestType=captureWallet";
-            $signature = hash_hmac('sha256', $rawHash, $secretKey);
-
-            $data = [
-            'partnerCode' => $partnerCode,
-            'partnerName' => "Test",
-            'storeId'     => "MomoTestStore",
-            'requestId'   => $requestId,
-            'amount'      => $finalTotal,
-            'orderId'     => $orderId,
-            'orderInfo'   => $orderInfo,
-            'returnUrl'   => $redirectUrl,
-            'notifyUrl'   => $ipnUrl,
-            'lang'        => 'vi',
-            'extraData'   => $extraData,
-            'requestType' => "captureWallet",
-            'signature'   => $signature
-        ];
-
-            $response = Http::post($endpoint, $data);
-
-            if ($response->successful() && isset($response['payUrl'])) {
-                DB::commit();
-                return redirect($response['payUrl']);
-            }
-
-            DB::rollBack();
-            return back()->with('error', 'Không thể tạo thanh toán MoMo. Vui lòng thử lại.');
-        }
-
-        // Nếu thanh toán COD thì xóa giỏ hàng
+        // Xóa giỏ hàng
         $cart->items()->delete();
         $cart->delete();
 
@@ -220,8 +130,6 @@ public function process(Request $request)
         return back()->with('error', 'Đã xảy ra lỗi: ' . $e->getMessage());
     }
 }
-
-
 
 public function momoReturn(Request $request)
 {
