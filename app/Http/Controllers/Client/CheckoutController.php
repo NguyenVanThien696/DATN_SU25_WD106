@@ -20,6 +20,7 @@ class CheckoutController extends Controller
 {
 public function index()
 {
+    
     $user = Auth::user();
 
     $cart = Cart::with([
