@@ -12,8 +12,10 @@ use Illuminate\Support\Facades\Auth;
 class CartController extends Controller
 {
     public function index(){
+        
     if(Auth::check()) {
         $cart = Cart::where('user_id', Auth::id())
+        
             ->with('items.variant.product', 'items.variant.size', 'items.variant.color')
             ->first();
 
@@ -22,6 +24,7 @@ class CartController extends Controller
         $cart = session()->get('cart', []);
         return view('client.cart.index', compact('cart'));
     }
+    
 }
 
 

@@ -224,7 +224,7 @@
                                             @php $total = 0; @endphp
                                             @foreach ($products as $item)
                                             @php
-                                            $variant = $item->productVariant;
+                                            $variant = $item->variant;
                                             $product = $variant->product;
                                             $quantity = $item->quantity;
                                             $price = $product->price;

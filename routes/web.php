@@ -49,17 +49,6 @@ Route::prefix('about')->group(function () {
 });
 
 
-// Trang cart phía user  
-Route::prefix('cart')->group(function () {
-    Route::get('/cart', [CartController::class, 'index'])->name('client.cart.index');
-    Route::post('/cart/add', [CartController::class, 'add'])->name('client.cart.add');
-    Route::post('/cart/update', [CartController::class, 'update'])->name('client.cart.update');
-    Route::get('/cart/delete/{variant_id}', [CartController::class, 'delete'])->name('client.cart.delete');
-    Route::get('/cart/clear', [CartController::class, 'clear'])->name('client.cart.clear');
-});
-
-
-
 
 // Login routes (không cần auth)
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login.form');
@@ -76,6 +65,16 @@ Route::middleware(['auth'])->group(function () {
       
     Route::prefix('client')->name('client.')->group(function () {
 
+
+        // Trang cart phía user  
+        Route::prefix('cart')->name('cart.')->group(function () {
+            Route::get('/', [CartController::class, 'index'])->name('index');
+            Route::post('/add', [CartController::class, 'add'])->name('add');
+            Route::post('/update', [CartController::class, 'update'])->name('update');
+            Route::get('/delete/{variant_id}', [CartController::class, 'delete'])->name('delete');
+            Route::get('/clear', [CartController::class, 'clear'])->name('clear');
+        });
+
         // Checkout user
         Route::prefix('checkout')->name('checkout.')->group(function () {
             Route::get('/', [CheckoutController::class, 'index'])->name('index');
@@ -86,6 +85,8 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/thankyou', [CheckoutController::class, 'thankyou'])->name('thankyou');
 
         });
+
+
     });
 });
 

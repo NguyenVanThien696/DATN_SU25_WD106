@@ -11,22 +11,22 @@
 		        <div class="collapse navbar-collapse" id="navbarsFurni">
 		            <ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
 		                <li class="nav-item {{ request()->routeIs('client.index') ? 'active' : '' }}">
-		                    <a class="nav-link" href="{{ route('client.index') }}">Home</a>
+		                    <a class="nav-link" href="{{ route('client.index') }}">Trang chủ </a>
 		                </li>
 		                <li class="nav-item {{ request()->routeIs('client.products.index') ? 'active' : '' }}">
-		                    <a class="nav-link" href="{{ route('client.products.index') }}">Shop</a>
+		                    <a class="nav-link" href="{{ route('client.products.index') }}">Cửa hàng </a>
 		                </li>
 		                <li class="nav-item {{ request()->routeIs('client.about.index') ? 'active' : '' }}">
-		                    <a class="nav-link" href="{{ route('client.about.index') }}">About us</a>
+		                    <a class="nav-link" href="{{ route('client.about.index') }}">Về chúng tôi </a>
 		                </li>
 		                <li class="nav-item">
-		                    <a class="nav-link" href="#">Services</a>
+		                    <a class="nav-link" href="#">Dịch vụ </a>
 		                </li>
 		                <li class="nav-item {{ request()->routeIs('client.blog.index') ? 'active' : '' }}">
 		                    <a class="nav-link" href="{{ route('client.blog.index') }}">Blog</a>
 		                </li>
 		                <li class="nav-item {{ request()->routeIs('client.contact.index') ? 'active' : '' }}">
-		                    <a class="nav-link" href="{{ route('client.contact.index') }}">Contact us</a>
+		                    <a class="nav-link" href="{{ route('client.contact.index') }}">Liên hệ với chúng tôi </a>
 		                </li>
 		                <li class="nav-item">
 		                    <a class="nav-link"><i class="fas fa-search" id="search" style="cursor: pointer;"></i></a>

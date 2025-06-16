@@ -20,12 +20,13 @@ class CheckoutController extends Controller
 {
 public function index()
 {
+    
     $user = Auth::user();
 
     $cart = Cart::with([
-        'items.productVariant.product',
-        'items.productVariant.size',
-        'items.productVariant.color'
+        'items.variant.product',
+        'items.variant.size',
+        'items.variant.color'
     ])->where('user_id', $user->id)->first();
 
     if (!$cart || $cart->items->isEmpty()) {
@@ -36,7 +37,7 @@ public function index()
 
     $total = 0;
     foreach ($products as $item) {
-        $product = $item->productVariant->product;  
+        $product = $item->variant->product;  
         $total += $product->price * $item->quantity;
     }
 
@@ -70,14 +71,14 @@ public function process(Request $request)
         $user = Auth::user();
 
         // Lấy giỏ hàng
-        $cart = Cart::with('items.productVariant.product')->where('user_id', $userId)->first();
+        $cart = Cart::with('items.variant.product')->where('user_id', $userId)->first();
         if (!$cart || $cart->items->isEmpty()) {
             return back()->with('error', 'Giỏ hàng của bạn đang trống.');
         }
 
         // Tính tổng tiền
         $total = $cart->items->sum(function ($item) {
-            return $item->productVariant->product->price * $item->quantity;
+            return $item->variant->product->price * $item->quantity;
         });
 
         // Mã giảm giá
@@ -151,7 +152,7 @@ public function process(Request $request)
                 'order_id'           => $order->id,
                 'product_variant_id' => $item->product_variant_id,
                 'quantity'           => $item->quantity,
-                'price'              => $item->productVariant->product->price,
+                'price'              => $item->variant->product->price,
             ]);
         }
 
