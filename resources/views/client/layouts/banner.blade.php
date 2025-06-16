@@ -10,7 +10,7 @@
 			                        được chơi bằng tất cả sự nâng niu và tinh tế, bộ sưu tập mới nhất của dòng Senora cao cấp cất
 			                        lên những thanh âm thanh lịch, sâu lắng và đầy mê hoặc.</p>
 			                    <p><a href="{{ route('client.products.index') }}" class="btn btn-secondary me-2">Mua ngay</a><a
-			                            href="{{ route('client.products.index') }}" class="btn btn-white-outline">Khám phá</a>
+			                            href="{{ route('client.about.index') }}" class="btn btn-white-outline">Khám phá</a>
 			                    </p>
 			                </div>
 			            </div>

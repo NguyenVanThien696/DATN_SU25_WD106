@@ -67,12 +67,12 @@ Route::middleware(['auth'])->group(function () {
 
 
         // Trang cart phía user  
-        Route::prefix('cart')->group(function () {
-            Route::get('/', [CartController::class, 'index'])->name('cart.index');
-            Route::post('/add', [CartController::class, 'add'])->name('cart.add');
-            Route::post('/update', [CartController::class, 'update'])->name('cart.update');
-            Route::get('/delete/{variant_id}', [CartController::class, 'delete'])->name('cart.delete');
-            Route::get('/clear', [CartController::class, 'clear'])->name('cart.clear');
+        Route::prefix('cart')->name('cart.')->group(function () {
+            Route::get('/', [CartController::class, 'index'])->name('index');
+            Route::post('/add', [CartController::class, 'add'])->name('add');
+            Route::post('/update', [CartController::class, 'update'])->name('update');
+            Route::get('/delete/{variant_id}', [CartController::class, 'delete'])->name('delete');
+            Route::get('/clear', [CartController::class, 'clear'])->name('clear');
         });
 
         // Checkout user

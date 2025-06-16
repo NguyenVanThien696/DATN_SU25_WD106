@@ -4,8 +4,13 @@
 @php
 $isLoggedIn = Auth::check();
 @endphp
+
 @if (session('success'))
-<div class="alert alert-success">{{session('success')}}</div>
+<div class="alert alert-success">{{ session('success') }}</div>
+@endif
+
+@if (session('error'))
+<div class="alert alert-danger">{{ session('error') }}</div>
 @endif
 
 @if($isLoggedIn ? $cart && $cart->items->count() > 0 : count($cart) > 0)
@@ -123,9 +128,17 @@ $isLoggedIn = Auth::check();
         </div>
         @endif
         <div class="col-md-12">
-            <a href="{{ route('client.checkout.index') }}" class="btn btn-black btn-lg py-3 btn-block">Tiến hành thanh
-                toán</a>
+            @auth
+            <a href="{{ route('client.checkout.index') }}" class="btn btn-black btn-lg py-3 btn-block">
+                Tiến hành thanh toán
+            </a>
+            @else
+            <a href="{{ route('login') }}" class="btn btn-danger btn-lg py-3 btn-block">
+                Đăng nhập để thanh toán
+            </a>
+            @endauth
         </div>
+
         <!-- 
         <div class="col-md-12">
             <a href="{{ route('client.checkout.index') }}"class="btn btn-black btn-lg py-3 btn-block">Tiến hành

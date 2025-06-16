@@ -14,8 +14,8 @@
             </svg>
           </span>
           <h2 class="display-3 text-black">Thank you!</h2>
-          <p class="lead mb-5">You order was successfuly completed.</p>
-          <p><a href="{{ route('client.products.index') }}" class="btn btn-sm btn-outline-black">Back to shop</a></p>
+          <p class="lead mb-5">Đơn hàng của bạn đã hoàn thành thành công.</p>
+          <p><a href="{{ route('client.products.index') }}" class="btn btn-sm btn-outline-black">Quay lại cửa hàng</a></p>
         </div>
       </div>
     </div>
