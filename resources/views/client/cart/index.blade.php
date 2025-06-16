@@ -64,6 +64,9 @@
         <h4>Tổng tiền: <strong id="cart-total">{{ number_format($total) }} VNĐ</strong></h4>
 
     @elseif(!$isLoggedIn && !empty($cart))
+    @php
+        $total = 0;
+    @endphp
         @foreach ($cart as $item)
             @php
                 $variant = App\Models\ProductVariant::with(['product', 'size', 'color'])->find($item['variant_id']);
@@ -76,11 +79,11 @@
                 <td>{{ $product->name }}</td>
                 <td>{{ $variant->size->name ?? '—' }}</td>
                 <td>{{ $variant->color->name ?? '—' }}</td>
-                <td>{{ number_format($variant->price) }}</td>
+                <td>{{ number_format($product->price) }}</td>
                 <td>
                     <input type="number" name="quantity[{{ $variant->id }}]" value="{{ $item['quantity'] }}" min="1" class="form-control quantity-input" style="width: 70px;">
                 </td>
-                <td class="item-subtotal">{{ number_format($subtotal) }}</td>
+                <td class="item-subtotal">{{ number_format(($product->price) * $item['quantity']) }}</td>
                 <td>
                     <a href="{{ route('client.cart.delete', $variant->id) }}" class="btn btn-sm btn-danger">X</a>
                 </td>
@@ -104,6 +107,9 @@
             <p>Giỏ hàng trống</p>
           @endif
         </table>
+        @php
+        $total = 0;
+    @endphp
         @if ($total > 0)
     <div class="text-end">
         <h4>Tổng tiền: <strong>{{ number_format($total) }} VNĐ</strong></h4>
