@@ -6,11 +6,12 @@
         <div class="row justify-content-between">
             <div class="col-lg-5">
                 <div class="intro-excerpt">
-                    <h1>Cửa hàng <span clsas="d-block">Design Studio</span></h1>
-                    <p class="mb-4">Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam
-                        vulputate velit imperdiet dolor tempor tristique.</p>
-                    <p><a href="" class="btn btn-secondary me-2">Shop Now</a><a href="#"
-                            class="btn btn-white-outline">Explore</a></p>
+                    <h1>BỘ SƯU TẬP SENORA MỚI</h1>
+                    <p class="mb-4">Tựa như một bản nhạc cổ điển
+                        được chơi bằng tất cả sự nâng niu và tinh tế, bộ sưu tập mới nhất của dòng Senora cao cấp cất
+                        lên những thanh âm thanh lịch, sâu lắng và đầy mê hoặc.</p>
+                    <p><a href="{{ route('client.products.index') }}" class="btn btn-secondary me-2">Mua ngay </a><a
+                            href="{{ route('client.about.index') }}" class="btn btn-white-outline">Khám phá </a></p>
                 </div>
             </div>
             <div class="col-lg-7">
@@ -26,8 +27,11 @@
         <div class="row">
             @foreach ($listProducts as $product)
             <div class="col-12 col-md-4 col-lg-3 mb-5">
+                <span class="badge rounded-pill text-bg-danger">Danger</span>
                 <a class="product-item" href="{{ route('client.products.detail', $product->id) }}">
+
                     <img src="{{ asset('storage/' . $product->image) }}" class="img-fluid product-thumbnail">
+
                     <h3 class="product-title">{{ $product->name }}</h3>
                     <strong class="product-price">{{ number_format($product->price) }} VNĐ</strong>
 

@@ -1,148 +1,199 @@
 @extends('client.master')
 
 @section('content')
+@php
+$isLoggedIn = Auth::check();
+@endphp
+
 @if (session('success'))
-  <div class="alert alert-success">{{session('success')}}</div>
+<div class="alert alert-success">{{ session('success') }}</div>
 @endif
 
-@if(count($cart) > 0)
-@php
-  $total = 0;
-@endphp
-<div class="untree_co-section before-footer-section">
-            <div class="container">
-              <div class="row mb-5">
-                <form class="col-md-12" method="post" action="{{route('client.cart.update')}}">
-                  @csrf
-                  <div class="site-blocks-table">
-                    <table class="table">
-                      <thead>
-                        <tr>
-                          <th class="product-thumbnail">Image</th>
-                          <th class="product-name">Product</th>
-                          <th class="product-price">Price</th>
-                          <th class="product-quantity">Quantity</th>
-                          <th class="product-total">Total</th>
-                          <th class="product-remove">Remove</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        @foreach ($cart as $id => $item)
-                        @php
-                          $subtotal = $item['price'] * $item['quantity'];
-                          $total += $subtotal;
-                        @endphp
-                        {{-- @dd($item); --}}
-                          <tr>
-                          <td class="product-thumbnail">
+@if (session('error'))
+<div class="alert alert-danger">{{ session('error') }}</div>
+@endif
 
-                            <img src="{{asset('storage/'.$item['options']['image'])}}" alt="Image" class="img-fluid">
-                          </td>
-                          <td class="product-name">
-                            <h2 class="h5 text-black">{{$item['name']}}</h2>
-                          </td>
-                          <td>{{number_format($item['price'])}}</td>
-                          <td>
-                            <div class="input-group mb-3 d-flex align-items-center quantity-container" style="max-width: 120px;">
-                              <input type="number" name="quantity[{{$id}}]" class="form-control text-center quantity-amount" value="{{$item['quantity']}}" min="1" placeholder="" aria-label="Example text with button addon" aria-describedby="button-addon1">
-                            </div>
-                          </td>
-                          <td class="item-total">{{number_format($subtotal)}}</td>
-                          <td><a href="{{route('client.cart.delete', $id)}}" class="btn btn-black btn-sm">X</a></td>
+@if($isLoggedIn ? $cart && $cart->items->count() > 0 : count($cart) > 0)
+
+<section class="cart-section py-5" style="min-height: 70vh">
+    <div class="container">
+        <h2 class="mb-4">Giỏ hàng</h2>
+        <table class="table">
+            <form method="POST" action="{{ route('client.cart.update') }}">
+                @csrf
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Ảnh</th>
+                            <th>Tên</th>
+                            <th>Size</th>
+                            <th>Màu</th>
+                            <th>Giá</th>
+                            <th>Số lượng</th>
+                            <th>Tổng</th>
+                            <th>Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php $total = 0; @endphp
+
+                        @if ($isLoggedIn && $cart && $cart->items)
+                        {{-- <pre>
+    {{ dd($cart) }}
+                        </pre> --}}
+                        @foreach ($cart->items as $item)
+                        @php
+                        $variant = $item->variant;
+                        if(!$variant || !$variant->product){
+                        continue;
+                        }
+                        $product = $variant->product;
+                        $subtotal = $variant->price * $item->quantity;
+                        $total += $subtotal;
+                        @endphp
+                        <tr>
+                            <td><img src="{{ asset('storage/' . $variant->image) }}" width="80"></td>
+                            <td>{{ $product->name }}</td>
+                            <td>{{ $variant->size->name ?? '—' }}</td>
+                            <td>{{ $variant->color->name ?? '—' }}</td>
+                            <td>{{ number_format($product->price) }}</td>
+                            <td>
+                                <input type="number" name="quantity[{{ $variant->id }}]" value="{{ $item->quantity }}"
+                                    min="1" class="form-control quantity-input" style="width: 70px;">
+                            </td>
+                            <td class="item-subtotal">{{ number_format(($product->price) * $item->quantity) }}</td>
+                            <td>
+                                <a href="{{ route('client.cart.delete', $variant->id) }}"
+                                    class="btn btn-sm btn-danger">X</a>
+                            </td>
                         </tr>
                         @endforeach
-                        <button type="submit">Cập nhật giỏ hàng</button>
-                      </tbody>
-                      <tfoot>
+                        <h4>Tổng tiền: <strong id="cart-total">{{ number_format($total) }} VNĐ</strong></h4>
+
+                        @elseif(!$isLoggedIn && !empty($cart))
+                        @php
+                        $total = 0;
+                        @endphp
+                        @foreach ($cart as $item)
+                        @php
+                        $variant = App\Models\ProductVariant::with(['product', 'size',
+                        'color'])->find($item['variant_id']);
+                        $product = $variant->product;
+                        $subtotal = $variant->price * $item['quantity'];
+                        $total += $subtotal;
+                        @endphp
                         <tr>
-                          <td colspan="4" class="text-right"><strong>Tổng cộng:</strong></td>
-                          <td colspan="2" id="cart-total" class="font-weight-bold"></td>
+                            <td><img src="{{ asset('storage/' . $variant->image) }}" width="80"></td>
+                            <td>{{ $product->name }}</td>
+                            <td>{{ $variant->size->name ?? '—' }}</td>
+                            <td>{{ $variant->color->name ?? '—' }}</td>
+                            <td>{{ number_format($product->price) }}</td>
+                            <td>
+                                <input type="number" name="quantity[{{ $variant->id }}]" value="{{ $item['quantity'] }}"
+                                    min="1" class="form-control quantity-input" style="width: 70px;">
+                            </td>
+                            <td class="item-subtotal">{{ number_format(($product->price) * $item['quantity']) }}</td>
+                            <td>
+                                <a href="{{ route('client.cart.delete', $variant->id) }}"
+                                    class="btn btn-sm btn-danger">X</a>
+                            </td>
                         </tr>
-                      </tfoot>
+                        @endforeach
+                        <h4>Tổng tiền: <strong id="cart-total">{{ number_format($total) }} VNĐ</strong></h4>
 
-                    </table>
-                  </div>
-                </form>
-                      <div class="row">
-                        <div class="col-md-12">
-                          <a href="{{ route('client.checkout.index') }}" class="btn btn-black btn-lg py-3 btn-block" onclick="submitCartAndGoToCheckout()">Proceed To Checkout</a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                        @else
+                        <tr>
+                            <td colspan="8" class="text-center">Giỏ hàng trống</td>
+                        </tr>
+                        @endif
+                    </tbody>
+                </table>
 
-              </div>
-            </div>
-          </div>
-          @else
+
+            </form>
+
+
+            @else
             <p>Giỏ hàng trống</p>
-          @endif
+            @endif
+        </table>
+        @php
+        $total = 0;
+        @endphp
+        @if ($total > 0)
+        <div class="text-end">
+            <h4>Tổng tiền: <strong>{{ number_format($total) }} VNĐ</strong></h4>
+            <button type="submit" class="btn btn-primary">Cập nhật số lượng</button>
+            <a href="{{ route('client.cart.clear') }}" class="btn btn-danger">Xoá toàn bộ</a>
+        </div>
+        @endif
+        <div class="col-md-12">
+            @auth
+            <a href="{{ route('client.checkout.index') }}" class="btn btn-black btn-lg py-3 btn-block">
+                Tiến hành thanh toán
+            </a>
+            @else
+            <a href="{{ route('login') }}" class="btn btn-danger btn-lg py-3 btn-block">
+                Đăng nhập để thanh toán
+            </a>
+            @endauth
+        </div>
+
+        <!-- 
+        <div class="col-md-12">
+            <a href="{{ route('client.checkout.index') }}"class="btn btn-black btn-lg py-3 btn-block">Tiến hành
+                thanh
+                toán</a>
+        </div> -->
+    </div>
+
+</section>
+
+
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const quantityContainers = document.querySelectorAll('.quantity-container');
-  const totalDisplay = document.getElementById('cart-total');
+document.addEventListener("DOMContentLoaded", function() {
+    const formatCurrency = (num) => {
+        return num.toLocaleString('vi-VN') + ' VNĐ';
+    };
 
-  const formatCurrency = (num) => {
-    return num.toLocaleString('vi-VN') + '₫';
-  };
+    const updateRowSubtotal = (row) => {
+        const priceCell = row.querySelector("td:nth-child(5)");
+        const quantityInput = row.querySelector(".quantity-input");
+        const subtotalCell = row.querySelector(".item-subtotal");
 
-  const updateRowSubtotal = (row) => {
-    const priceText = row.querySelector('td:nth-child(3)').textContent;
-    const price = parseInt(priceText.replace(/[^\d]/g, '')) || 0;
-    const quantity = parseInt(row.querySelector('.quantity-amount').value) || 1;
-    const subtotal = price * quantity;
-    const subtotalCell = row.querySelector('.item-subtotal');
-    if (subtotalCell) {
-      subtotalCell.textContent = formatCurrency(subtotal);
-    }
-    return subtotal;
-  };
+        if (!priceCell || !quantityInput || !subtotalCell) return 0;
 
-  const updateCartTotal = () => {
-    let total = 0;
-    document.querySelectorAll('tbody tr').forEach(row => {
-      total += updateRowSubtotal(row);
+        const price = parseInt(priceCell.textContent.replace(/[^\d]/g, '')) || 0;
+        const quantity = parseInt(quantityInput.value) || 1;
+        const subtotal = price * quantity;
+
+        subtotalCell.textContent = formatCurrency(subtotal);
+        return subtotal;
+    };
+
+    const updateCartTotal = () => {
+        let total = 0;
+        document.querySelectorAll("tbody tr").forEach(row => {
+            total += updateRowSubtotal(row);
+        });
+
+        const totalDisplay = document.getElementById("cart-total");
+        if (totalDisplay) {
+            totalDisplay.textContent = formatCurrency(total);
+        }
+    };
+
+    document.querySelectorAll(".quantity-input").forEach(input => {
+        input.addEventListener("change", () => {
+            if (parseInt(input.value) < 1) input.value = 1;
+            updateCartTotal();
+        });
     });
-    if (totalDisplay) {
-      totalDisplay.textContent = formatCurrency(total);
-    }
-  };
 
-  quantityContainers.forEach(container => {
-    const input = container.querySelector('.quantity-amount');
-    const btnIncrease = container.querySelector('.increase');
-    const btnDecrease = container.querySelector('.decrease');
-
-    if (btnIncrease) {
-      btnIncrease.addEventListener('click', (e) => {
-        e.preventDefault();
-        let value = parseInt(input.value) || 1;
-        input.value = value + 1;
-        updateCartTotal();
-      });
-    }
-
-    if (btnDecrease) {
-      btnDecrease.addEventListener('click', (e) => {
-        e.preventDefault();
-        let value = parseInt(input.value) || 1;
-        input.value = Math.max(1, value - 1);
-        updateCartTotal();
-      });
-    }
-
-    input.addEventListener('change', () => {
-      let value = parseInt(input.value);
-      if (!value || value < 1) input.value = 1;
-      updateCartTotal();
-    });
-  });
-
-  updateCartTotal();
+    updateCartTotal();
 });
-
 </script>
+
 
 
 @endsection

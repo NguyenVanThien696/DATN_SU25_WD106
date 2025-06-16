@@ -16,16 +16,13 @@
                     <p class="mb-2"><strong>Email:</strong> {{ Auth::user()->email }}</p>
                     <p class="mb-2"><strong>Phone:</strong> {{ Auth::user()->phone ?? 'Chưa cập nhật' }}</p>
                     <p class="mb-2"><strong>Tài khoản:</strong> {{ Auth::user()->username ?? Auth::user()->name }}</p>
-                    <p class="mb-2"><strong>Số dư:</strong> {{ number_format(Auth::user()->balance ?? 0) }} VND</p>
                     <p class="mb-0"><strong>Ngày tạo:</strong> {{ Auth::user()->created_at->format('Y-m-d H:i:s') }}</p>
                 </div>
 
-                <a href="#" class="btn btn-primary w-100 mt-4 py-2" style="border-radius: 30px;">
-                    + Nạp tiền tài khoản
-                </a>
+
 
                 @if (Auth::user()->role == 1)
-                    <a href="{{ route('admin.index') }}" class="btn btn-outline-danger w-100 mt-2 py-2" style="border-radius: 30px;">
+                    <a href="{{ route('admin.home') }}" class="btn btn-primary w-100 mt-2 py-2" style="border-radius: 30px;">
                         → Truy cập trang ADMIN
                     </a>
                 @endif

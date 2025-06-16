@@ -1,22 +1,7 @@
 @extends('client.master')
 
 @section('content')
-<!-- Start Hero Section -->
-			<div class="hero">
-				<div class="container">
-					<div class="row justify-content-between">
-						<div class="col-lg-5">
-							<div class="intro-excerpt">
-								<h1>Cart</h1>
-							</div>
-						</div>
-						<div class="col-lg-7">
-							
-						</div>
-					</div>
-				</div>
-			</div>
-		<!-- End Hero Section -->
+
 		
 		<div class="untree_co-section">
     <div class="container">
@@ -29,8 +14,8 @@
             </svg>
           </span>
           <h2 class="display-3 text-black">Thank you!</h2>
-          <p class="lead mb-5">You order was successfuly completed.</p>
-          <p><a href="shop.html" class="btn btn-sm btn-outline-black">Back to shop</a></p>
+          <p class="lead mb-5">Đơn hàng của bạn đã hoàn thành thành công.</p>
+          <p><a href="{{ route('client.products.index') }}" class="btn btn-sm btn-outline-black">Quay lại cửa hàng</a></p>
         </div>
       </div>
     </div>
