@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class CartItem extends Model
 {
+ sua-cart
     use HasFactory;
     protected $fillable = ['cart_id', 'product_variant_id', 'color_id', 'size_id', 'quantity'];
     public function cart(){
@@ -16,3 +17,4 @@ class CartItem extends Model
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
 }
+
