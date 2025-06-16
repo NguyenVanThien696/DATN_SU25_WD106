@@ -66,7 +66,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('client')->name('client.')->group(function () {
 
 
-        // Trang cart phía user  
+        // Trang cart phía user 
         Route::prefix('cart')->name('cart.')->group(function () {
             Route::get('/', [CartController::class, 'index'])->name('index');
             Route::post('/add', [CartController::class, 'add'])->name('add');
