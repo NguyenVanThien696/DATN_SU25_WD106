@@ -46,7 +46,6 @@
                             <div class="input-group mb-3 d-flex align-items-center quantity-container" style="max-width: 120px;">
                               <input type="number" name="quantity[{{$id}}]" class="form-control text-center quantity-amount" value="{{$item['quantity']}}" min="1" placeholder="" aria-label="Example text with button addon" aria-describedby="button-addon1">
                             </div>
-        
                           </td>
                           <td class="item-total">{{number_format($subtotal)}}</td>
                           <td><a href="{{route('client.cart.delete', $id)}}" class="btn btn-black btn-sm">X</a></td>

@@ -24,7 +24,6 @@
 <!-- Start Blog Section -->
 <div class="blog-section">
     <div class="container">
-
         <div class="row">
 
             <div class="col-12 col-sm-6 col-md-4 mb-5">
