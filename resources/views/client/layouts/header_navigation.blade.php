@@ -16,8 +16,8 @@
 		                <li class="nav-item {{ request()->routeIs('client.products.index') ? 'active' : '' }}">
 		                    <a class="nav-link" href="{{ route('client.products.index') }}">Cửa hàng </a>
 		                </li>
-		                <li class="nav-item {{ request()->routeIs('client.about.index') ? 'active' : '' }}">
-		                    <a class="nav-link" href="{{ route('client.about.index') }}">Về chúng tôi </a>
+		                <li class="nav-item {{ request()->routeIs('client.contact.index') ? 'active' : '' }}">
+		                    <a class="nav-link" href="{{ route('client.contact.index') }}">Về chúng tôi </a>
 		                </li>
 		                <li class="nav-item">
 		                    <a class="nav-link" href="#">Dịch vụ </a>
@@ -25,8 +25,8 @@
 		                <li class="nav-item {{ request()->routeIs('client.blog.index') ? 'active' : '' }}">
 		                    <a class="nav-link" href="{{ route('client.blog.index') }}">Blog</a>
 		                </li>
-		                <li class="nav-item {{ request()->routeIs('client.contact.index') ? 'active' : '' }}">
-		                    <a class="nav-link" href="{{ route('client.contact.index') }}">Liên hệ với chúng tôi </a>
+		                <li class="nav-item {{ request()->routeIs('client.about.index') ? 'active' : '' }}">
+		                    <a class="nav-link" href="{{ route('client.about.index') }}">Liên hệ với chúng tôi </a>
 		                </li>
 		                <li class="nav-item">
 		                    <a class="nav-link"><i class="fas fa-search" id="search" style="cursor: pointer;"></i></a>

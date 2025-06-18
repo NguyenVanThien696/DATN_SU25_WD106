@@ -8,6 +8,11 @@
         <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
+        @if (session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+        @endif
+        
+
         <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
@@ -96,30 +101,78 @@
             let variantIndex = 1;
 
             document.getElementById('addVariant').addEventListener('click', function() {
-                const sizesOptions =
-                    `@foreach ($sizes as $size) <option value="{{ $size->id }}">{{ $size->name }}</option> @endforeach`;
-                const colorsOptions =
-                    `@foreach ($colors as $color) <option value="{{ $color->id }}">{{ $color->name }}</option> @endforeach`;
+                const existingVariants = document.querySelectorAll('#variantTable tbody tr');
+                let existingPairs = [];
 
-                const table = document.querySelector('#variantTable tbody');
-                const row = document.createElement('tr');
-                row.innerHTML = `
-            <td><select name="variants[${variantIndex}][size_id]" class="form-control" required>${sizesOptions}</select></td>
-            <td><select name="variants[${variantIndex}][color_id]" class="form-control" required>${colorsOptions}</select></td>
-            <td><input type="number" name="variants[${variantIndex}][stock]" class="form-control" required></td>
-            <td><input type="file" name="variants[${variantIndex}][image]" class="form-control"></td>
-            <td><button type="button" class="btn btn-danger remove-variant">Xóa</button></td>
-        `;
-                table.appendChild(row);
+                existingVariants.forEach(row => {
+                    const size = row.querySelector('select[name^="variants"][name$="[size_id]"]')
+                        ?.value;
+                    const color = row.querySelector('select[name^="variants"][name$="[color_id]"]')
+                        ?.value;
+                    if (size && color) {
+                        existingPairs.push(`${size}-${color}`);
+                    }
+                });
+
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+        <td>
+            <select name="variants[${variantIndex}][size_id]" class="form-control size-select" required>
+                <option disabled selected value="">Chọn size</option>
+                @foreach ($sizes as $size)
+                <option value="{{ $size->id }}">{{ $size->name }}</option>
+                @endforeach
+            </select>
+        </td>
+        <td>
+            <select name="variants[${variantIndex}][color_id]" class="form-control color-select" required>
+                <option disabled selected value="">Chọn màu</option>
+                @foreach ($colors as $color)
+                <option value="{{ $color->id }}">{{ $color->name }}</option>
+                @endforeach
+            </select>
+        </td>
+        <td><input type="number" name="variants[${variantIndex}][stock]" class="form-control" required></td>
+        <td><input type="file" name="variants[${variantIndex}][image]" class="form-control"></td>
+        <td><button type="button" class="btn btn-danger remove-variant">Xóa</button></td>
+    `;
+
+                table = document.querySelector('#variantTable tbody');
+                table.appendChild(newRow);
+
                 variantIndex++;
             });
 
+            document.addEventListener('change', function(e) {
+                if (e.target.classList.contains('size-select') || e.target.classList.contains('color-select')) {
+                    const rows = document.querySelectorAll('#variantTable tbody tr');
+                    const selectedPairs = new Set();
+                    let duplicateFound = false;
+
+                    rows.forEach(row => {
+                        const size = row.querySelector('.size-select')?.value;
+                        const color = row.querySelector('.color-select')?.value;
+                        if (size && color) {
+                            const key = `${size}-${color}`;
+                            if (selectedPairs.has(key)) {
+                                alert('Biến thể với Size và Màu này đã tồn tại!');
+                                row.querySelector('.size-select').value = "";
+                                row.querySelector('.color-select').value = "";
+                                duplicateFound = true;
+                            } else {
+                                selectedPairs.add(key);
+                            }
+                        }
+                    });
+                }
+            });
             document.addEventListener('click', function(e) {
                 if (e.target.classList.contains('remove-variant')) {
                     e.target.closest('tr').remove();
                 }
             });
             </script>
+
             <button type="submit" class="btn btn-primary">Thêm sản phẩm</button>
         </form>
     </div>

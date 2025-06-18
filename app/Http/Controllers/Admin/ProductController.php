@@ -82,6 +82,15 @@ public function store(Request $request) {
         'variants.*.stock' => 'required|integer|min:0',
         'variants.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
     ]);
+    
+    $variantPairs = [];
+    foreach ($request->variants as $variant) {
+        $key = $variant['size_id'] . '-' . $variant['color_id'];
+        if (in_array($key, $variantPairs)) {
+            return back()->with(['error' => 'Có biến thể bị trùng size và màu. Vui lòng kiểm tra lại.']);
+        }
+        $variantPairs[] = $key;
+    }
 
     $product = new Product();
     $product->name = $request->name;
@@ -142,6 +151,16 @@ public function update(Request $request, $id) {
         'variants.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
     ]);
 
+    $variantPairs = [];
+    foreach ($request->variants as $variant) {
+        $key = $variant['size_id'] . '-' . $variant['color_id'];
+        if (in_array($key, $variantPairs)) {
+            return back()->with(['error' => 'Có biến thể bị trùng size và màu. Vui lòng kiểm tra lại.']);
+        }
+        $variantPairs[] = $key;
+    }
+
+    
     $product = Product::findOrFail($id);
 
     $path = $product->image;
