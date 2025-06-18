@@ -25,9 +25,7 @@
 <!-- Start Blog Section -->
 <div class="blog-section">
     <div class="container">
-
         <div class="row">
-
             <div class="col-12 col-sm-6 col-md-4 mb-5">
                 <div class="post-entry">
                     <a href="#" class="post-thumbnail"><img src="{{ asset('assets/images/post-1.jpg') }}" alt="Image"

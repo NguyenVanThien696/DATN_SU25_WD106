@@ -104,7 +104,7 @@
                 <th>Email</th>
                 <th>Số điện thoại</th>
                 <th>Username</th>
-                <th>Số dư</th>
+
                 <th>Vai trò</th>
                 <th>Ngày tạo</th>
                 <th>Hành động</th>
@@ -118,7 +118,7 @@
                 <td>{{ $user->email }}</td>
                 <td>{{ $user->phone ?? 'Chưa có' }}</td>
                 <td>{{ $user->username ?? 'N/A' }}</td>
-                <td>{{ number_format($user->balance ?? 0) }} VND</td>
+
                 <td>
                     <span class="badge {{ $user->role == 1 ? 'bg-success' : 'bg-secondary' }}">
                         {{ $user->role == 1 ? 'Admin' : 'User' }}
@@ -132,15 +132,7 @@
                     </a>
 
                     <!-- Nút xóa -->
-                    @if(Auth::user()->role == 1 && Auth::id() != $user->id)
-                        <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa?')" class="m-0">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger custom-delete-btn" >
-                                <i class="fas fa-trash-alt"></i> Xóa
-                            </button>
-                        </form>
-                    @endif
+
                 </td>
             </tr>
             @endforeach
