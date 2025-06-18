@@ -15,6 +15,7 @@ use App\Http\Controllers\Client\CouponController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 
 use App\Http\Controllers\Auth\AuthController;
 // Trang chu
@@ -141,5 +142,13 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::put('/update/{id}', [AdminCategoryController::class, 'update'])->name('categories.update');
         Route::delete('/delete/{id}', [AdminCategoryController::class, 'delete'])->name('categories.delete');
         Route::get('/detail/{id}', [AdminCategoryController::class, 'show'])->name('categories.show');
+    });
+
+
+    // Order admin
+    Route::prefix('order')->name('order.')->group(function () {
+        Route::get('/', [AdminOrderController::class, 'listOrder'])->name('index');
+        Route::put('status/{id}', [AdminOrderController::class, 'updateStatus'])->name('updateStatus');
+        Route::get('/detail/{id}', [AdminOrderController::class, 'detail'])->name('detail');
     });
 });
