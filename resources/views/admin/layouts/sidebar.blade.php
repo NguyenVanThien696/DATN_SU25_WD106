@@ -125,7 +125,7 @@
                         <ul>
                             <li data-menu-item="modern-order-list" class="menu-item">
                                 <i class="fa-solid fa-wallet fa-sm"></i>
-                                <a class="h-full w-full flex items-center" href="">
+                                <a class="h-full w-full flex items-center" href="{{ route('admin.order.index') }}">
                                     <span>Danh Sách Đơn Hàng</span>
                                 </a>
                             </li>
