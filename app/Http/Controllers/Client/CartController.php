@@ -29,57 +29,74 @@ class CartController extends Controller
 
 
 
-    public function add(Request $request){
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'size_id' => 'required|exists:sizes,id',
-            'color_id' => 'required|exists:colors,id',
-            'quantity' => 'required|integer|min:1',
-        ]);
+public function add(Request $request){
+    $request->validate([
+        'product_id' => 'required|exists:products,id',
+        'size_id'    => 'required|exists:sizes,id',
+        'color_id'   => 'required|exists:colors,id',
+        'quantity'   => 'required|integer|min:1',
+    ]);
 
-        $variant = ProductVariant::where([
-            'product_id' => $request->product_id,
-            'size_id' => $request->size_id,
-            'color_id' => $request->color_id,
-        ])->first();
-            // dd($variant);
-        if(!$variant){
-            return back()->with('error', 'không tìm thấy biến thể sản phẩm');
-        }
+    $variant = ProductVariant::where([
+        'product_id' => $request->product_id,
+        'size_id'    => $request->size_id,
+        'color_id'   => $request->color_id,
+    ])->first();
 
-        if(Auth::check()){
-            $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
-            $item = CartItem::where('cart_id', $cart->id)->where('product_variant_id', $variant->id)->first();
-
-            if($item){
-                $item->quantity += $request->quantity;
-                $item->save();
-            }else{
-                CartItem::create([
-                    'cart_id' => $cart->id,
-                    'product_variant_id' => $variant->id,
-                    'quantity' => $request->quantity
-                ]);
-            }
-        }else{
-            $cart = session()->get('cart', []);
-            $key = $variant->id;
-
-            if(isset($cart[$key])){
-                $cart[$key]['quantity'] += $request->quantity;
-            }else{
-                $cart[$key] = [
-                    'variant_id' => $variant->id,
-                    'product_id' => $request->product_id,
-                    'size_id' => $request->size_id,
-                    'color_id' => $request->color_id,
-                    'quantity' => $request->quantity
-                ];
-            }
-            session()->put('cart', $cart);
-        }
-        return back()->with('success', 'Đã thêm sản phẩm vào giỏ hàng!');
+    if (!$variant) {
+        return back()->with('error', 'Không tìm thấy biến thể sản phẩm');
     }
+
+    $requestedQty = $request->quantity;
+
+    if (Auth::check()) {
+        $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
+        $item = CartItem::where('cart_id', $cart->id)
+                        ->where('product_variant_id', $variant->id)
+                        ->first();
+
+        $currentQtyInCart = $item ? $item->quantity : 0;
+
+        if (($currentQtyInCart + $requestedQty) > $variant->stock) {
+            return back()->with('error', 'Số lượng vượt quá tồn kho hiện tại.');
+        }
+
+        if ($item) {
+            $item->quantity += $requestedQty;
+            $item->save();
+        } else {
+            CartItem::create([
+                'cart_id'            => $cart->id,
+                'product_variant_id' => $variant->id,
+                'quantity'           => $requestedQty
+            ]);
+        }
+    } else {
+        $cart = session()->get('cart', []);
+        $key = $variant->id;
+        $currentQtyInCart = isset($cart[$key]) ? $cart[$key]['quantity'] : 0;
+
+        if (($currentQtyInCart + $requestedQty) > $variant->stock) {
+            return back()->with('error', 'Số lượng vượt quá tồn kho hiện tại.');
+        }
+
+        if (isset($cart[$key])) {
+            $cart[$key]['quantity'] += $requestedQty;
+        } else {
+            $cart[$key] = [
+                'variant_id' => $variant->id,
+                'product_id' => $request->product_id,
+                'size_id'    => $request->size_id,
+                'color_id'   => $request->color_id,
+                'quantity'   => $requestedQty
+            ];
+        }
+
+        session()->put('cart', $cart);
+    }
+
+    return back()->with('success', 'Đã thêm sản phẩm vào giỏ hàng!');
+}
 
     public function update(Request $request){
 

@@ -20,7 +20,6 @@ class CheckoutController extends Controller
 {
 public function index()
 {
-    
     $user = Auth::user();
 
     $cart = Cart::with([
@@ -36,16 +35,29 @@ public function index()
     $products = $cart->items;
 
     $total = 0;
+    $errors = [];
+
     foreach ($products as $item) {
-        $product = $item->variant->product;  
+        $variant = $item->variant;
+        $product = $variant->product;
+
+        // Kiểm tra tồn kho
+        if ($item->quantity > $variant->stock) {
+            $errors[] = "Sản phẩm '{$product->name}' vượt quá số lượng tồn kho. Vui lòng chọn lại.";
+        }
+
         $total += $product->price * $item->quantity;
     }
 
-    session(['cart_total' => $total]); 
+    // Có lỗi chuyển về trang giỏ hàng
+    if (!empty($errors)) {
+        return redirect()->route('client.cart.index')->with('error', implode("\n", $errors));
+    }
+
+    session(['cart_total' => $total]);
 
     return view('client.checkout.index', compact('user', 'products'));
 }
-
 
 
 public function thankyou(){
@@ -71,6 +83,12 @@ public function process(Request $request)
         $cart = Cart::with('items.variant.product')->where('user_id', $userId)->first();
         if (!$cart || $cart->items->isEmpty()) {
             return back()->with('error', 'Giỏ hàng của bạn đang trống.');
+        }
+
+        foreach ($cart->items as $item) {
+            if ($item->quantity > $item->variant->stock) {
+            return back()->with('error', "Sản phẩm '{$item->variant->product->name}' không đủ số lượng trong kho.");
+            }
         }
 
         // Tính tổng tiền
@@ -116,6 +134,14 @@ public function process(Request $request)
                 'quantity'           => $item->quantity,
                 'price'              => $item->variant->product->price,
             ]);
+
+            // Trừ tồn kho
+            $variant = $item->variant;
+            $variant->stock -= $item->quantity;
+            if ($variant->stock < 0) {
+                throw new \Exception('Sản phẩm "' . $variant->product->name . '" không đủ hàng trong kho.');
+            }
+            $variant->save();
         }
 
         // Xóa giỏ hàng
