@@ -50,6 +50,10 @@ Route::prefix('about')->group(function () {
 });
 
 
+//Search
+Route::get('/search', [ProductController::class, 'search'])->name('client.search.index');
+
+
 
 // Login routes (không cần auth)
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login.form');

@@ -33,5 +33,27 @@ public function show($id)
     return view('client.products.detail', compact('product', 'variants', 'stock'));
 }
 
+public function search(Request $request){
+    $keyword = $request->input('s') ?? $request->input('keyword');
+
+    if(!$keyword){
+        return view('client.search.index', ['products' => collect(), 'keyword' => $keyword]);
+    }
+
+    $keywords = explode(' ', $keyword);
+
+    $products = Product::query();
+    
+    foreach ($keywords as $word) {
+        $products->where(function($query) use ($word){
+            $query->where('name', 'LIKE', '%' .$word. '%')->orWhere('description', 'LIKE', '%' .$word. '%');
+        });
+    }
+
+    $products = $products->get();
+
+    return view('client.search.index', compact('products', 'keyword'));
+}
+
 
 }

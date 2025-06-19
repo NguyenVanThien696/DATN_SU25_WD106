@@ -28,8 +28,16 @@
 		                <li class="nav-item {{ request()->routeIs('client.about.index') ? 'active' : '' }}">
 		                    <a class="nav-link" href="{{ route('client.about.index') }}">Liên hệ với chúng tôi </a>
 		                </li>
-		                <li class="nav-item">
-		                    <a class="nav-link"><i class="fas fa-search" id="search" style="cursor: pointer;"></i></a>
+		                <li class="nav-item position-relative">
+							<a class="nav-link" id="searchToggle"><i class="fas fa-search"  style="cursor: pointer;"></i></a>
+							<div id="searchBox" class="d-none position-absolute bg-white p-2 shadow" style="top: 100%; right: 0; z-index: 1000; min-width: 250px;">
+							<form action="{{route('client.search.index')}}" method="get" class="d-flex">
+								    <input type="text" name="s" class="form-control me-2" placeholder="Tìm kiếm sản phẩm..." value="{{ request('s') }}">
+									<button class="btn btn-outline-primary" type="submit">
+										<i class="fas fa-search"></i>
+									</button>
+							</form>
+							</div>                    
 		                </li>
 		            </ul>
 
