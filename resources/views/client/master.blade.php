@@ -79,6 +79,7 @@
 
 	<script src="{{ asset('assets/js1/main.js') }}"></script>
     <script src="{{ asset('assets/js/products.js')}}"></script>
+    <!-- <script src="{{ asset('assets/js/search.js')}}"></script> -->
 </body>
 
 </html>
