@@ -10,6 +10,7 @@ use App\Http\Controllers\Client\AboutController;
 use App\Http\Controllers\Client\CartController;
 use App\Http\Controllers\Client\CheckoutController;
 use App\Http\Controllers\Client\CouponController;
+use App\Http\Controllers\Client\OrderController;
 
 
 use App\Http\Controllers\Admin\UserController;
@@ -89,6 +90,12 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/momo-ipn', [CheckoutController::class, 'momoIPN'])->name('momoIPN');
             Route::get('/thankyou', [CheckoutController::class, 'thankyou'])->name('thankyou');
 
+        });
+
+            // Order user
+        Route::prefix('order')->name('order.')->group(function () {
+            Route::get('/', [OrderController::class, 'listOrder'])->name('index');
+            Route::get('/detail/{id}', [OrderController::class, 'detail'])->name('detail');
         });
 
 

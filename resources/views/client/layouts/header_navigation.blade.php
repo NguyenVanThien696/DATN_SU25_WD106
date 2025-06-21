@@ -65,6 +65,12 @@
 		                            </a>
 		                        </li>
 		                        <li>
+		                            <a class="dropdown-item d-flex align-items-center gap-2"
+		                                href="{{ route('client.order.index') }}">
+		                                <i class="fas fa-receipt"></i> Đơn hàng
+		                            </a>
+		                        </li>
+		                        <li>
 		                            <form method="POST" action="{{ route('logout') }}">
 		                                @csrf
 		                                <button class="dropdown-item d-flex align-items-center gap-2" type="submit">
