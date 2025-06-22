@@ -109,10 +109,11 @@ $isLoggedIn = Auth::check();
                     </tbody>
                 </table>
 
-
+                <button type="submit" class="btn btn-primary">Cập nhật giỏ hàng</button>
             </form>
 
-
+                <br>
+                <br>
             @else
             <p>Giỏ hàng trống</p>
             @endif
@@ -121,11 +122,14 @@ $isLoggedIn = Auth::check();
         $total = 0;
         @endphp
         @if ($total > 0)
-        <div class="text-end">
+        <div class="d-flex justify-content-end mt-4">
+            <div class="text-end">
             <h4>Tổng tiền: <strong>{{ number_format($total) }} VNĐ</strong></h4>
             <button type="submit" class="btn btn-primary">Cập nhật số lượng</button>
             <a href="{{ route('client.cart.clear') }}" class="btn btn-danger">Xoá toàn bộ</a>
         </div>
+        </div>
+        
         @endif
         <div class="col-md-12">
             @auth
