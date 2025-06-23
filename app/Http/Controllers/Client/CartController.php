@@ -100,20 +100,25 @@ public function add(Request $request){
 
     public function update(Request $request){
 
-        $quantities = $request->quantity; // Mảng quantity[id] => số lượng
-    $cart = session()->get('cart', []);
-
-    foreach ($quantities as $id => $qty) {
-        if (isset($cart[$id])) {
-            $cart[$id]['quantity'] = max(1, (int)$qty); // Không cho nhỏ hơn 1
+    $quantities = $request->input('quantity', []);
+     if (Auth::check()) {
+        $cart = Cart::where('user_id', Auth::id())->first();
+        if($cart){
+            foreach($quantities as $variantId => $qty){
+                CartItem::where('cart_id', $cart->id)->where('product_variant_id', $variantId)->update(['quantity' => max(1, (int)$qty)]);
+            }
+        }else{
+            $cart = session()->get('cart', []);
+            foreach($quantities as $variantId => $qty){
+                if(isset($cart[$variantId])){
+                    $cart[$variantId]['quantity'] = max(1, (int)$qty);
+                }
+            }
+            session()->put('cart', $cart);
         }
+        return back()->with('success', 'Cập nhật giỏ hàng thành công!');
     }
-
-    session()->put('cart', $cart);
-
-    return back()->with('success', 'Cập nhật giỏ hàng thành công!');
-    }
-
+}
     public function delete($variantId)
 {
     if (Auth::check()) {

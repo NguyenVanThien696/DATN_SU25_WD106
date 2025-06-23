@@ -11,7 +11,7 @@ class ProductController extends Controller
 {
 public function index()
 {
-    $listProducts = Product::with(['variants.size', 'variants.color'])->latest()->paginate(12);
+    $listProducts = Product::with(['tag','variants.size', 'variants.color'])->latest()->paginate(12);
 
     return view('client.products.index', compact('listProducts'));
 }
