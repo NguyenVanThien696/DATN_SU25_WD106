@@ -665,3 +665,25 @@ textarea {
     height: 50px;
     border-radius: 50%;
     background: rgba(59, 93, 80, 0.2); }
+
+.related-products h4{
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+a{
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-decoration: none;
+}
+
+.related-products .card{
+  transition: transform 0.3s ease;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.related-products .card:hover{
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}

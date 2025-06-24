@@ -30,7 +30,10 @@ public function show($id)
         ];
     });
     $stock = $variants->sum('stock');
-    return view('client.products.detail', compact('product', 'variants', 'stock'));
+
+    //Sản phẩm liên quan
+    $relatedProducts = Product::where('category_id', $product->category_id)->where('id', '!=', $product->id)->latest()->take(4)->get();
+    return view('client.products.detail', compact('product', 'variants', 'stock', 'relatedProducts'));
 }
 
 public function search(Request $request){
