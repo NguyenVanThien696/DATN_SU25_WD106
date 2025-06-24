@@ -687,3 +687,24 @@ a{
   transform: translateY(-5px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
+
+.product-tag{
+  top: 10px; 
+  left: 10px; 
+  color:white; 
+  box-shadow:0 4px 8px rgba(0,0,0,0.2); 
+  font-size: 0.75rem; 
+  padding: 4px 10px; 
+  border-radius: 12px; 
+  z-index: 10;
+  text-transform: uppercase;
+}
+
+.tag-hot{
+    background:linear-gradient(45deg, #ff416c, #ff4b2b); 
+}
+
+.tag-new{
+    background:linear-gradient(45deg, #00c853, #64dd17); 
+}
+
