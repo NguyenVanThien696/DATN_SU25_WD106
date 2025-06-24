@@ -127,6 +127,24 @@
                     <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
                 </form>
             </div>
+            <div class="related-products mt-5">
+                <h4>Sản phẩm liên quan</h4>
+                <div class="row">
+                    @foreach ($relatedProducts as $related)
+                        <div class="col-md-3 mb-4">
+                            <div class="card h-100">
+                                <a href="{{route('client.products.detail', $related->id)}}">
+                                    <img src="{{asset('storage/' . $related->image)}}" class="card-img-top" alt="{{$related->name}}">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{$related->name}}</h5>
+                                        <p class="card-text">{{number_format($related->price)}} VNĐ</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
         </div>
     </div>
 </div>
