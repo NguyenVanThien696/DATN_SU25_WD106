@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container my-5">
-    <h2 class="mb-4 text-center">Chi tiết đơn hàng #12345</h2>
+    <h2 class="mb-4 text-center">Chi tiết đơn hàng</h2>
 
     <div class="card mb-4 shadow">
         <div class="card-header bg-primary text-white fw-semibold">
@@ -74,7 +74,11 @@
             <table class="table table-bordered table-striped mb-0">
                 <tbody>
                     <tr>
-                        <th>Trạng thái:</th>
+                        <th class="w-25">Ngày đặt hàng:</th>
+                        <td>{{ $order->created_at->format('H:i d/m/Y') }}</td>
+                    </tr>
+                    <tr>
+                        <th>Trạng thái đơn hàng:</th>
                         <td><span class="badge {{ $statusClass }}">{{ $statusText }}</span></td>
                     </tr>
                     <tr>
