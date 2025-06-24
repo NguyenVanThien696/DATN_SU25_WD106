@@ -77,9 +77,15 @@
                                         'completed' => 'Đã hoàn thành',
                                         'cancelled' => 'Đã hủy',
                                         ];
+
+                                        $availableTransitions = match($order->status) {
+                                        'pending' => ['processing', 'completed', 'cancelled'],
+                                        'processing' => ['completed'],
+                                        default => [],
+                                        };
                                         @endphp
 
-                                        @if (in_array($order->status, ['completed', 'cancelled']))
+                                        @if (empty($availableTransitions))
                                         <span class="badge {{ $statusClass }}">
                                             {{ $statusList[$order->status] ?? 'Không xác định' }}
                                         </span>
@@ -90,25 +96,24 @@
                                                 {{ $statusList[$order->status] ?? 'Không xác định' }}
                                             </button>
                                             <ul class="dropdown-menu">
-                                                @foreach ($statusList as $key => $value)
-                                                @if ($key !== $order->status)
+                                                @foreach ($availableTransitions as $key)
                                                 <li>
                                                     <form action="{{ route('admin.order.updateStatus', $order->id) }}"
                                                         method="POST">
                                                         @csrf
                                                         @method('PUT')
                                                         <input type="hidden" name="status" value="{{ $key }}">
-                                                        <button class="dropdown-item"
-                                                            type="submit">{{ $value }}</button>
+                                                        <button class="dropdown-item" type="submit">
+                                                            {{ $statusList[$key] ?? ucfirst($key) }}
+                                                        </button>
                                                     </form>
                                                 </li>
-                                                @endif
                                                 @endforeach
                                             </ul>
                                         </div>
                                         @endif
-
                                     </td>
+
 
                                     <td>
                                         <a href="{{ route('admin.order.detail', $order->id) }}"

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Http\Request;
 
@@ -33,16 +34,24 @@ class OrderController extends Controller
         return view('admin.orders.detail', compact('order'));
     }
 
-    public function updateStatus(Request $request, $id){
+public function updateStatus(Request $request, $id){
     $request->validate([
         'status' => 'required|in:pending,processing,completed,cancelled'
     ]);
 
-    $order = Order::findOrFail($id);
-    $order->status = $request->status;
-    $order->save();
+    return DB::transaction(function () use ($request, $id) {
+        $order = Order::lockForUpdate()->findOrFail($id);
 
-    return back()->with('success', 'Cập nhật trạng thái đơn hàng thành công!');
-    }
+        if (in_array($order->status, ['cancelled', 'completed'])) {
+            return back()->with('error', 'Không thể thay đổi trạng thái đơn hàng đã hoàn tất hoặc đã bị hủy.');
+        }
+
+        $order->status = $request->status;
+        $order->save();
+
+        return back()->with('success', 'Cập nhật trạng thái đơn hàng thành công!');
+    });
+}
+
 
 }

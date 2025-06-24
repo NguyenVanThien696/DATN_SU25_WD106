@@ -96,6 +96,8 @@ Route::middleware(['auth'])->group(function () {
         Route::prefix('order')->name('order.')->group(function () {
             Route::get('/', [OrderController::class, 'listOrder'])->name('index');
             Route::get('/detail/{id}', [OrderController::class, 'detail'])->name('detail');
+            Route::post('/cancel/{id}/', [OrderController::class, 'cancel'])->name('cancel');
+
         });
 
 
