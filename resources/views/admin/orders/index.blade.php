@@ -79,7 +79,7 @@
                                         ];
                                         @endphp
 
-                                        @if (in_array($order->status, ['completed', 'cancelled']))
+                                        @if (in_array($order->status, ['processing', 'completed', 'cancelled']))
                                         <span class="badge {{ $statusClass }}">
                                             {{ $statusList[$order->status] ?? 'Không xác định' }}
                                         </span>

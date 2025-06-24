@@ -233,6 +233,12 @@ public function update(Request $request, $id) {
 
         $product = Product::findOrFail($id);
 
+    foreach ($product->variants as $variant) {
+        if ($variant->orderItems()->exists()) {
+            return redirect()->route('admin.products.index')
+                ->with('error', 'Không thể xóa sản phẩm vì đã có đơn hàng liên quan.');
+        }
+    }
     if ($product->image) {
         Storage::delete('public/' . $product->image);
     }

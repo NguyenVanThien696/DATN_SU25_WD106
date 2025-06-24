@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container my-5">
-    <h2 class="mb-4 text-center">Chi tiết đơn hàng #12345</h2>
+    <h2 class="mb-4 text-center">Chi tiết đơn hàng số {{ $order->id }}</h2>
 
     <div class="card mb-4 shadow">
         <div class="card-header bg-primary text-white fw-semibold">
