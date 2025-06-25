@@ -42,9 +42,9 @@ public function index()
         $product = $variant->product;
 
         // Kiểm tra tồn kho
-        if ($item->quantity > $variant->stock) {
-            $errors[] = "Sản phẩm '{$product->name}' vượt quá số lượng tồn kho. Vui lòng chọn lại.";
-        }
+        // if ($item->quantity > $variant->stock) {
+        //     $errors[] = "Sản phẩm '{$product->name}' vượt quá số lượng tồn kho. Vui lòng chọn lại.";
+        // }
 
         $total += $product->price * $item->quantity;
     }
