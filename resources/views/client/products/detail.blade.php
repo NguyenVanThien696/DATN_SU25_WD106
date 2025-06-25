@@ -117,6 +117,24 @@
                     <button type="submit" class="btn btn-primary mt-3">Thêm vào giỏ hàng</button>
             </div>
             </form>
+            <div class="related-products mt-5">
+                <h4>Sản phẩm liên quan</h4>
+                <div class="row mt-5">
+                    @foreach ($relatedProducts as $related)
+                    <div class="col-12 col-md-4 col-lg-3 mb-5">
+                        <a class="product-item d-block position-relative text-decoration-none"
+                            href="{{route('client.products.detail', $related->id) }}">
+                            <img src="{{ asset('storage/' . $related->image) }}" class="img-fluid product-thumbnail">
+                            <h3 class="product-title mt-2">{{ $related->name }}</h3>
+                            <strong class="product-price">{{ number_format($product->price) }} VNĐ</strong>
+                            <span class="icon-cross">
+                                <img src="{{ asset('assets/images/cross.svg') }}" class="img-fluid">
+                            </span>
+                        </a>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
             <div class="mt-5">
                 <h4>Đánh giá sản phẩm</h4>
                 <form>
@@ -142,17 +160,20 @@ input[type="radio"]:checked+span {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('form[action="{{route(
-            'client.cart.add')}}"]');
-    form.addEventListener('submit', function(e) {
-        const sizeChecked = document.querySelector('input[name="size_id"]:checked');
-        const colorChecked = document.querySelector('input[name="color_id"]:checked');
+        const form = document.querySelector('form[action="{{route(
+            'client.cart.add')
+    }
+}
+"]');
+form.addEventListener('submit', function(e) {
+const sizeChecked = document.querySelector('input[name="size_id"]:checked');
+const colorChecked = document.querySelector('input[name="color_id"]:checked');
 
-        if (!sizeChecked || !colorChecked) {
-            e.preventDefault();
-            alert('Vui lòng chọn size và màu sắc trước khi thêm vào giỏ hàng.');
-        }
-    });
+if (!sizeChecked || !colorChecked) {
+    e.preventDefault();
+    alert('Vui lòng chọn size và màu sắc trước khi thêm vào giỏ hàng.');
+}
+});
 });
 </script>
 

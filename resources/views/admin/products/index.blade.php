@@ -50,7 +50,7 @@
                                         </td>
                                         <td>
                                             <a href="{{ route('admin.products.show', $products->id) }}"
-                                                class="btn btn-secondary">Detail </a>
+                                                class="btn btn-secondary">Xem </a>
                                             <!-- <a href="{{ route('admin.products.edit', $products->id) }}"
                                                 class="btn btn-warning">Edit</a> -->
                                             <form action="{{ route('admin.products.delete', $products->id) }} "
@@ -58,7 +58,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button class="btn btn-danger"
-                                                    onclick="return confirm('Bạn có chắc chắn xóa không? ')">Delete
+                                                    onclick="return confirm('Bạn có chắc chắn xóa không? ')">Xóa
                                                 </button>
                                             </form>
                                         </td>

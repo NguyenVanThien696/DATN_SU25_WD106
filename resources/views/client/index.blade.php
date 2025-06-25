@@ -1,6 +1,13 @@
 @extends('client.master')
 
 @section('content')
+@if (session('success'))
+<div class="alert alert-success">{{ session('success') }}</div>
+@endif
+
+@if (session('error'))
+<div class="alert alert-danger">{{ session('error') }}</div>
+@endif
 <div class="hero">
     <div class="container">
         <div class="row justify-content-between">
@@ -44,46 +51,27 @@
             <!-- End Column 1 -->
 
             <!-- Start Column 2 -->
+            @foreach ($listProducts as $product)
             <div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
-                <a class="product-item" href="cart.html">
-                    <img src="{{ asset('assets/images/product-1.png')}}" class="img-fluid product-thumbnail">
-                    <h3 class="product-title">Nordic Chair</h3>
-                    <strong class="product-price">$50.00</strong>
+                <a class="product-item" href="{{ route('client.products.detail', $product->id) }}">
+                    @if ($product->tag)
+                    <span
+                        class="product-tag badge bg-danger text-uppercase position-absolute tag-{{Str::slug($product->tag->name)}}">
+                        <i class="fas fa-fire me-1"></i>{{ $product->tag->name }}
+                    </span>
+                    @endif
+                    <img src="{{ asset('storage/' . $product->image) }}" class="img-fluid product-thumbnail">
+                    <h3 class="product-title">{{ $product->name }}</h3>
+                    <strong class="product-price">{{ number_format($product->price) }} VNĐ</strong>
 
                     <span class="icon-cross">
                         <img src="{{asset('assets/images/cross.svg')}}" class="img-fluid">
                     </span>
                 </a>
             </div>
+            @endforeach
+
             <!-- End Column 2 -->
-
-            <!-- Start Column 3 -->
-            <div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
-                <a class="product-item" href="cart.html">
-                    <img src="{{asset('assets/images/product-2.png')}}" class="img-fluid product-thumbnail">
-                    <h3 class="product-title">Kruzo Aero Chair</h3>
-                    <strong class="product-price">$78.00</strong>
-
-                    <span class="icon-cross">
-                        <img src="{{asset('assets/images/cross.svg')}}" class="img-fluid">
-                    </span>
-                </a>
-            </div>
-            <!-- End Column 3 -->
-
-            <!-- Start Column 4 -->
-            <div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
-                <a class="product-item" href="cart.html">
-                    <img src="{{asset('assets/images/product-3.png')}}" class="img-fluid product-thumbnail">
-                    <h3 class="product-title">Ergonomic Chair</h3>
-                    <strong class="product-price">$43.00</strong>
-
-                    <span class="icon-cross">
-                        <img src="{{asset('assets/images/cross.svg')}}" class="img-fluid">
-                    </span>
-                </a>
-            </div>
-            <!-- End Column 4 -->
 
         </div>
     </div>

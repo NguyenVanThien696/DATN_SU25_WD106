@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Auth\AuthController;
 // Trang chu
 Route::get('/', [ClientController::class, 'index'])->name('client.index');
+// Route::get('/', [ClientController::class, 'index'])->name('client.index');
 
 
 
