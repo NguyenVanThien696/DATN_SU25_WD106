@@ -29,10 +29,10 @@
                                 <thead>
                                     <tr>
                                         <th>ID</th>
-                                        <th>Name Product</th>
-                                        <th>Description</th>
-                                        <th>Price</th>
-                                        <th>Image</th>
+                                        <th>Tên sản phẩm</th>
+                                        <th>Thông tin</th>
+                                        <th>Giá sản phẩm</th>
+                                        <th>Ảnh sản phẩm</th>
                                         <th>#</th>
                                     </tr>
                                 <tbody>
@@ -51,8 +51,8 @@
                                         <td>
                                             <a href="{{ route('admin.products.show', $products->id) }}"
                                                 class="btn btn-secondary">Xem </a>
-                                            <!-- <a href="{{ route('admin.products.edit', $products->id) }}"
-                                                class="btn btn-warning">Edit</a> -->
+                                            <a href="{{ route('admin.products.edit', $products->id) }}"
+                                                class="btn btn-warning">Sửa</a>
                                             <form action="{{ route('admin.products.delete', $products->id) }} "
                                                 class="d-inline" method="POST">
                                                 @csrf
