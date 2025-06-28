@@ -20,6 +20,7 @@ class CheckoutController extends Controller
 {
 public function index()
 {
+    // dd(session('coupon'));
     $user = Auth::user();
 
     $cart = Cart::with([
@@ -35,29 +36,22 @@ public function index()
     $products = $cart->items;
 
     $total = 0;
-    $errors = [];
-
     foreach ($products as $item) {
-        $variant = $item->variant;
-        $product = $variant->product;
-
-        // Kiểm tra tồn kho
-        // if ($item->quantity > $variant->stock) {
-        //     $errors[] = "Sản phẩm '{$product->name}' vượt quá số lượng tồn kho. Vui lòng chọn lại.";
-        // }
-
+        $product = $item->variant->product;  
         $total += $product->price * $item->quantity;
     }
 
-    // Có lỗi chuyển về trang giỏ hàng
-    if (!empty($errors)) {
-        return redirect()->route('client.cart.index')->with('error', implode("\n", $errors));
-    }
+       // Áp dụng coupon nếu có
+    $discount = session('coupon.discount_amount', 0);
+    $couponCode = session('coupon.code', null);
 
-    session(['cart_total' => $total]);
+    $finalTotal = $total - $discount;
 
-    return view('client.checkout.index', compact('user', 'products'));
+    session(['cart_total' => $total]); 
+
+    return view('client.checkout.index', compact('user', 'products', 'total', 'finalTotal', 'couponCode', 'discount'));
 }
+
 
 
 public function thankyou(){
@@ -66,6 +60,7 @@ public function thankyou(){
 
 public function process(Request $request)
 {
+    // dd($request->all());
     $request->validate([
         'name'    => 'required|string|max:255',
         'email'   => 'required|email|max:255',
@@ -85,16 +80,14 @@ public function process(Request $request)
             return back()->with('error', 'Giỏ hàng của bạn đang trống.');
         }
 
-        foreach ($cart->items as $item) {
-            if ($item->quantity > $item->variant->stock) {
-            return back()->with('error', "Sản phẩm '{$item->variant->product->name}' không đủ số lượng trong kho.");
-            }
-        }
-
         // Tính tổng tiền
-        $finalTotal = $cart->items->sum(function ($item) {
+        $total = $cart->items->sum(function ($item) {
             return $item->variant->product->price * $item->quantity;
         });
+
+        // Áp dụng giảm giá nếu có
+        $discount = session('coupon.discount_amount', 0);
+        $finalTotal = $total - $discount;
 
         // Tạo đơn hàng
         $order = Order::create([
@@ -125,6 +118,7 @@ public function process(Request $request)
                 'note'     => $request->input('shipping_note'),
             ]);
         }
+        
 
         // Thêm các item vào bảng order_items
         foreach ($cart->items as $item) {
@@ -134,19 +128,12 @@ public function process(Request $request)
                 'quantity'           => $item->quantity,
                 'price'              => $item->variant->product->price,
             ]);
-
-            // Trừ tồn kho
-            $variant = $item->variant;
-            $variant->stock -= $item->quantity;
-            if ($variant->stock < 0) {
-                throw new \Exception('Sản phẩm "' . $variant->product->name . '" không đủ hàng trong kho.');
-            }
-            $variant->save();
         }
 
         // Xóa giỏ hàng
         $cart->items()->delete();
         $cart->delete();
+        session()->forget('coupon');
 
         DB::commit();
         return redirect()->route('client.checkout.thankyou')->with('success', 'Đặt hàng thành công!');
@@ -169,29 +156,49 @@ public function momoReturn(Request $request)
 
 public function apply(Request $request)
 {
-    $coupon = Coupon::where('code', $request->coupon_code)
-        ->where(function ($q) {
-            $q->whereNull('expires_at')->orWhere('expires_at', '>=', now());
-        })
-        ->first();
+    $request->validate([
+        'coupon_code' => 'required|string'
+    ]);
 
+    $coupon = \App\Models\Coupon::where('code', $request->coupon_code)->first();
+
+    // Kiểm tra mã có tồn tại không
     if (!$coupon) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Mã giảm giá không hợp lệ hoặc đã hết hạn.',
-        ]);
+        return back()->with('error', 'Mã giảm giá không hợp lệ.');
     }
 
+    // Kiểm tra hạn sử dụng
+    if ($coupon->expires_at && now()->greaterThan($coupon->expires_at)) {
+        return back()->with('error', 'Mã giảm giá đã hết hạn.');
+    }
+
+    // Lấy người dùng và giỏ hàng
+    $user = Auth::user();
+    $cart = \App\Models\Cart::with('items.variant.product')->where('user_id', $user->id)->first();
+
+    if (!$cart || $cart->items->isEmpty()) {
+        return back()->with('error', 'Giỏ hàng của bạn đang trống.');
+    }
+
+    // Tính tổng tiền
+    $cartTotal = 0;
+    foreach ($cart->items as $item) {
+        $cartTotal += $item->variant->product->price * $item->quantity;
+    }
+
+    // Tính giảm giá
+    $discount = round($cartTotal * ($coupon->discount_percent / 100));
+    $discount = min($discount, $cartTotal); // Không vượt quá tổng tiền
+
+    // Lưu session
+    session()->forget('coupon');
     session()->put('coupon', [
         'code' => $coupon->code,
         'discount_percent' => $coupon->discount_percent,
+        'discount_amount' => $discount
     ]);
 
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Áp dụng mã giảm giá thành công!',
-        'discount_percent' => $coupon->discount_percent,
-    ]);
+    return back()->with('success', 'Áp dụng mã giảm giá thành công!');
 }
 
 }

@@ -68,10 +68,13 @@
                                 </td>
 
                                 <td>
-                                    @php
-                                    $total = $order->orderItems->sum(fn($i) => $i->price * $i->quantity);
-                                    @endphp
-                                    <strong>{{ number_format($total, 0, ',', '.') }} đ</strong>
+                                    <strong>{{ number_format($order->total_price, 0, ',', '.') }} đ</strong>
+                                    @if($order->orderItems->sum(fn($i) => $i->price * $i->quantity) > $order->total_price)
+                                        <br>
+                                        <small class="text-success">
+                                            (Đã áp dụng mã giảm giá)
+                                        </small>
+                                    @endif
                                 </td>
                                 <td>
                                     @php
