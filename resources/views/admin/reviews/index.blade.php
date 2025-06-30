@@ -41,7 +41,7 @@
                                         <td>{{ $review->id }}</td>
                                         <td>{{ $review->product->name }}</td>
                                         <td>{{ $review->user->name }}</td>
-                                        <td>{{ $review->rating }} ★</td>
+                                        <td>{{ $review->rating }} ⭐</td>
                                         <td>{{ $review->comment }}</td>
                                         <td>{{ $review->created_at->format('d/m/Y H:i') }}</td>
                                         <td>
