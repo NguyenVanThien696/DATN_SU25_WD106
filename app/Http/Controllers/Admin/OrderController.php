@@ -52,6 +52,19 @@ public function updateStatus(Request $request, $id){
         return back()->with('success', 'Cập nhật trạng thái đơn hàng thành công!');
     });
 }
+public function refund($id)
+{
+     $order = Order::findOrFail($id);
+    if ($order->status !== 'cancelled_paid' || $order->payment_status !== 'paid') {
+        return back()->with('error', 'Đơn hàng không hợp lệ để hoàn tiền.');
+    }
 
+    $order->update([
+        'status' => 'refunded',
+        'payment_status' => 'refunded',
+    ]);
+
+    return back()->with('success', 'Đã hoàn tiền cho đơn hàng #' . $order->id);
+}
 
 }
