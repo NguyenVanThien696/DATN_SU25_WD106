@@ -87,6 +87,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', [CheckoutController::class, 'index'])->name('index');
             Route::post('/', [CheckoutController::class, 'process'])->name('process');
             Route::post('/apply-coupon', [CheckoutController::class, 'apply'])->name('coupon.apply');
+            Route::get('/vnpay-return', [CheckoutController::class, 'vnpayReturn'])->name('vnpayReturn');
             Route::get('/momo-return', [CheckoutController::class, 'momoReturn'])->name('momoReturn');
             Route::post('/momo-ipn', [CheckoutController::class, 'momoIPN'])->name('momoIPN');
             Route::get('/thankyou', [CheckoutController::class, 'thankyou'])->name('thankyou');

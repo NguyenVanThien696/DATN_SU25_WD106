@@ -217,9 +217,8 @@
                                             checked>
                                         <label class="form-check-label">Thanh toán khi nhận hàng</label>
                                     </div>
-                                    <div class="border p-3 mb-3">
-                                        <input class="form-check-input" type="radio" name="payment_method" value="momo">
-                                        <label class="form-check-label">Thanh toán qua MoMo</label>
+                                    <div class="border p-2 mb-2">
+                                        <input type="radio" name="payment_method" value="vnpay"> Thanh toán qua VNPAY
                                     </div>
                                 </div>
 
