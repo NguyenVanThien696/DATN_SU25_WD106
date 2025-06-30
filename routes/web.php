@@ -17,8 +17,11 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
-
+use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Client\ProductReviewController;
+use App\Models\ProductReview;
+
 // Trang chu
 Route::get('/', [ClientController::class, 'index'])->name('client.index');
 // Route::get('/', [ClientController::class, 'index'])->name('client.index');
@@ -101,6 +104,10 @@ Route::middleware(['auth'])->group(function () {
 
         });
 
+        //Reviews
+        Route::prefix('reviews')->group(function () {
+        Route::post('/', [ProductReviewController::class, 'store'])->name('reviews.store');
+        });
 
     });
 });
@@ -164,5 +171,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/', [AdminOrderController::class, 'listOrder'])->name('index');
         Route::put('status/{id}', [AdminOrderController::class, 'updateStatus'])->name('updateStatus');
         Route::get('/detail/{id}', [AdminOrderController::class, 'detail'])->name('detail');
+    });
+
+    // Reviews admin
+    Route::prefix('reviews')->name('reviews.')->group(function () {
+        Route::get('/', [ReviewController::class, 'index'])->name('index');
+        Route::delete('/delete/{id}', [ReviewController::class, 'destroy'])->name('destroy');
     });
 });

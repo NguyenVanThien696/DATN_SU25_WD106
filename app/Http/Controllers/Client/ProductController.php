@@ -19,7 +19,7 @@ public function index()
 // ShopController
 public function show($id)
 {
-    $product = Product::with(['variants.size', 'variants.color', 'category', 'brand'])->findOrFail($id);
+    $product = Product::with(['variants.size', 'variants.color', 'category', 'brand', 'reviews.user'])->findOrFail($id);
 
     $variants = $product->variants->map(function($variant){
         return [

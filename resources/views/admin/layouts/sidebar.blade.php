@@ -110,7 +110,7 @@
                         <ul>
                             <li data-menu-item="modern-dialog" class="menu-item">
                                 <i class="fa-solid fa-comment"></i>
-                                <a class="h-full w-full flex items-center" href="">
+                                <a class="h-full w-full flex items-center" href="{{route('admin.reviews.index')}}">
                                     <span>Danh Sách Bình Luận</span>
                                 </a>
                             </li>

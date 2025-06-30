@@ -135,15 +135,54 @@
                     @endforeach
                 </div>
             </div>
-            <div class="mt-5">
-                <h4>Đánh giá sản phẩm</h4>
-                <form>
+            <div class="review-section mt-5">
+    <h4 class="text-xl font-semibold mb-4">Đánh giá sản phẩm</h4>
+
+    @forelse ($product->reviews as $review)
+        <div class="border p-3 rounded-lg mb-3 bg-gray-50">
+            <div class="flex items-center justify-between mb-2">
+                <strong class="text-green-700">{{ $review->user->name }}</strong>
+                <div class="text-yellow-500">
+                    @for ($i = 1; $i <= 5; $i++)
+                        @if ($i <= $review->rating)
+                            <i class="fas fa-star"></i>
+                        @else
+                            <i class="far fa-star"></i>
+                        @endif
+                    @endfor
+                </div>
+            </div>
+            <p class="text-gray-700">{{ $review->comment }}</p>
+        </div>
+    @empty
+        <p class="text-gray-500">Chưa có đánh giá nào.</p>
+    @endforelse
+</div>
+
+                @auth
+                <form action="{{route('client.reviews.store')}}" method="POST">
+                    @csrf
+                    <input type="hidden" name="product_id" value="{{$product->id}}">
+
+                     <div class="form-group text-center">
+                        <label for="rating" class="d-block mb-2">Đánh giá:</label>
+                        <div class="star-rating">
+                            @for ($i=5; $i>=1; $i--)
+                                <input type="radio" name="rating" id="star{{$i}}" value="{{$i}}" required>
+                                <label for="star{{$i}}">★</label>
+                            @endfor
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label for="comment" class="form-label">Nhận xét:</label>
-                        <textarea id="comment" class="form-control" rows="3"></textarea>
+                        <textarea name="comment" id="comment" class="form-control" rows="3"></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
                 </form>
+                @else
+                    <p><a href="{{route('login')}}">Đăng nhập</a> để gửi đánh giá</p>
+                @endauth    
             </div>
         </div>
     </div>
