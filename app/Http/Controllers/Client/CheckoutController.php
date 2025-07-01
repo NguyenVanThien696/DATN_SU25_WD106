@@ -255,7 +255,7 @@ if ($request->has('ship_to_different')) {
                 'price'              => $item->variant->product->price,
             ]);
         }
-
+        $this->saveUsedCoupon($userId);
         $cart->items()->delete();
         $cart->delete();
         session()->forget('coupon');
@@ -299,6 +299,14 @@ public function apply(Request $request)
 
     // Lấy người dùng và giỏ hàng
     $user = Auth::user();
+    $used = \App\Models\UserCoupon::where('user_id', $user->id)
+                                  ->where('coupon_id', $coupon->id)
+                                  ->exists();
+
+    if ($used) {
+        return back()->with('error', 'Bạn đã sử dụng mã giảm giá này rồi.');
+    }
+
     $cart = \App\Models\Cart::with('items.variant.product')->where('user_id', $user->id)->first();
 
     if (!$cart || $cart->items->isEmpty()) {
@@ -388,7 +396,7 @@ public function vnpayReturn(Request $request)
                     'price'              => $item['price'],
                 ]);
             }
-
+            $this->saveUsedCoupon($pendingOrder['user_id']);
             $cart = Cart::where('user_id', $pendingOrder['user_id'])->first();
             if ($cart) {
                 $cart->items()->delete();
@@ -414,5 +422,18 @@ public function vnpayReturn(Request $request)
         return redirect()->route('client.checkout.index')->with('error', 'Thanh toán thất bại hoặc bị hủy.');
     }
 }
+ private function saveUsedCoupon($userId)
+    {
+        if (session()->has('coupon')) {
+            $couponCode = session('coupon.code');
+            $coupon = Coupon::where('code', $couponCode)->first();
 
+            if ($coupon) {
+                UserCoupon::firstOrCreate([
+                    'user_id'   => $userId,
+                    'coupon_id' => $coupon->id,
+                ]);
+            }
+        }
+    }
 }
