@@ -131,6 +131,27 @@
                             </li>
                         </ul>
                     </li>
+                    <li class="menu-collapse">
+                        <div class="menu-collapse-item">
+                            <i class="fa-solid fa-ticket fa-lg"></i>
+                            <span class="menu-item-text">Quản Lý Voucher</span>
+                        </div>
+                        <ul>
+                            <li data-menu-item="modern-voucher-list" class="menu-item">
+                                <i class="fa-solid fa-list-ul fa-sm"></i>
+                                <a class="h-full w-full flex items-center" href="{{ route('admin.vouchers.index') }}">
+                                    <span>Danh Sách Voucher</span>
+                                </a>
+                            </li>
+                            <li data-menu-item="modern-new-voucher" class="menu-item">
+                                <i class="fa-solid fa-square-plus fa-sm"></i>
+                                <a class="h-full w-full flex items-center" href="{{ route('admin.vouchers.create') }}">
+                                    <span>Thêm Voucher</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
 
                     <!-- <ul class="navbar-nav ms-auto">
                         @guest

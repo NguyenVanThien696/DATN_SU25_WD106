@@ -287,52 +287,70 @@ public function apply(Request $request)
 
     $coupon = \App\Models\Coupon::where('code', $request->coupon_code)->first();
 
-    // Kiểm tra mã có tồn tại không
+    // Kiểm tra tồn tại
     if (!$coupon) {
-        return back()->with('error', 'Mã giảm giá không hợp lệ.');
+        return back()->withInput()->with('error', 'Mã giảm giá không hợp lệ.');
     }
 
-    // Kiểm tra hạn sử dụng
-    if ($coupon->expires_at && now()->greaterThan($coupon->expires_at)) {
-        return back()->with('error', 'Mã giảm giá đã hết hạn.');
+    // Kiểm tra trạng thái
+    if ($coupon->status !== 'active') {
+        return back()->withInput()->with('error', 'Mã giảm giá không còn hoạt động.');
     }
 
-    // Lấy người dùng và giỏ hàng
-    $user = Auth::user();
+    // Kiểm tra thời gian hiệu lực
+    $now = now();
+    if (($coupon->start_at && $now->lt($coupon->start_at)) || ($coupon->end_at && $now->gt($coupon->end_at))) {
+        return back()->withInput()->with('error', 'Mã giảm giá hiện không còn hiệu lực.');
+    }
+
+    // Kiểm tra số lượt sử dụng tối đa
+    if (!is_null($coupon->usage_limit) && $coupon->used >= $coupon->usage_limit) {
+        return back()->withInput()->with('error', 'Mã giảm giá đã được sử dụng hết.');
+    }
+
+    // Kiểm tra người dùng đã dùng chưa
+    $user = \Auth::user();
     $used = \App\Models\UserCoupon::where('user_id', $user->id)
                                   ->where('coupon_id', $coupon->id)
                                   ->exists();
 
     if ($used) {
-        return back()->with('error', 'Bạn đã sử dụng mã giảm giá này rồi.');
+        return back()->withInput()->with('error', 'Bạn đã sử dụng mã giảm giá này rồi.');
     }
 
+    // Giỏ hàng
     $cart = \App\Models\Cart::with('items.variant.product')->where('user_id', $user->id)->first();
 
     if (!$cart || $cart->items->isEmpty()) {
         return back()->with('error', 'Giỏ hàng của bạn đang trống.');
     }
 
-    // Tính tổng tiền
-    $cartTotal = 0;
-    foreach ($cart->items as $item) {
-        $cartTotal += $item->variant->product->price * $item->quantity;
-    }
+    // Tổng tiền
+    $cartTotal = $cart->items->sum(function ($item) {
+        return $item->variant->product->price * $item->quantity;
+    });
 
     // Tính giảm giá
-    $discount = round($cartTotal * ($coupon->discount_percent / 100));
+    if ($coupon->discount_type === 'percent') {
+        $discount = round($cartTotal * ($coupon->discount_percent / 100));
+    } else {
+        $discount = $coupon->discount_amount;
+    }
+
     $discount = min($discount, $cartTotal); // Không vượt quá tổng tiền
 
     // Lưu session
     session()->forget('coupon');
     session()->put('coupon', [
         'code' => $coupon->code,
-        'discount_percent' => $coupon->discount_percent,
-        'discount_amount' => $discount
+        'type' => $coupon->discount_type,
+        'discount_value' => $coupon->discount_type === 'percent' ? $coupon->discount_percent : $coupon->discount_amount,
+        'discount_amount' => $discount,
     ]);
 
     return back()->withInput()->with('success', 'Áp dụng mã giảm giá thành công!');
 }
+
 
 public function vnpayReturn(Request $request)
 {

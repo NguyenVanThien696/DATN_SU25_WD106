@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminVoucherController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Client\ClientController;
@@ -170,4 +171,13 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/detail/{id}', [AdminOrderController::class, 'detail'])->name('detail');
         Route::post('/refund/{id}', [AdminOrderController::class, 'refund'])->name('refund');
     });
+
+    Route::prefix('vouchers')->name('vouchers.')->group(function () {
+        Route::get('/', [AdminVoucherController::class, 'index'])->name('index');
+        Route::get('/create', [AdminVoucherController::class, 'create'])->name('create');
+        Route::post('/store', [AdminVoucherController::class, 'store'])->name('store');
+        Route::get('/edit/{id}', [AdminVoucherController::class, 'edit'])->name('edit');
+        Route::put('/update/{id}', [AdminVoucherController::class, 'update'])->name('update');
+        Route::delete('/delete/{id}', [AdminVoucherController::class, 'destroy'])->name('delete');
+});
 });
