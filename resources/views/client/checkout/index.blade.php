@@ -5,16 +5,16 @@
 
 {{-- Thông báo khi áp dụng voucher --}}
 @if(session('success'))
-    <div class="alert alert-success mt-2">{{ session('success') }}</div>
+<div class="alert alert-success mt-2">{{ session('success') }}</div>
 @endif
 {{-- @if(session('coupon'))
 <div class="alert alert-info py-2 px-3 mb-3">
     Đã áp dụng mã: <strong>{{ session('coupon.code') }}</strong>
-    ({{ session('coupon.discount_percent') }}%)
+({{ session('coupon.discount_percent') }}%)
 </div>
 @endif --}}
 @if(session('error'))
-    <div class="alert alert-danger mt-2">{{ session('error') }}</div>
+<div class="alert alert-danger mt-2">{{ session('error') }}</div>
 @endif
 
 <form action="{{ route('client.checkout.process', $user->id) }}" method="POST" enctype="multipart/form-data">
@@ -186,25 +186,32 @@
                                         </tr>
                                         @endforeach
                                         <tr>
-                                            <td class="text-black font-weight-bold"><strong>Tạm tính</strong></td>
+                                            <td class="text-black font-weight-bold">Tạm tính</td>
                                             <td></td>
                                             <td></td>
                                             <td class="text-black font-weight-bold">{{ number_format($total) }}</td>
                                         </tr>
+
                                         <tr>
                                             <td class="text-black font-weight-bold">Giảm giá</td>
                                             <td></td>
                                             <td></td>
-                                            <td>-{{ number_format($discount) }}₫</td>
+                                            <td>- {{ number_format($discount) }}</td>
                                         </tr>
+
+                                        <tr>
+                                            <td class="text-black font-weight-bold">Phí vận chuyển</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td>{{ $shippingFee == 0 ? 'Miễn phí' : number_format($shippingFee) }}
+                                            </td>
+                                        </tr>
+
                                         <tr>
                                             <td colspan="3"><strong>Tổng cộng</strong></td>
-                                            <td><strong>{{ number_format($finalTotal) }}₫</strong></td>
+                                            <td><strong>{{ number_format($finalTotal + $shippingFee) }} đ</strong></td>
                                             <td></td>
                                             <td></td>
-                                            {{-- <td class="text-black font-weight-bold" id="final-total">
-                                                <strong>{{ number_format($total) }}</strong>
-                                            </td> --}}
                                             <input type="hidden" name="coupon" id="hidden-coupon">
                                         </tr>
                                     </tbody>
@@ -236,10 +243,28 @@
 </form>
 
 {{-- FORM ÁP DỤNG MÃ GIẢM GIÁ --}}
-<form action="{{ route('client.checkout.coupon.apply') }}" method="POST" class="mb-3 d-flex" style="max-width: 400px;">
+
+
+<form action="{{ route('client.checkout.coupon.apply') }}" method="POST">
     @csrf
-    <input type="text" name="coupon_code" class="form-control me-2" placeholder="Nhập mã giảm giá" value="{{ old('coupon_code', session('coupon.code') ?? '') }}">
-    <button type="submit" class="btn btn-dark btn-sm">Áp dụng</button>
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-md-6">
+                <div class="p-3 p-lg-5 border bg-white">
+                    <label for="c_code" class="text-black mb-3">Nhập mã phiếu giảm giá</label>
+                    <div class="input-group w-75 couponcode-wrap">
+                        <input type="text" class="form-control me-2" name="coupon_code" id="c_code"
+                            placeholder="Nhập mã giảm giá"
+                            value="{{ old('coupon_code', session('coupon.code') ?? '') }}">
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-black btn-sm" id="apply-coupon-btn">Áp
+                                dụng</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </form>
 
 @endsection

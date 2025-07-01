@@ -21,7 +21,6 @@ class CheckoutController extends Controller
 {
 public function index()
 {
-    // dd(session('coupon'));
     $user = Auth::user();
 
     $cart = Cart::with([
@@ -36,23 +35,41 @@ public function index()
 
     $products = $cart->items;
 
+    // Tính tổng tiền hàng
     $total = 0;
     foreach ($products as $item) {
         $product = $item->variant->product;  
         $total += $product->price * $item->quantity;
     }
 
-       // Áp dụng coupon nếu có
+    // Áp dụng mã giảm giá (nếu có)
     $discount = session('coupon.discount_amount', 0);
     $couponCode = session('coupon.code', null);
 
     $finalTotal = $total - $discount;
 
-    session(['cart_total' => $total]); 
+    // Tính phí ship
+    $shippingFee = $finalTotal >= 500000 ? 0 : 30000;
 
-    return view('client.checkout.index', compact('user', 'products', 'total', 'finalTotal', 'couponCode', 'discount'));
+    // Tổng cần thanh toán sau khi cộng phí ship
+    $finalWithShipping = $finalTotal + $shippingFee;
+
+    session([
+        'cart_total' => $total,
+        'shipping_fee' => $shippingFee,
+    ]);
+
+    return view('client.checkout.index', compact(
+        'user',
+        'products',
+        'total',
+        'discount',
+        'couponCode',
+        'shippingFee',
+        'finalTotal',
+        'finalWithShipping'
+    ));
 }
-
 
 
 public function thankyou(){
@@ -79,14 +96,19 @@ public function process(Request $request)
             return back()->with('error', 'Giỏ hàng của bạn đang trống.');
         }
 
+
         $total = $cart->items->sum(function ($item) {
             return $item->variant->product->price * $item->quantity;
         });
 
+
         $discount = session('coupon.discount_amount', 0);
         $finalTotal = $total - $discount;
 
-        // ---- NẾU CHỌN THANH TOÁN QUA VNPAY ----
+        $shippingFee = $finalTotal >= 500000 ? 0 : 30000;
+
+        $finalTotalWithShipping = $finalTotal + $shippingFee;
+
         $paymentMethod = $request->input('payment_method', 'cod');
 
         if ($paymentMethod === 'vnpay') {
@@ -95,6 +117,7 @@ public function process(Request $request)
                 'txn_ref'     => $txnRef,
                 'user_id'     => $userId,
                 'total_price' => $finalTotal,
+                'shipping_fee'=> $shippingFee,
                 'note'        => $request->input('c_order_notes'),
                 'user_info'   => [
                     'name'    => $request->input('name'),
@@ -110,83 +133,67 @@ public function process(Request $request)
                     ];
                 })->toArray()
             ]);
-            \Log::info('✅ Đã tạo pending order: ' . $pending->txn_ref);
-            DB::commit(); 
 
-        // ---- TẠO URL VNPAY ----
-        $vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-        $vnp_Returnurl = route('client.checkout.vnpayReturn');
-        $vnp_TmnCode = '1615H65S';
-        $vnp_HashSecret = config('services.vnpay.hash_secret');
+            $vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+            $vnp_Returnurl = route('client.checkout.vnpayReturn');
+            $vnp_TmnCode = '1615H65S';
+            $vnp_HashSecret = config('services.vnpay.hash_secret');
+            $vnp_OrderInfo = 'payment';
+            $vnp_OrderType = 'billpayment';
+            $vnp_Amount = (int)round($finalTotalWithShipping * 100);
+            $vnp_Locale = 'vn';
+            $vnp_BankCode = 'NCB';
+            $vnp_IpAddr = $_SERVER['REMOTE_ADDR'];
 
-        // $vnp_TxnRef = uniqid($userId . '_');
-        $vnp_OrderInfo = 'payment';
-        $vnp_OrderType = 'billpayment';
-        $vnp_Amount = (int)round($finalTotal * 100);
-        $vnp_Locale = 'vn';
-        $vnp_BankCode = 'NCB';
-        $vnp_IpAddr = $_SERVER['REMOTE_ADDR'];
+            $inputData = [
+                "vnp_Version" => "2.1.0",
+                "vnp_TmnCode" => $vnp_TmnCode,
+                "vnp_Amount" => $vnp_Amount,
+                "vnp_Command" => "pay",
+                "vnp_CreateDate" => date('YmdHis'),
+                "vnp_CurrCode" => "VND",
+                "vnp_IpAddr" => $vnp_IpAddr,
+                "vnp_Locale" => $vnp_Locale,
+                "vnp_OrderInfo" => $vnp_OrderInfo,
+                "vnp_OrderType" => $vnp_OrderType,
+                "vnp_ReturnUrl" => $vnp_Returnurl,
+                "vnp_TxnRef" => $txnRef,
+            ];
 
-        $inputData = [
-            "vnp_Version" => "2.1.0",
-            "vnp_TmnCode" => $vnp_TmnCode,
-            "vnp_Amount" => $vnp_Amount,
-            "vnp_Command" => "pay",
-            "vnp_CreateDate" => date('YmdHis'),
-            "vnp_CurrCode" => "VND",
-            "vnp_IpAddr" => $vnp_IpAddr,
-            "vnp_Locale" => $vnp_Locale,
-            "vnp_OrderInfo" => $vnp_OrderInfo,
-            "vnp_OrderType" => $vnp_OrderType,
-            "vnp_ReturnUrl" => $vnp_Returnurl,
-            "vnp_TxnRef" => $txnRef,
-        ];
-
-        if (isset($vnp_BankCode) && $vnp_BankCode != "") {
-            $inputData['vnp_BankCode'] = $vnp_BankCode;
-        }
-        if (isset($vnp_Bill_State) && $vnp_Bill_State != "") {
-            $inputData['vnp_Bill_State'] = $vnp_Bill_State;
-        }
-        
-        //var_dump($inputData);
-        ksort($inputData);
-        $query = "";
-        $i = 0;
-        $hashdata = "";
-        foreach ($inputData as $key => $value) {
-            if ($i == 1) {
-                $hashdata .= '&' . urlencode($key) . "=" . urlencode($value);
-            } else {
-                $hashdata .= urlencode($key) . "=" . urlencode($value);
-                $i = 1;
+            if (!empty($vnp_BankCode)) {
+                $inputData['vnp_BankCode'] = $vnp_BankCode;
             }
-            $query .= urlencode($key) . "=" . urlencode($value) . '&';
-        }
-         \Log::info('VNPay hashData: ' . $hashdata);
-        
-        $vnp_Url = $vnp_Url . "?" . $query;
-        if (isset($vnp_HashSecret)) {
-            $vnpSecureHash =   hash_hmac('sha512', $hashdata, $vnp_HashSecret);//  
-            $vnp_Url .= 'vnp_SecureHash=' . $vnpSecureHash;
-        }
-        $returnData = array('code' => '00'
-            , 'message' => 'success'
-            , 'data' => $vnp_Url);
-            if (isset($_POST['redirect'])) {
-                header('Location: ' . $vnp_Url);
-                die();
-            } else {
-                echo json_encode($returnData);
+
+            ksort($inputData);
+            $query = "";
+            $i = 0;
+            $hashdata = "";
+            foreach ($inputData as $key => $value) {
+                $hashdata .= ($i ? '&' : '') . urlencode($key) . "=" . urlencode($value);
+                $query .= urlencode($key) . "=" . urlencode($value) . '&';
+                $i++;
             }
- 
-            return redirect()->to($vnp_Url); // Chuyển hướng sang VNPay
+
+            $vnp_Url .= "?" . $query;
+            if ($vnp_HashSecret) {
+                $vnpSecureHash = hash_hmac('sha512', $hashdata, $vnp_HashSecret);
+                $vnp_Url .= 'vnp_SecureHash=' . $vnpSecureHash;
+            }
+
+            DB::commit();
+            return redirect()->to($vnp_Url);
         }
 
-        // ---- NẾU CHỌN THANH TOÁN COD ----
+//         dd([
+//     '$shippingFee' => $shippingFee,
+//     '$finalTotal' => $finalTotal,
+//     '$finalTotalWithShipping' => $finalTotalWithShipping
+// ]);
+
         $order = Order::create([
             'user_id'        => $userId,
-            'total_price'    => $finalTotal,
+            'total_price'    => $finalTotalWithShipping,
+            'shipping_fee'   => $shippingFee,
             'status'         => 'pending',
             'note'           => $request->input('c_order_notes'),
             'payment_method' => 'cod',
@@ -210,6 +217,7 @@ public function process(Request $request)
                 'note'     => $request->input('shipping_note'),
             ]);
         }
+
         foreach ($cart->items as $item) {
             OrderItem::create([
                 'order_id'           => $order->id,
@@ -230,6 +238,7 @@ public function process(Request $request)
         return back()->with('error', 'Đã xảy ra lỗi: ' . $e->getMessage());
     }
 }
+
 
 public function momoReturn(Request $request)
 {
