@@ -10,6 +10,7 @@ use App\Models\Coupon;
 use App\Models\UserCoupon;
 
 use App\Http\Controllers\Controller;
+use App\Models\PendingOrder;
 use App\Models\ShippingAddress;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -20,6 +21,7 @@ class CheckoutController extends Controller
 {
 public function index()
 {
+    // dd(session('coupon'));
     $user = Auth::user();
 
     $cart = Cart::with([
@@ -35,29 +37,22 @@ public function index()
     $products = $cart->items;
 
     $total = 0;
-    $errors = [];
-
     foreach ($products as $item) {
-        $variant = $item->variant;
-        $product = $variant->product;
-
-        // Kiểm tra tồn kho
-        if ($item->quantity > $variant->stock) {
-            $errors[] = "Sản phẩm '{$product->name}' vượt quá số lượng tồn kho. Vui lòng chọn lại.";
-        }
-
+        $product = $item->variant->product;  
         $total += $product->price * $item->quantity;
     }
 
-    // Có lỗi chuyển về trang giỏ hàng
-    if (!empty($errors)) {
-        return redirect()->route('client.cart.index')->with('error', implode("\n", $errors));
-    }
+       // Áp dụng coupon nếu có
+    $discount = session('coupon.discount_amount', 0);
+    $couponCode = session('coupon.code', null);
 
-    session(['cart_total' => $total]);
+    $finalTotal = $total - $discount;
 
-    return view('client.checkout.index', compact('user', 'products'));
+    session(['cart_total' => $total]); 
+
+    return view('client.checkout.index', compact('user', 'products', 'total', 'finalTotal', 'couponCode', 'discount'));
 }
+
 
 
 public function thankyou(){
@@ -79,34 +74,125 @@ public function process(Request $request)
         $userId = Auth::id();
         $user = Auth::user();
 
-        // Lấy giỏ hàng
         $cart = Cart::with('items.variant.product')->where('user_id', $userId)->first();
         if (!$cart || $cart->items->isEmpty()) {
             return back()->with('error', 'Giỏ hàng của bạn đang trống.');
         }
 
-        foreach ($cart->items as $item) {
-            if ($item->quantity > $item->variant->stock) {
-            return back()->with('error', "Sản phẩm '{$item->variant->product->name}' không đủ số lượng trong kho.");
-            }
-        }
-
-        // Tính tổng tiền
-        $finalTotal = $cart->items->sum(function ($item) {
+        $total = $cart->items->sum(function ($item) {
             return $item->variant->product->price * $item->quantity;
         });
 
-        // Tạo đơn hàng
+        $discount = session('coupon.discount_amount', 0);
+        $finalTotal = $total - $discount;
+
+        // ---- NẾU CHỌN THANH TOÁN QUA VNPAY ----
+        $paymentMethod = $request->input('payment_method', 'cod');
+
+        if ($paymentMethod === 'vnpay') {
+            $txnRef = uniqid($userId . '_');
+            $pending = PendingOrder::create([
+                'txn_ref'     => $txnRef,
+                'user_id'     => $userId,
+                'total_price' => $finalTotal,
+                'note'        => $request->input('c_order_notes'),
+                'user_info'   => [
+                    'name'    => $request->input('name'),
+                    'email'   => $request->input('email'),
+                    'phone'   => $request->input('phone'),
+                    'address' => $request->input('address'),
+                ],
+                'cart_items'  => $cart->items->map(function ($item) {
+                    return [
+                        'product_variant_id' => $item->product_variant_id,
+                        'quantity'           => $item->quantity,
+                        'price'              => $item->variant->product->price,
+                    ];
+                })->toArray()
+            ]);
+            \Log::info('✅ Đã tạo pending order: ' . $pending->txn_ref);
+            DB::commit(); 
+
+        // ---- TẠO URL VNPAY ----
+        $vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+        $vnp_Returnurl = route('client.checkout.vnpayReturn');
+        $vnp_TmnCode = '1615H65S';
+        $vnp_HashSecret = config('services.vnpay.hash_secret');
+
+        // $vnp_TxnRef = uniqid($userId . '_');
+        $vnp_OrderInfo = 'payment';
+        $vnp_OrderType = 'billpayment';
+        $vnp_Amount = (int)round($finalTotal * 100);
+        $vnp_Locale = 'vn';
+        $vnp_BankCode = 'NCB';
+        $vnp_IpAddr = $_SERVER['REMOTE_ADDR'];
+
+        $inputData = [
+            "vnp_Version" => "2.1.0",
+            "vnp_TmnCode" => $vnp_TmnCode,
+            "vnp_Amount" => $vnp_Amount,
+            "vnp_Command" => "pay",
+            "vnp_CreateDate" => date('YmdHis'),
+            "vnp_CurrCode" => "VND",
+            "vnp_IpAddr" => $vnp_IpAddr,
+            "vnp_Locale" => $vnp_Locale,
+            "vnp_OrderInfo" => $vnp_OrderInfo,
+            "vnp_OrderType" => $vnp_OrderType,
+            "vnp_ReturnUrl" => $vnp_Returnurl,
+            "vnp_TxnRef" => $txnRef,
+        ];
+
+        if (isset($vnp_BankCode) && $vnp_BankCode != "") {
+            $inputData['vnp_BankCode'] = $vnp_BankCode;
+        }
+        if (isset($vnp_Bill_State) && $vnp_Bill_State != "") {
+            $inputData['vnp_Bill_State'] = $vnp_Bill_State;
+        }
+        
+        //var_dump($inputData);
+        ksort($inputData);
+        $query = "";
+        $i = 0;
+        $hashdata = "";
+        foreach ($inputData as $key => $value) {
+            if ($i == 1) {
+                $hashdata .= '&' . urlencode($key) . "=" . urlencode($value);
+            } else {
+                $hashdata .= urlencode($key) . "=" . urlencode($value);
+                $i = 1;
+            }
+            $query .= urlencode($key) . "=" . urlencode($value) . '&';
+        }
+         \Log::info('VNPay hashData: ' . $hashdata);
+        
+        $vnp_Url = $vnp_Url . "?" . $query;
+        if (isset($vnp_HashSecret)) {
+            $vnpSecureHash =   hash_hmac('sha512', $hashdata, $vnp_HashSecret);//  
+            $vnp_Url .= 'vnp_SecureHash=' . $vnpSecureHash;
+        }
+        $returnData = array('code' => '00'
+            , 'message' => 'success'
+            , 'data' => $vnp_Url);
+            if (isset($_POST['redirect'])) {
+                header('Location: ' . $vnp_Url);
+                die();
+            } else {
+                echo json_encode($returnData);
+            }
+ 
+            return redirect()->to($vnp_Url); // Chuyển hướng sang VNPay
+        }
+
+        // ---- NẾU CHỌN THANH TOÁN COD ----
         $order = Order::create([
             'user_id'        => $userId,
             'total_price'    => $finalTotal,
             'status'         => 'pending',
             'note'           => $request->input('c_order_notes'),
-            'payment_method' => $request->input('payment_method') ?? 'cod',
+            'payment_method' => 'cod',
             'payment_status' => 'unpaid'
         ]);
 
-        // Cập nhật thông tin user
         $user->update([
             'name'    => $request->input('name'),
             'email'   => $request->input('email'),
@@ -114,7 +200,6 @@ public function process(Request $request)
             'address' => $request->input('address'),
         ]);
 
-        // Địa chỉ giao hàng khác
         if ($request->has('ship_to_different')) {
             ShippingAddress::create([
                 'order_id' => $order->id,
@@ -125,8 +210,6 @@ public function process(Request $request)
                 'note'     => $request->input('shipping_note'),
             ]);
         }
-
-        // Thêm các item vào bảng order_items
         foreach ($cart->items as $item) {
             OrderItem::create([
                 'order_id'           => $order->id,
@@ -134,19 +217,11 @@ public function process(Request $request)
                 'quantity'           => $item->quantity,
                 'price'              => $item->variant->product->price,
             ]);
-
-            // Trừ tồn kho
-            $variant = $item->variant;
-            $variant->stock -= $item->quantity;
-            if ($variant->stock < 0) {
-                throw new \Exception('Sản phẩm "' . $variant->product->name . '" không đủ hàng trong kho.');
-            }
-            $variant->save();
         }
 
-        // Xóa giỏ hàng
         $cart->items()->delete();
         $cart->delete();
+        session()->forget('coupon');
 
         DB::commit();
         return redirect()->route('client.checkout.thankyou')->with('success', 'Đặt hàng thành công!');
@@ -155,7 +230,6 @@ public function process(Request $request)
         return back()->with('error', 'Đã xảy ra lỗi: ' . $e->getMessage());
     }
 }
-
 
 public function momoReturn(Request $request)
 {
@@ -169,29 +243,137 @@ public function momoReturn(Request $request)
 
 public function apply(Request $request)
 {
-    $coupon = Coupon::where('code', $request->coupon_code)
-        ->where(function ($q) {
-            $q->whereNull('expires_at')->orWhere('expires_at', '>=', now());
-        })
-        ->first();
+    $request->validate([
+        'coupon_code' => 'required|string'
+    ]);
 
+    $coupon = \App\Models\Coupon::where('code', $request->coupon_code)->first();
+
+    // Kiểm tra mã có tồn tại không
     if (!$coupon) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Mã giảm giá không hợp lệ hoặc đã hết hạn.',
-        ]);
+        return back()->with('error', 'Mã giảm giá không hợp lệ.');
     }
 
+    // Kiểm tra hạn sử dụng
+    if ($coupon->expires_at && now()->greaterThan($coupon->expires_at)) {
+        return back()->with('error', 'Mã giảm giá đã hết hạn.');
+    }
+
+    // Lấy người dùng và giỏ hàng
+    $user = Auth::user();
+    $cart = \App\Models\Cart::with('items.variant.product')->where('user_id', $user->id)->first();
+
+    if (!$cart || $cart->items->isEmpty()) {
+        return back()->with('error', 'Giỏ hàng của bạn đang trống.');
+    }
+
+    // Tính tổng tiền
+    $cartTotal = 0;
+    foreach ($cart->items as $item) {
+        $cartTotal += $item->variant->product->price * $item->quantity;
+    }
+
+    // Tính giảm giá
+    $discount = round($cartTotal * ($coupon->discount_percent / 100));
+    $discount = min($discount, $cartTotal); // Không vượt quá tổng tiền
+
+    // Lưu session
+    session()->forget('coupon');
     session()->put('coupon', [
         'code' => $coupon->code,
         'discount_percent' => $coupon->discount_percent,
+        'discount_amount' => $discount
     ]);
 
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Áp dụng mã giảm giá thành công!',
-        'discount_percent' => $coupon->discount_percent,
-    ]);
+    return back()->with('success', 'Áp dụng mã giảm giá thành công!');
 }
 
+public function vnpayReturn(Request $request)
+{
+    
+    $vnp_HashSecret = config('services.vnpay.hash_secret');
+    $inputData = $request->all();
+    $vnp_SecureHash = $inputData['vnp_SecureHash'] ?? '';
+
+    unset($inputData['vnp_SecureHash']);
+    unset($inputData['vnp_SecureHashType']);
+    ksort($inputData);
+    $hashDataArr = [];
+    foreach ($inputData as $key => $value) {
+    $hashDataArr[] = $key . '=' . $value;
+}
+    $hashData = implode('&', $hashDataArr);
+    $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
+    \Log::info('VNPay SecureHash DEBUG', [
+    'inputData' => $inputData,
+    'hashData' => $hashData,
+    'generatedHash' => $secureHash,
+    'receivedHash' => $vnp_SecureHash,
+    'match' => $secureHash === $vnp_SecureHash,
+    'responseCode' => $request->vnp_ResponseCode,
+]);
+    \Log::info('✅ VNPay Hash Check:', [
+        'expected' => $secureHash,
+        'actual' => $vnp_SecureHash,
+        'match' => $secureHash === $vnp_SecureHash,
+        'hashData' => $hashData,
+    ]);
+
+    if ($secureHash === $vnp_SecureHash && $request->vnp_ResponseCode == '00') {
+        $txnRef = $request->vnp_TxnRef ?? null;
+        \Log::info('🔍 Đang tìm pending order với txn_ref: ' . $txnRef);
+        $pendingOrder = PendingOrder::where('txn_ref', $txnRef)->first();
+        if (!$pendingOrder) {
+            return redirect()->route('client.checkout.index')->with('error', 'Không tìm thấy thông tin đơn hàng.');
+        }
+        \Log::info('🔗 Redirect đến VNPay với txn_ref: ' . $txnRef);
+
+        DB::beginTransaction();
+        try {
+            $order = Order::create([
+                'user_id'        => $pendingOrder['user_id'],
+                'total_price'    => $pendingOrder['total_price'],
+                'status'         => 'pending',
+                'note'           => $pendingOrder['note'],
+                'payment_method' => 'vnpay',
+                'payment_status' => 'paid'
+            ]);
+
+            $user = User::find($pendingOrder['user_id']);
+            $user->update($pendingOrder['user_info']);
+
+            foreach ($pendingOrder['cart_items'] as $item) {
+                OrderItem::create([
+                    'order_id'           => $order->id,
+                    'product_variant_id' => $item['product_variant_id'],
+                    'quantity'           => $item['quantity'],
+                    'price'              => $item['price'],
+                ]);
+            }
+
+            $cart = Cart::where('user_id', $pendingOrder['user_id'])->first();
+            if ($cart) {
+                $cart->items()->delete();
+                $cart->delete();
+            }
+
+            session()->forget('coupon');
+            $pendingOrder->delete();
+
+            DB::commit();
+            return redirect()->route('client.checkout.thankyou')->with('success', 'Thanh toán VNPAY thành công!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('client.checkout.index')->with('error', 'Đã xảy ra lỗi khi tạo đơn hàng: ' . $e->getMessage());
+        }
+        } else {
+        \Log::warning('VNPay: Sai chữ ký hoặc thất bại.', [
+            'expected' => $secureHash,
+            'actual' => $vnp_SecureHash,
+            'hashData' => $hashData,
+            'responseCode' => $request->vnp_ResponseCode
+        ]);
+        return redirect()->route('client.checkout.index')->with('error', 'Thanh toán thất bại hoặc bị hủy.');
+    }
+}
 }

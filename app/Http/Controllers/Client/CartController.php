@@ -102,9 +102,13 @@ public function add(Request $request){
 
     $quantities = $request->input('quantity', []);
      if (Auth::check()) {
-        $cart = Cart::where('user_id', Auth::id())->first();
+        $cart = Cart::where('user_id', Auth::id())->with('items.variant.product')->first();
         if($cart){
             foreach($quantities as $variantId => $qty){
+                $variant = ProductVariant::with('product')->find($variantId);
+                if($qty > $variant->stock){
+                    return back()->with('error', 'Số lượng vượt quá tồn kho cho sản phẩm: ' . $variant->product->name);
+                }
                 CartItem::where('cart_id', $cart->id)->where('product_variant_id', $variantId)->update(['quantity' => max(1, (int)$qty)]);
             }
         }else{
@@ -117,6 +121,9 @@ public function add(Request $request){
             session()->put('cart', $cart);
         }
         return back()->with('success', 'Cập nhật giỏ hàng thành công!');
+
+        $products = $cart->items;
+
     }
 }
     public function delete($variantId)
