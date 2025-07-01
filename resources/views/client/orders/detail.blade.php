@@ -72,17 +72,17 @@
             };
 
             $paymentStatusClass = match($order->payment_status) {
-                'paid' => 'bg-success',
-                'unpaid' => 'bg-warning',
-                'refunded' => 'bg-success',
-                default => 'bg-secondary',
+            'paid' => 'bg-success',
+            'unpaid' => 'bg-warning',
+            'refunded' => 'bg-success',
+            default => 'bg-secondary',
             };
 
             $paymentStatusText = match($order->payment_status) {
-                'paid' => 'Đã thanh toán',
-                'unpaid' => 'Chưa thanh toán',
-                'refunded' => 'Đã hoàn tiền',
-                default => 'Không xác định',
+            'paid' => 'Đã thanh toán',
+            'unpaid' => 'Chưa thanh toán',
+            'refunded' => 'Đã hoàn tiền',
+            default => 'Không xác định',
             };
             @endphp
 
@@ -156,6 +156,16 @@
                         @endforeach
                     </tbody>
                     <tfoot class="table-light fw-bold text-center">
+
+                        <tr>
+                            <td colspan="6">Phí vận chuyển</td>
+                            <td>{{ number_format($order->shipping_fee, 0, ',', '.') }}đ</td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="6">Giảm giá</td>
+                            <td>- {{ number_format($order->discount, 0, ',', '.') }}đ</td>
+                        </tr>
                         <tr>
                             <td colspan="6">Tổng cộng</td>
                             <td class="text-danger">

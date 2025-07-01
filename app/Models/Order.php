@@ -38,4 +38,9 @@ class Order extends Model
     {
     return $this->hasOne(ShippingAddress::class);
     }
+
+    public function Coupons()
+    {
+        return $this->belongsTo(Coupon::class);
+    }
 }
