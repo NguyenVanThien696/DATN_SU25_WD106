@@ -46,13 +46,13 @@
                                         @php
                                         $paymentClass = match($order->payment_method) {
                                         'cod' => 'bg-warning',
-                                        'momo' => 'bg-danger',
+                                        'vnpay' => 'bg-primary',
                                         default => 'bg-secondary',
                                         };
 
                                         $paymentText = match($order->payment_method) {
                                         'cod' => 'Thanh toán khi nhận hàng',
-                                        'momo' => 'Thanh toán Momo',
+                                        'vnpay' => 'Thanh toán VNPay',
                                         default => 'Không xác định',
                                         };
                                         @endphp
@@ -68,6 +68,8 @@
                                         'processing' => 'bg-info',
                                         'completed' => 'bg-success',
                                         'cancelled' => 'bg-danger',
+                                        'cancelled_paid' => 'bg-warning text-dark',
+                                        'refunded' => 'bg-success',
                                         default => 'bg-secondary',
                                         };
 
@@ -76,6 +78,8 @@
                                         'processing' => 'Đang giao hàng',
                                         'completed' => 'Đã hoàn thành',
                                         'cancelled' => 'Đã hủy',
+                                        'cancelled_paid' => 'Đã hủy (đang đợi hoàn tiền)',
+                                        'refunded' => 'Đã hoàn tiền',
                                         ];
 
                                         $availableTransitions = match($order->status) {
@@ -120,6 +124,15 @@
                                             class="btn btn-sm btn-outline-dark">
                                             <i class="bi bi-eye"></i> Xem
                                         </a>
+                                        @if ($order->status === 'cancelled_paid')
+                                            <form action="{{ route('admin.order.refund', $order->id) }}" method="POST"
+                                                onsubmit="return confirm('Xác nhận hoàn tiền cho đơn hàng này?')">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                                    <i class="bi bi-cash-coin"></i> Hoàn tiền
+                                                </button>
+                                            </form>
+                                        @endif
                                     </td>
                                 </tr>
                                 @endforeach

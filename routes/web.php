@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 
+
 use App\Http\Controllers\Auth\AuthController;
 // Trang chu
 Route::get('/', [ClientController::class, 'index'])->name('client.index');
@@ -165,5 +166,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/', [AdminOrderController::class, 'listOrder'])->name('index');
         Route::put('status/{id}', [AdminOrderController::class, 'updateStatus'])->name('updateStatus');
         Route::get('/detail/{id}', [AdminOrderController::class, 'detail'])->name('detail');
+        Route::post('/refund/{id}', [AdminOrderController::class, 'refund'])->name('refund');
     });
 });
