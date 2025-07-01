@@ -32,6 +32,7 @@
                                     <th>Tổng tiền</th>
                                     <th>Phương Thức Thanh Toán</th>
                                     <th>Trạng thái đơn hàng</th>
+                                    <th>Trạng thái thanh toán</th>
                                     <th>Chi Tiết</th>
                                 </tr>
                             <tbody>
@@ -76,14 +77,14 @@
                                         $statusList = [
                                         'pending' => 'Đang chờ xử lí',
                                         'processing' => 'Đang giao hàng',
-                                        'completed' => 'Đã hoàn thành',
-                                        'cancelled' => 'Đã hủy',
+                                        'completed' => 'Hoàn thành',
+                                        'cancelled' => 'Hủy',
                                         'cancelled_paid' => 'Đã hủy (đang đợi hoàn tiền)',
                                         'refunded' => 'Đã hoàn tiền',
                                         ];
 
                                         $availableTransitions = match($order->status) {
-                                        'pending' => ['processing', 'completed', 'cancelled'],
+                                        'pending' => ['processing', 'cancelled'],
                                         'processing' => ['completed'],
                                         default => [],
                                         };
@@ -118,6 +119,27 @@
                                         @endif
                                     </td>
 
+                                    <td>
+                                        @php
+                                        $paymentStatusClass = match($order->payment_status) {
+                                        'paid' => 'bg-success',
+                                        'unpaid' => 'bg-warning',
+                                        'refunded' => 'bg-success',
+                                        default => 'bg-secondary',
+                                        };
+
+                                        $paymentStatusText = match($order->payment_status) {
+                                        'paid' => 'Đã thanh toán',
+                                        'unpaid' => 'Chưa thanh toán',
+                                        'refunded' => 'Đã hoàn tiền',
+                                        default => 'Không xác định',
+                                        };
+                                        @endphp
+                                        <span class="badge {{ $paymentStatusClass }}">
+                                            {{ $paymentStatusText }}
+                                        </span>
+                                    </td>
+
 
                                     <td>
                                         <a href="{{ route('admin.order.detail', $order->id) }}"
@@ -125,13 +147,13 @@
                                             <i class="bi bi-eye"></i> Xem
                                         </a>
                                         @if ($order->status === 'cancelled_paid')
-                                            <form action="{{ route('admin.order.refund', $order->id) }}" method="POST"
-                                                onsubmit="return confirm('Xác nhận hoàn tiền cho đơn hàng này?')">
-                                                @csrf
-                                                <button type="submit" class="btn btn-sm btn-outline-success">
-                                                    <i class="bi bi-cash-coin"></i> Hoàn tiền
-                                                </button>
-                                            </form>
+                                        <form action="{{ route('admin.order.refund', $order->id) }}" method="POST"
+                                            onsubmit="return confirm('Xác nhận hoàn tiền cho đơn hàng này?')">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                                <i class="bi bi-cash-coin"></i> Hoàn tiền
+                                            </button>
+                                        </form>
                                         @endif
                                     </td>
                                 </tr>
