@@ -194,6 +194,7 @@ public function process(Request $request)
             'user_id'        => $userId,
             'total_price'    => $finalTotalWithShipping,
             'shipping_fee'   => $shippingFee,
+            'discount'       => $discount,
             'status'         => 'pending',
             'note'           => $request->input('c_order_notes'),
             'payment_method' => 'cod',

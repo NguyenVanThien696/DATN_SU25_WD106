@@ -35,7 +35,8 @@ public function listOrder()
         $order = Order::with([
             'user',
             'shippingAddress',
-            'orderItems.productVariant.product'
+            'orderItems.productVariant.product',
+            'coupons'
         ])->findOrFail($id);
 
         if (
