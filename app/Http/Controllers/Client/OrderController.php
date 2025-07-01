@@ -67,12 +67,18 @@ public function listOrder()
             $variant->save();
         }
 
-        $order->status = 'cancelled';
+        // Phân biệt xử lý theo trạng thái thanh toán
+        if ($order->payment_status === 'paid') {
+        // Đã thanh toán vnpay trạng thái chờ hoàn tiền
+            $order->status = 'cancelled_paid';
+        } else {
+            // Chưa thanh toán cod hủy bình thường
+            $order->status = 'cancelled';
+        }
+
         $order->save();
 
         return redirect()->route('client.order.index')->with('success', 'Đơn hàng đã được hủy.');
     });
     }
-
-
 }

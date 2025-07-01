@@ -17,10 +17,16 @@ class Coupon extends Model
 
     protected $dates = ['expires_at'];
 
+    public function isValid(): bool
+{
+    return $this->expires_at === null || $this->expires_at->isFuture();
+}
+
     public function users()
     {
         return $this->belongsToMany(User::class, 'user_coupons')
                     ->withPivot('used_at')
                     ->withTimestamps();
     }
+    
 }

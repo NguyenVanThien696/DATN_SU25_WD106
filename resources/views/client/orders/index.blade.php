@@ -68,10 +68,13 @@
                                 </td>
 
                                 <td>
-                                    @php
-                                    $total = $order->orderItems->sum(fn($i) => $i->price * $i->quantity);
-                                    @endphp
-                                    <strong>{{ number_format($total, 0, ',', '.') }} đ</strong>
+                                    <strong>{{ number_format($order->total_price, 0, ',', '.') }} đ</strong>
+                                    @if($order->orderItems->sum(fn($i) => $i->price * $i->quantity) > $order->total_price)
+                                        <br>
+                                        <small class="text-success">
+                                            (Đã áp dụng mã giảm giá)
+                                        </small>
+                                    @endif
                                 </td>
                                 <td>
                                     @php
@@ -80,6 +83,8 @@
                                     'processing' => 'badge bg-info',
                                     'completed' => 'badge bg-success',
                                     'cancelled' => 'badge bg-danger',
+                                    'cancelled_paid' => 'badge bg-warning text-dark',
+                                    'refunded' => 'badge  bg-success',
                                     ][$order->status] ?? 'badge bg-secondary';
 
                                     $statusList = [
@@ -87,6 +92,8 @@
                                     'processing' => 'Đang giao hàng',
                                     'completed' => 'Đã hoàn thành',
                                     'cancelled' => 'Đã hủy',
+                                    'cancelled_paid' => 'Đã hủy (đang đợi hoàn tiền)',
+                                    'refunded' => 'Đã hoàn tiền',
                                     ];
                                     @endphp
                                     <span
@@ -97,12 +104,12 @@
                                     @php
                                     $paymentText = [
                                     'cod' => 'Thanh toán khi nhận hàng',
-                                    'momo' => 'Thanh toán Momo',
+                                    'vnpay' => 'Thanh toán VNPay',
                                     ][$order->payment_method] ?? 'Không xác định';
 
                                     $paymentClass = [
-                                    'cod' => 'bg-warning',
-                                    'momo' => 'bg-danger',
+                                    'cod' => 'bg-secondary',
+                                    'vnpay' => 'bg-primary',
                                     ][$order->payment_method] ?? 'bg-light';
                                     @endphp
                                     <span class="badge {{ $paymentClass }} text-white">{{ $paymentText }}</span>
