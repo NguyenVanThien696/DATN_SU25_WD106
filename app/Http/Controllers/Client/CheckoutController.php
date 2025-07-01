@@ -78,13 +78,25 @@ public function thankyou(){
 
 public function process(Request $request)
 {
+    // dd($request->all());
+      if ($request->has('apply_coupon')) {
+        return $this->apply($request);  // Gọi hàm apply khi bấm "Áp dụng"
+    }
+if ($request->has('ship_to_different')) {
+    $request->validate([
+        'shipping_name'    => 'required|string|max:255',
+        'shipping_email'   => 'required|email|max:255',
+        'shipping_phone'   => 'required|string|max:20',
+        'shipping_address' => 'required|string|max:255',
+    ]);
+} else {
     $request->validate([
         'name'    => 'required|string|max:255',
         'email'   => 'required|email|max:255',
         'phone'   => 'required|string|max:20',
         'address' => 'required|string|max:255',
     ]);
-
+}
     DB::beginTransaction();
 
     try {
@@ -100,7 +112,7 @@ public function process(Request $request)
         $total = $cart->items->sum(function ($item) {
             return $item->variant->product->price * $item->quantity;
         });
-
+        
 
         $discount = session('coupon.discount_amount', 0);
         $finalTotal = $total - $discount;
@@ -110,7 +122,10 @@ public function process(Request $request)
         $finalTotalWithShipping = $finalTotal + $shippingFee;
 
         $paymentMethod = $request->input('payment_method', 'cod');
-
+        $note = $request->input('c_order_notes');
+        if ($request->has('ship_to_different')) {
+            $note = $request->input('shipping_note');
+        }
         if ($paymentMethod === 'vnpay') {
             $txnRef = uniqid($userId . '_');
             $pending = PendingOrder::create([
@@ -118,7 +133,7 @@ public function process(Request $request)
                 'user_id'     => $userId,
                 'total_price' => $finalTotal,
                 'shipping_fee'=> $shippingFee,
-                'note'        => $request->input('c_order_notes'),
+                'note'        => $note,
                 'user_info'   => [
                     'name'    => $request->input('name'),
                     'email'   => $request->input('email'),
@@ -189,23 +204,36 @@ public function process(Request $request)
 //     '$finalTotal' => $finalTotal,
 //     '$finalTotalWithShipping' => $finalTotalWithShipping
 // ]);
+        // Lấy thông tin người nhận từ form
+        $name = $request->input('name');
+        $email = $request->input('email');
+        $phone = $request->input('phone');
+        $address = $request->input('address');
+        $note = $request->input('c_order_notes');
 
+        if ($request->has('ship_to_different')) {
+            $name = $request->input('shipping_name');
+            $email = $request->input('shipping_email');
+            $phone = $request->input('shipping_phone');
+            $address = $request->input('shipping_address');
+            $note = $request->input('shipping_note');
+        }
         $order = Order::create([
             'user_id'        => $userId,
             'total_price'    => $finalTotalWithShipping,
             'shipping_fee'   => $shippingFee,
             'discount'       => $discount,
             'status'         => 'pending',
-            'note'           => $request->input('c_order_notes'),
+            'note' => $note,
             'payment_method' => 'cod',
             'payment_status' => 'unpaid'
         ]);
 
-        $user->update([
-            'name'    => $request->input('name'),
-            'email'   => $request->input('email'),
-            'phone'   => $request->input('phone'),
-            'address' => $request->input('address'),
+       $user->update([
+            'name'    => $name,
+            'email'   => $email,
+            'phone'   => $phone,
+            'address' => $address,
         ]);
 
         if ($request->has('ship_to_different')) {
@@ -231,7 +259,7 @@ public function process(Request $request)
         $cart->items()->delete();
         $cart->delete();
         session()->forget('coupon');
-
+        
         DB::commit();
         return redirect()->route('client.checkout.thankyou')->with('success', 'Đặt hàng thành công!');
     } catch (\Exception $e) {
@@ -295,7 +323,7 @@ public function apply(Request $request)
         'discount_amount' => $discount
     ]);
 
-    return back()->with('success', 'Áp dụng mã giảm giá thành công!');
+    return back()->withInput()->with('success', 'Áp dụng mã giảm giá thành công!');
 }
 
 public function vnpayReturn(Request $request)
@@ -386,4 +414,5 @@ public function vnpayReturn(Request $request)
         return redirect()->route('client.checkout.index')->with('error', 'Thanh toán thất bại hoặc bị hủy.');
     }
 }
+
 }
