@@ -42,7 +42,7 @@ public function seachs(Request $request)
     
     public function edit(User $user)
     {
-        return view('admin.users.edit', compact('user'));
+        return view('admin.users.edit-user', compact('user'));
     }
 
     public function update(Request $request, User $user)

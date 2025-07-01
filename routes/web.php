@@ -27,11 +27,17 @@ Route::get('/', [ClientController::class, 'index'])->name('client.index');
 
 
 // Trang product phía user 
-Route::prefix('products')->group(function () {
-    Route::get('/', [ProductController::class, 'index'])->name('client.products.index');
-    Route::get('/detail/{id}', [ProductController::class, 'show'])->name('client.products.detail');
+Route::prefix('client')->name('client.')->group(function () {
 
+    Route::prefix('products')->name('products.')->group(function () {
+        Route::get('/', [ProductController::class, 'index'])->name('index');
+        Route::get('/detail/{id}', [ProductController::class, 'show'])->name('detail');
+        Route::get('/boy', [ProductController::class, 'boy'])->name('boy');
+        Route::get('/girl', [ProductController::class, 'girl'])->name('girl');
+        Route::get('/hot', [ProductController::class, 'hot'])->name('hot');
+        Route::get('/new', [ProductController::class, 'new'])->name('new');
 
+    });
 });
 
 
@@ -126,10 +132,6 @@ Route::middleware(['auth'])->group(function () {
 
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/users', [UserController::class, 'index'])->name('users');
-    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
-    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
-    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('users');
