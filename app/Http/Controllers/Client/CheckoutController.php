@@ -205,6 +205,7 @@ if ($request->has('ship_to_different')) {
 //     '$finalTotalWithShipping' => $finalTotalWithShipping
 
 // ]);
+
         // Lấy thông tin người nhận từ form
         $name = $request->input('name');
         $email = $request->input('email');
@@ -230,12 +231,14 @@ if ($request->has('ship_to_different')) {
             'payment_status' => 'unpaid'
         ]);
 
-       $user->update([
-            'name'    => $name,
-            'email'   => $email,
-            'phone'   => $phone,
-            'address' => $address,
-        ]);
+if (!$request->has('ship_to_different')) {
+    $user->update([
+        'name'    => $request->input('name'),
+        'email'   => $request->input('email'),
+        'phone'   => $request->input('phone'),
+        'address' => $request->input('address'),
+    ]);
+}
 
         if ($request->has('ship_to_different')) {
             ShippingAddress::create([
@@ -246,6 +249,7 @@ if ($request->has('ship_to_different')) {
                 'address'  => $request->input('shipping_address'),
                 'note'     => $request->input('shipping_note'),
             ]);
+            // dd($shipping);
         }
 
         foreach ($cart->items as $item) {
