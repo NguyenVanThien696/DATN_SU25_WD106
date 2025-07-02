@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminVoucherController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Client\ClientController;
@@ -19,7 +20,11 @@ use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 
 
+use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Client\ProductReviewController;
+use App\Models\ProductReview;
+
 // Trang chu
 Route::get('/', [ClientController::class, 'index'])->name('client.index');
 // Route::get('/', [ClientController::class, 'index'])->name('client.index');
@@ -109,6 +114,10 @@ Route::middleware(['auth'])->group(function () {
 
         });
 
+        //Reviews
+        Route::prefix('reviews')->group(function () {
+        Route::post('/', [ProductReviewController::class, 'store'])->name('reviews.store');
+        });
 
     });
 });
@@ -169,5 +178,19 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::put('status/{id}', [AdminOrderController::class, 'updateStatus'])->name('updateStatus');
         Route::get('/detail/{id}', [AdminOrderController::class, 'detail'])->name('detail');
         Route::post('/refund/{id}', [AdminOrderController::class, 'refund'])->name('refund');
+    });
+
+    Route::prefix('vouchers')->name('vouchers.')->group(function () {
+        Route::get('/', [AdminVoucherController::class, 'index'])->name('index');
+        Route::get('/create', [AdminVoucherController::class, 'create'])->name('create');
+        Route::post('/store', [AdminVoucherController::class, 'store'])->name('store');
+        Route::get('/edit/{id}', [AdminVoucherController::class, 'edit'])->name('edit');
+        Route::put('/update/{id}', [AdminVoucherController::class, 'update'])->name('update');
+        Route::delete('/delete/{id}', [AdminVoucherController::class, 'destroy'])->name('delete');
+});
+    // Reviews admin
+    Route::prefix('reviews')->name('reviews.')->group(function () {
+        Route::get('/', [ReviewController::class, 'index'])->name('index');
+        Route::delete('/delete/{id}', [ReviewController::class, 'destroy'])->name('destroy');
     });
 });

@@ -34,16 +34,28 @@ class OrderController extends Controller
         return view('admin.orders.detail', compact('order'));
     }
 
-public function updateStatus(Request $request, $id){
+public function updateStatus(Request $request, $id)
+{
     $request->validate([
         'status' => 'required|in:pending,processing,completed,cancelled'
     ]);
 
     return DB::transaction(function () use ($request, $id) {
-        $order = Order::lockForUpdate()->findOrFail($id);
+        $order = Order::with('orderItems')->lockForUpdate()->findOrFail($id);
 
         if (in_array($order->status, ['cancelled', 'completed'])) {
             return back()->with('error', 'Không thể thay đổi trạng thái đơn hàng đã hoàn tất hoặc đã bị hủy.');
+        }
+
+        
+        if ($request->status === 'cancelled') {
+            foreach ($order->orderItems as $item) {
+                if ($item->product_variant_id && $item->quantity > 0) {
+                    DB::table('product_variants')
+                        ->where('id', $item->product_variant_id)
+                        ->increment('stock', $item->quantity);
+                }
+            }
         }
 
         $order->status = $request->status;
@@ -52,17 +64,26 @@ public function updateStatus(Request $request, $id){
         return back()->with('success', 'Cập nhật trạng thái đơn hàng thành công!');
     });
 }
+
+
 public function refund($id)
 {
      $order = Order::findOrFail($id);
     if ($order->status !== 'cancelled_paid' || $order->payment_status !== 'paid') {
         return back()->with('error', 'Đơn hàng không hợp lệ để hoàn tiền.');
     }
+        foreach ($order->orderItems as $item) {
+        $variant = $item->productVariant;
+        $variant->stock += $item->quantity;
+        $variant->save();
+    }
 
     $order->update([
         'status' => 'refunded',
         'payment_status' => 'refunded',
     ]);
+
+
 
     return back()->with('success', 'Đã hoàn tiền cho đơn hàng #' . $order->id);
 }

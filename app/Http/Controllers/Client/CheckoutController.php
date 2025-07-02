@@ -78,13 +78,25 @@ public function thankyou(){
 
 public function process(Request $request)
 {
+    // dd($request->all());
+      if ($request->has('apply_coupon')) {
+        return $this->apply($request);  // Gọi hàm apply khi bấm "Áp dụng"
+    }
+if ($request->has('ship_to_different')) {
+    $request->validate([
+        'shipping_name'    => 'required|string|max:255',
+        'shipping_email'   => 'required|email|max:255',
+        'shipping_phone'   => 'required|string|max:20',
+        'shipping_address' => 'required|string|max:255',
+    ]);
+} else {
     $request->validate([
         'name'    => 'required|string|max:255',
         'email'   => 'required|email|max:255',
         'phone'   => 'required|string|max:20',
         'address' => 'required|string|max:255',
     ]);
-
+}
     DB::beginTransaction();
 
     try {
@@ -100,7 +112,7 @@ public function process(Request $request)
         $total = $cart->items->sum(function ($item) {
             return $item->variant->product->price * $item->quantity;
         });
-
+        
 
         $discount = session('coupon.discount_amount', 0);
         $finalTotal = $total - $discount;
@@ -110,7 +122,10 @@ public function process(Request $request)
         $finalTotalWithShipping = $finalTotal + $shippingFee;
 
         $paymentMethod = $request->input('payment_method', 'cod');
-
+        $note = $request->input('c_order_notes');
+        if ($request->has('ship_to_different')) {
+            $note = $request->input('shipping_note');
+        }
         if ($paymentMethod === 'vnpay') {
             $txnRef = uniqid($userId . '_');
             $pending = PendingOrder::create([
@@ -118,7 +133,7 @@ public function process(Request $request)
                 'user_id'     => $userId,
                 'total_price' => $finalTotal,
                 'shipping_fee'=> $shippingFee,
-                'note'        => $request->input('c_order_notes'),
+                'note'        => $note,
                 'user_info'   => [
                     'name'    => $request->input('name'),
                     'email'   => $request->input('email'),
@@ -180,6 +195,7 @@ public function process(Request $request)
                 $vnp_Url .= 'vnp_SecureHash=' . $vnpSecureHash;
             }
 
+            
             DB::commit();
             return redirect()->to($vnp_Url);
         }
@@ -188,25 +204,42 @@ public function process(Request $request)
 //     '$shippingFee' => $shippingFee,
 //     '$finalTotal' => $finalTotal,
 //     '$finalTotalWithShipping' => $finalTotalWithShipping
+
 // ]);
 
+        // Lấy thông tin người nhận từ form
+        $name = $request->input('name');
+        $email = $request->input('email');
+        $phone = $request->input('phone');
+        $address = $request->input('address');
+        $note = $request->input('c_order_notes');
+
+        if ($request->has('ship_to_different')) {
+            $name = $request->input('shipping_name');
+            $email = $request->input('shipping_email');
+            $phone = $request->input('shipping_phone');
+            $address = $request->input('shipping_address');
+            $note = $request->input('shipping_note');
+        }
         $order = Order::create([
             'user_id'        => $userId,
             'total_price'    => $finalTotalWithShipping,
             'shipping_fee'   => $shippingFee,
             'discount'       => $discount,
             'status'         => 'pending',
-            'note'           => $request->input('c_order_notes'),
+            'note' => $note,
             'payment_method' => 'cod',
             'payment_status' => 'unpaid'
         ]);
 
-        $user->update([
-            'name'    => $request->input('name'),
-            'email'   => $request->input('email'),
-            'phone'   => $request->input('phone'),
-            'address' => $request->input('address'),
-        ]);
+if (!$request->has('ship_to_different')) {
+    $user->update([
+        'name'    => $request->input('name'),
+        'email'   => $request->input('email'),
+        'phone'   => $request->input('phone'),
+        'address' => $request->input('address'),
+    ]);
+}
 
         if ($request->has('ship_to_different')) {
             ShippingAddress::create([
@@ -217,6 +250,7 @@ public function process(Request $request)
                 'address'  => $request->input('shipping_address'),
                 'note'     => $request->input('shipping_note'),
             ]);
+            // dd($shipping);
         }
 
         foreach ($cart->items as $item) {
@@ -226,12 +260,22 @@ public function process(Request $request)
                 'quantity'           => $item->quantity,
                 'price'              => $item->variant->product->price,
             ]);
+            
+            // Trừ tồn kho
+            $variant = $item->variant;
+            $variant->stock -= $item->quantity;
+            if ($variant->stock < 0) {
+                throw new \Exception('Sản phẩm "' . $variant->product->name . '" không đủ hàng trong kho.');
+            }
+            $variant->save();
         }
 
+        
+        $this->saveUsedCoupon($userId);
         $cart->items()->delete();
         $cart->delete();
         session()->forget('coupon');
-
+        
         DB::commit();
         return redirect()->route('client.checkout.thankyou')->with('success', 'Đặt hàng thành công!');
     } catch (\Exception $e) {
@@ -259,44 +303,70 @@ public function apply(Request $request)
 
     $coupon = \App\Models\Coupon::where('code', $request->coupon_code)->first();
 
-    // Kiểm tra mã có tồn tại không
+    // Kiểm tra tồn tại
     if (!$coupon) {
-        return back()->with('error', 'Mã giảm giá không hợp lệ.');
+        return back()->withInput()->with('error', 'Mã giảm giá không hợp lệ.');
     }
 
-    // Kiểm tra hạn sử dụng
-    if ($coupon->expires_at && now()->greaterThan($coupon->expires_at)) {
-        return back()->with('error', 'Mã giảm giá đã hết hạn.');
+    // Kiểm tra trạng thái
+    if ($coupon->status !== 'active') {
+        return back()->withInput()->with('error', 'Mã giảm giá không còn hoạt động.');
     }
 
-    // Lấy người dùng và giỏ hàng
-    $user = Auth::user();
+    // Kiểm tra thời gian hiệu lực
+    $now = now();
+    if (($coupon->start_at && $now->lt($coupon->start_at)) || ($coupon->end_at && $now->gt($coupon->end_at))) {
+        return back()->withInput()->with('error', 'Mã giảm giá hiện không còn hiệu lực.');
+    }
+
+    // Kiểm tra số lượt sử dụng tối đa
+    if (!is_null($coupon->usage_limit) && $coupon->used >= $coupon->usage_limit) {
+        return back()->withInput()->with('error', 'Mã giảm giá đã được sử dụng hết.');
+    }
+
+    // Kiểm tra người dùng đã dùng chưa
+    $user = \Auth::user();
+    $used = \App\Models\UserCoupon::where('user_id', $user->id)
+                                  ->where('coupon_id', $coupon->id)
+                                  ->exists();
+
+    if ($used) {
+        return back()->withInput()->with('error', 'Bạn đã sử dụng mã giảm giá này rồi.');
+    }
+
+    // Giỏ hàng
     $cart = \App\Models\Cart::with('items.variant.product')->where('user_id', $user->id)->first();
 
     if (!$cart || $cart->items->isEmpty()) {
         return back()->with('error', 'Giỏ hàng của bạn đang trống.');
     }
 
-    // Tính tổng tiền
-    $cartTotal = 0;
-    foreach ($cart->items as $item) {
-        $cartTotal += $item->variant->product->price * $item->quantity;
-    }
+    // Tổng tiền
+    $cartTotal = $cart->items->sum(function ($item) {
+        return $item->variant->product->price * $item->quantity;
+    });
 
     // Tính giảm giá
-    $discount = round($cartTotal * ($coupon->discount_percent / 100));
+    if ($coupon->discount_type === 'percent') {
+        $discount = round($cartTotal * ($coupon->discount_percent / 100));
+    } else {
+        $discount = $coupon->discount_amount;
+    }
+
     $discount = min($discount, $cartTotal); // Không vượt quá tổng tiền
 
     // Lưu session
     session()->forget('coupon');
     session()->put('coupon', [
         'code' => $coupon->code,
-        'discount_percent' => $coupon->discount_percent,
-        'discount_amount' => $discount
+        'type' => $coupon->discount_type,
+        'discount_value' => $coupon->discount_type === 'percent' ? $coupon->discount_percent : $coupon->discount_amount,
+        'discount_amount' => $discount,
     ]);
 
-    return back()->with('success', 'Áp dụng mã giảm giá thành công!');
+    return back()->withInput()->with('success', 'Áp dụng mã giảm giá thành công!');
 }
+
 
 public function vnpayReturn(Request $request)
 {
@@ -359,8 +429,15 @@ public function vnpayReturn(Request $request)
                     'quantity'           => $item['quantity'],
                     'price'              => $item['price'],
                 ]);
-            }
 
+            $variant = \App\Models\ProductVariant::find($item['product_variant_id']);
+                $variant->stock -= $item['quantity'];
+                if ($variant->stock < 0) {
+                    throw new \Exception('Sản phẩm không đủ hàng trong kho.');
+                }
+                $variant->save();
+            }
+            $this->saveUsedCoupon($pendingOrder['user_id']);
             $cart = Cart::where('user_id', $pendingOrder['user_id'])->first();
             if ($cart) {
                 $cart->items()->delete();
@@ -375,6 +452,7 @@ public function vnpayReturn(Request $request)
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->route('client.checkout.index')->with('error', 'Đã xảy ra lỗi khi tạo đơn hàng: ' . $e->getMessage());
+
         }
         } else {
         \Log::warning('VNPay: Sai chữ ký hoặc thất bại.', [
@@ -386,4 +464,18 @@ public function vnpayReturn(Request $request)
         return redirect()->route('client.checkout.index')->with('error', 'Thanh toán thất bại hoặc bị hủy.');
     }
 }
+ private function saveUsedCoupon($userId)
+    {
+        if (session()->has('coupon')) {
+            $couponCode = session('coupon.code');
+            $coupon = Coupon::where('code', $couponCode)->first();
+
+            if ($coupon) {
+                UserCoupon::firstOrCreate([
+                    'user_id'   => $userId,
+                    'coupon_id' => $coupon->id,
+                ]);
+            }
+        }
+    }
 }
