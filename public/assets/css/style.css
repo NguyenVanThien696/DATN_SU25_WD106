@@ -708,3 +708,25 @@ a{
     background:linear-gradient(45deg, #00c853, #64dd17); 
 }
 
+.star-rating{
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: center;
+}
+
+.star-rating input[type=radio]{
+  display: none;
+}
+
+.star-rating label{
+  font-size: 2rem;
+  color: #ddd;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.star-rating input[type=radio]:checked ~ label,
+.star-rating label:hover,
+.star-rating label:hover ~ label{
+  color: gold;
+}

@@ -195,6 +195,7 @@ if ($request->has('ship_to_different')) {
                 $vnp_Url .= 'vnp_SecureHash=' . $vnpSecureHash;
             }
 
+            
             DB::commit();
             return redirect()->to($vnp_Url);
         }
@@ -259,7 +260,17 @@ if (!$request->has('ship_to_different')) {
                 'quantity'           => $item->quantity,
                 'price'              => $item->variant->product->price,
             ]);
+            
+            // Trừ tồn kho
+            $variant = $item->variant;
+            $variant->stock -= $item->quantity;
+            if ($variant->stock < 0) {
+                throw new \Exception('Sản phẩm "' . $variant->product->name . '" không đủ hàng trong kho.');
+            }
+            $variant->save();
         }
+
+        
         $this->saveUsedCoupon($userId);
         $cart->items()->delete();
         $cart->delete();
@@ -418,6 +429,13 @@ public function vnpayReturn(Request $request)
                     'quantity'           => $item['quantity'],
                     'price'              => $item['price'],
                 ]);
+
+            $variant = \App\Models\ProductVariant::find($item['product_variant_id']);
+                $variant->stock -= $item['quantity'];
+                if ($variant->stock < 0) {
+                    throw new \Exception('Sản phẩm không đủ hàng trong kho.');
+                }
+                $variant->save();
             }
             $this->saveUsedCoupon($pendingOrder['user_id']);
             $cart = Cart::where('user_id', $pendingOrder['user_id'])->first();
@@ -434,6 +452,7 @@ public function vnpayReturn(Request $request)
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->route('client.checkout.index')->with('error', 'Đã xảy ra lỗi khi tạo đơn hàng: ' . $e->getMessage());
+
         }
         } else {
         \Log::warning('VNPay: Sai chữ ký hoặc thất bại.', [
