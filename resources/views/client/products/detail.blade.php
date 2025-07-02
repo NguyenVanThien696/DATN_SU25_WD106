@@ -64,7 +64,7 @@
                     <div class="d-flex gap-2 flex-wrap">
                         @foreach ($colors as $color)
                             <label style="cursor: pointer;">
-                                <input type="radio" name="color_id" value="{{ $color->id }}" style="display: none;">
+                                <input type="radio" name="color_id" value="{{ $color->id }}" class="color-radio" style="display: none;">
                                 <span class="border px-3 py-1 rounded">{{ $color->name }}</span>
                             </label>
                         @endforeach
