@@ -11,112 +11,81 @@
     @if (session('error'))
     <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
-    <div class="container">
-        <div class="row">
-            <div class="col-md-6">
-                <img id="main-image" src="{{ asset('storage/'. $product->image) }}" alt="Product Image"
-                    class="img-fluid" width="500">
-                <div class="col-md-6">
-                    <div class="d-flex gap-2">
-                        @php
-                        $uniqueColorVariants = collect();
-                        @endphp
+    <div class="container mt-5">
+    <div class="row">
+        <!-- Cột trái: Ảnh sản phẩm -->
+        <div class="col-md-6">
+            <img id="main-image" src="{{ asset('storage/'. $product->image) }}" class="img-fluid mb-3" width="100%" alt="Ảnh chính">
 
-                        @foreach ($product->variants as $variant)
-                        @if (!$uniqueColorVariants->contains('color_id', $variant->color_id))
-                        @php $uniqueColorVariants->push(['color_id' => $variant->color_id, 'image' => $variant->image,
-                        'color_name' => $variant->color->name]); @endphp
-                        <img src="{{ asset('storage/'.$variant->image)}}" alt="Ảnh màu {{$variant->color->name}}"
-                            class="img-thumbnail thumbnail-variant" data-color="{{$variant->color->id}}"
-                            data-image="{{ asset('storage/'.$variant->image)}}" width="80">
-                        @endif
+            <div class="d-flex gap-2 flex-wrap">
+                @php $uniqueColorVariants = collect(); @endphp
+                @foreach ($product->variants as $variant)
+                    @if (!$uniqueColorVariants->contains('color_id', $variant->color_id))
+                        @php
+                            $uniqueColorVariants->push(['color_id' => $variant->color_id]);
+                        @endphp
+                        <img src="{{ asset('storage/'.$variant->image) }}" alt="Ảnh màu {{ $variant->color->name }}"
+                            class="img-thumbnail thumbnail-variant" data-color="{{ $variant->color->id }}"
+                            data-image="{{ asset('storage/'.$variant->image)}}" style="width: 80px; height: 80px; object-fit: cover;">
+                    @endif
+                @endforeach
+            </div>
+        </div>
+
+        <!-- Cột phải: Thông tin sản phẩm -->
+        <div class="col-md-6">
+            <h3 class="fw-bold mb-3">{{ $product->name }}</h3>
+            <p class="text-muted">{{ $product->description }}</p>
+            <p><strong>Tồn kho:</strong> {{ $stock }} sản phẩm</p>
+
+            <p><strong>Danh mục:</strong> {{ $product->category->name }}</p>
+            <p><strong>Thương hiệu:</strong> {{ $product->brand->name }}</p>
+
+            <form action="{{ route('client.cart.add') }}" method="POST">
+                @csrf
+                <!-- Chọn size -->
+                @php $sizes = $product->variants->pluck('size')->filter()->unique('id'); @endphp
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Chọn kích cỡ:</label>
+                    <div class="d-flex gap-2 flex-wrap">
+                        @foreach ($sizes as $size)
+                            <label style="cursor: pointer;">
+                                <input type="radio" name="size_id" value="{{ $size->id }}" style="display: none;">
+                                <span class="border px-3 py-1 rounded">{{ $size->name }}</span>
+                            </label>
                         @endforeach
                     </div>
                 </div>
 
-            </div>
-            <div class="col-md-6">
-                <h2 class="text-black">{{$product->name}}</h2>
-                <p class="mb-4">{{$product->description}}</p>
-                <p>{{$stock}} sản phẩm</p>
-                <form action="{{route('client.cart.add')}}" method="POST">
-                    @csrf
-                    {{-- <table class="table mt-2">
-          <thead>
-            <tr>
-              <th>size</th>
-              <th>color</th>
-              <th>số lượng</th>
-            </tr>
-          </thead>
-          <tbody>
-            @foreach ($product->variants as $variant)
-              <tr>
-                <td>{{$variant->size->name}}</td>
-                    <td>{{$variant->color->name}}</td>
-                    <td>{{$variant->stock}}</td>
-                    </tr>
-                    @endforeach
-                    </tbody>
-                    </table> --}}
-                    @php
-                    $sizes = $product->variants->pluck('size')->filter()->unique('id');
-                    @endphp
-                    <h4>Size</h4>
-                    <div class="d-flex gap-2" id="size-options">
-                        @foreach ($sizes as $size)
-                        <label style="cursor: pointer;">
-                            <input type="radio" name="size_id" value="{{$size->id}}" style="display: none;">
-                            <span style="
-              padding: 5px 10px;
-              border: 1px solid;
-              border-radius: 4px;
-              display: inline-block;
-            ">
-                                {{$size->name}}
-                            </span>
-                        </label>
-                        @endforeach
-                    </div>
-                    @php
-                    $colors = $product->variants->pluck('color')->filter()->unique('id');
-                    @endphp
-                    <h4>Color</h4>
-                    <div style="display: flex; gap: 10px;">
+                <!-- Chọn màu -->
+                @php $colors = $product->variants->pluck('color')->filter()->unique('id'); @endphp
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Chọn màu:</label>
+                    <div class="d-flex gap-2 flex-wrap">
                         @foreach ($colors as $color)
-                        @php
-                        $variant = $product->variants->where('color_id', $color->id)->first();
-                        @endphp
-                        <label title="{{$color->name}}">
-                            <input type="radio" name="color_id" value="{{$color->id}}" class="color-radio"
-                                style="display: none;">
-                            <div style="
-                width:30px;
-                height:30px;
-                border-radius:50%;
-                background-color:{{$color->code}};
-                border: 1px solid;
-                cursor: pointer;
-                display: inline-block;
-                ">
-                            </div>
-
-                        </label>
+                            <label style="cursor: pointer;">
+                                <input type="radio" name="color_id" value="{{ $color->id }}" style="display: none;">
+                                <span class="border px-3 py-1 rounded">{{ $color->name }}</span>
+                            </label>
                         @endforeach
                     </div>
-                    <p class="mb-4">{{$product->category->name}}</p>
-                    <p class="mb-4">{{$product->brand->name}}</p>
-                    <p><strong class="text-primary h4">{{number_format($product->price)}}</strong></p>
-                    <div class="mb-1 d-flex">
-                        <label for="quantity" class="form-label">Số lượng</label>
-                        <input type="number" name="quantity" id="quantity" class="form-control text-center mx-2"
-                            value="1" min="1" style="width: 100px;">
-                    </div>
+                </div>
 
-                    <input type="hidden" name="product_id" value="{{$product->id}}">
-                    <button type="submit" class="btn btn-primary mt-3">Thêm vào giỏ hàng</button>
-            </div>
+                <div class="price-line mb-3">
+                    <span class="label">Giá:</span>
+                    <span class="price">{{number_format($product->price)}} VNĐ</span>
+                </div>
+
+                <!-- Số lượng -->
+                <div class="mb-3 d-flex align-items-center">
+                    <label for="quantity" class="me-2 mb-0 fw-bold">Số lượng:</label>
+                    <input type="number" name="quantity" id="quantity" value="1" min="1" class="form-control w-auto text-center" style="width: 100px;">
+                </div>
+
+                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                <button type="submit" class="btn btn-success mt-2 px-4">Thêm vào giỏ hàng</button>
             </form>
+        </div>
             <div class="related-products mt-5">
                 <h4>Sản phẩm liên quan</h4>
                 <div class="row mt-5">
@@ -128,7 +97,7 @@
                             <h3 class="product-title mt-2">{{ $related->name }}</h3>
                             <strong class="product-price">{{ number_format($product->price) }} VNĐ</strong>
                             <span class="icon-cross">
-                                <img src="{{ asset('assets/images/cross.svg') }}" class="img-fluid">
+<img src="{{ asset('assets/images/cross.svg') }}" class="img-fluid">
                             </span>
                         </a>
                     </div>
@@ -160,7 +129,8 @@
 </div>
 
                 @auth
-                <form action="{{route('client.reviews.store')}}" method="POST">
+                @if ($hasPurchased)
+                    <form action="{{route('client.reviews.store')}}" method="POST">
                     @csrf
                     <input type="hidden" name="product_id" value="{{$product->id}}">
 
@@ -181,6 +151,9 @@
                     <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
                 </form>
                 @else
+                    <p class="text-muted">Bạn cần mua sản phầm này trước khi đánh giá</p>
+                @endif
+                @else
                     <p><a href="{{route('login')}}">Đăng nhập</a> để gửi đánh giá</p>
                 @endauth    
             </div>
@@ -188,12 +161,57 @@
     </div>
 </div>
 
-
 <style>
-input[type="radio"]:checked+span {
-    background-color: black;
+/* Nút radio được chọn */
+input[type="radio"]:checked + span {
+    background-color: #3b5d50; /* Màu xanh */
     color: white;
-    border-color: black;
+    border-color: #3b5d50;
+}
+
+/* Hover size/màu */
+label:hover span {
+    border-color: #3b5d50;
+}
+
+/* Nút thêm vào giỏ hàng */
+.btn-success {
+    background-color: #3b5d50;
+    border-color: #3b5d50;
+}
+
+.btn-success:hover {
+    background-color: #3b5d50;
+    border-color: #3b5d50;
+}
+
+/* Tên sản phẩm */
+.product-section h3,
+.product-section h2 {
+    color: #3b5d50;
+}
+
+/* Giá sản phẩm */
+.product-section .text-danger {
+    color: #3b5d50 !important;
+}
+
+.price-line{
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.price-line .label{
+    font-weight: normal;
+    font-size: 16px;
+    color: #333;
+}
+
+.price-line .price{
+    font-weight: bold;
+    font-size: 20px;
+    color: #3b5d50;
 }
 </style>
 
