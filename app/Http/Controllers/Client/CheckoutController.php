@@ -203,6 +203,7 @@ if ($request->has('ship_to_different')) {
 //     '$shippingFee' => $shippingFee,
 //     '$finalTotal' => $finalTotal,
 //     '$finalTotalWithShipping' => $finalTotalWithShipping
+
 // ]);
         // Lấy thông tin người nhận từ form
         $name = $request->input('name');
