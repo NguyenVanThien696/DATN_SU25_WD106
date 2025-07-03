@@ -23,6 +23,11 @@
                             {{ session('error') }}
                         </div>
                         @endif
+                        @if (session('warning'))
+                        <div class="alert alert-warning">
+                            {{ session('warning') }}
+                        </div>
+                        @endif
                         <a href="{{ route('admin.products.create') }}" class="btn btn-success">Thêm mới </a>
                         <div class="overflow-x-auto mt-5">
                             <table id="product-list-data-table" class="table-default table-hover data-table">

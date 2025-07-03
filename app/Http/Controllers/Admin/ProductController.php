@@ -134,16 +134,16 @@ public function store(Request $request) {
         return view('admin.products.edit', compact('product', 'category', 'brand', 'sizes', 'colors', 'tag'));
     }
 
-public function update(Request $request, $id) {
-    // dd($request->all());
+public function update(Request $request, $id)
+{
     $request->validate([
-        'category_id' =>'required',
-        'brand_id' =>'required',
-        'tag_id' =>'required',
-        'name' =>'required|min:3|max:100',
-        'description' =>'nullable|string|max:500',
+        'category_id' => 'required',
+        'brand_id' => 'required',
+        'tag_id' => 'required',
+        'name' => 'required|min:3|max:100',
+        'description' => 'nullable|string|max:500',
         'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        'price' =>'required|numeric|min:0',
+        'price' => 'required|numeric|min:0',
         'variants' => 'required|array|min:1',
         'variants.*.size_id' => 'required|exists:sizes,id',
         'variants.*.color_id' => 'required|exists:colors,id',
@@ -151,18 +151,30 @@ public function update(Request $request, $id) {
         'variants.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
     ]);
 
+    // Kiểm tra biến thể trùng size & màu
     $variantPairs = [];
     foreach ($request->variants as $variant) {
         $key = $variant['size_id'] . '-' . $variant['color_id'];
         if (in_array($key, $variantPairs)) {
-            return back()->with(['error' => 'Có biến thể bị trùng size và màu. Vui lòng kiểm tra lại.']);
+            return back()->withInput()->with('error', 'Có biến thể bị trùng size và màu. Vui lòng kiểm tra lại.');
         }
         $variantPairs[] = $key;
     }
 
-    
     $product = Product::findOrFail($id);
 
+    // Kiểm tra nếu biến thể bị loại khỏi form mà đang có liên kết đơn hàng → báo lỗi
+    $requestVariantIds = collect($request->variants)->pluck('id')->filter()->toArray();
+    $cannotDelete = $product->variants()
+        ->whereNotIn('id', $requestVariantIds)
+        ->whereHas('orderItems')
+        ->get();
+
+    if ($cannotDelete->isNotEmpty()) {
+        return back()->withInput()->with('error', 'Không thể cập nhật sản phẩm vì có biến thể đã liên kết với đơn hàng mà bạn đang cố gắng loại bỏ.');
+    }
+
+    // Xử lý ảnh sản phẩm
     $path = $product->image;
     if ($request->hasFile('image')) {
         if ($product->image && Storage::disk('public')->exists($product->image)) {
@@ -171,6 +183,7 @@ public function update(Request $request, $id) {
         $path = $request->file('image')->store('products', 'public');
     }
 
+    // Cập nhật sản phẩm chính
     $product->update([
         'category_id' => $request->category_id,
         'brand_id' => $request->brand_id,
@@ -181,8 +194,7 @@ public function update(Request $request, $id) {
         'image' => $path,
     ]);
 
-    $requestVariantIds = [];
-
+    // Cập nhật hoặc tạo biến thể
     foreach ($request->variants as $index => $variantData) {
         $variant = null;
 
@@ -191,9 +203,10 @@ public function update(Request $request, $id) {
         }
 
         $variantImagePath = null;
-
         if ($request->hasFile("variants.$index.image")) {
             $variantImagePath = $request->file("variants.$index.image")->store("variants", "public");
+
+            // Xoá ảnh cũ nếu có
             if ($variant && $variant->image && Storage::disk('public')->exists($variant->image)) {
                 Storage::disk('public')->delete($variant->image);
             }
@@ -207,26 +220,18 @@ public function update(Request $request, $id) {
                 'image' => $variantImagePath ?? $variant->image,
             ]);
         } else {
-            $variant = $product->variants()->create([
+            $product->variants()->create([
                 'size_id' => $variantData['size_id'],
                 'color_id' => $variantData['color_id'],
                 'stock' => $variantData['stock'],
                 'image' => $variantImagePath,
             ]);
         }
-
-        $requestVariantIds[] = $variant->id;
     }
-
-    $product->variants()->whereNotIn('id', $requestVariantIds)->get()->each(function ($v) {
-        if ($v->image && Storage::disk('public')->exists($v->image)) {
-            Storage::disk('public')->delete($v->image);
-        }
-        $v->delete();
-    });
 
     return redirect()->route('admin.products.index')->with('success', 'Cập nhật sản phẩm thành công!');
 }
+
 
 
     public function delete($id) {
@@ -264,6 +269,40 @@ public function update(Request $request, $id) {
         ])->findOrFail($id);
 
         return view('admin.products.detail', compact('product'));
+    }
+
+    public function createSize(){
+        return view('admin.sizes.create');
+    }
+
+    public function storeSize(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|min:2|max:100',
+        ]);
+
+        Size::create([
+            'name' => $request->name,
+        ]);
+        return redirect()->route('admin.products.createSize')->with('success', 'Thêm biến thể kích thước sản phẩm thành công');
+
+    }
+
+    public function createColor(){
+        return view('admin.colors.create');
+    }
+
+    public function storeColor(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|min:2|max:100',
+        ]);
+
+        Color::create([
+            'name' => $request->name,
+        ]);
+        return redirect()->route('admin.products.createColor')->with('success', 'Thêm biến thể màu sản phẩm thành công');
+
     }
 
 }

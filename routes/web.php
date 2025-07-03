@@ -158,6 +158,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::put('/update/{id}', [AdminProductController::class, 'update'])->name('products.update');
         Route::delete('/delete/{id}', [AdminProductController::class, 'delete'])->name('products.delete');
         Route::get('/detail/{id}', [AdminProductController::class, 'show'])->name('products.show');
+        Route::get('/create/size', [AdminProductController::class, 'createSize'])->name('products.createSize');
+        Route::post('/store/size', [AdminProductController::class, 'storeSize'])->name('products.storeSize');
+        Route::get('/create/color', [AdminProductController::class, 'createColor'])->name('products.createColor');
+        Route::post('/store/color', [AdminProductController::class, 'storeColor'])->name('products.storeColor');
     });
 
     // Category admin
