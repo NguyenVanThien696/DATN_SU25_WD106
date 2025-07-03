@@ -151,6 +151,34 @@
                             </li>
                         </ul>
                     </li>
+                    <li class="menu-collapse">
+                        <div class="menu-collapse-item">
+                            <i class="fa-solid fa-layer-group fa-lg"></i>
+                            <span class="menu-item-text">Quản Lý Biến Thể</span>
+                        </div>
+                        <ul>
+                            <li data-menu-item="modern-voucher-list" class="menu-item">
+                                <i class="fa-solid fa-list fa-sm"></i>
+                                <a class="h-full w-full flex items-center" href="">
+                                    <span>Danh Sách Biến Thể</span>
+                                </a>
+                            </li>
+                            <li data-menu-item="modern-new-voucher" class="menu-item">
+                                <i class="fa-solid fa-square-plus fa-sm"></i>
+                                <a class="h-full w-full flex items-center"
+                                    href="{{ route('admin.products.createSize') }}">
+                                    <span>Thêm Kích Cỡ</span>
+                                </a>
+                            </li>
+                            <li data-menu-item="modern-new-voucher" class="menu-item">
+                                <i class="fa-solid fa-square-plus fa-sm"></i>
+                                <a class="h-full w-full flex items-center"
+                                    href="{{ route('admin.products.createColor') }}">
+                                    <span>Thêm Màu Sắc</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
 
 
                     <!-- <ul class="navbar-nav ms-auto">

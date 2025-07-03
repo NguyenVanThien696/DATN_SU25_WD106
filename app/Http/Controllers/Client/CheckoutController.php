@@ -131,7 +131,7 @@ if ($request->has('ship_to_different')) {
             $pending = PendingOrder::create([
                 'txn_ref'     => $txnRef,
                 'user_id'     => $userId,
-                'total_price' => $finalTotal,
+                'total_price' => $finalTotalWithShipping,
                 'shipping_fee'=> $shippingFee,
                 'note'        => $note,
                 'user_info'   => [
