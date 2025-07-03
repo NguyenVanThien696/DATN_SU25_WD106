@@ -19,7 +19,7 @@ class User extends Authenticatable
         'email',
         'role',
         'password',
-        'tel',
+        'phone',
         'address',
     ];
 

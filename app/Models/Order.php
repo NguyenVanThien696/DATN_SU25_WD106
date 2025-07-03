@@ -19,7 +19,8 @@ class Order extends Model
         'note',  
         'payment_method',
         'payment_status',       
-        'discount',    
+        'discount',  
+        'order_code',  
     ];
 
     // Quan hệ với User

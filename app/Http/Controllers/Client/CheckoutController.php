@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
 {
@@ -113,14 +114,13 @@ if ($request->has('ship_to_different')) {
             return $item->variant->product->price * $item->quantity;
         });
         
-
+        // dd(session('coupon'));
         $discount = session('coupon.discount_amount', 0);
         $finalTotal = $total - $discount;
 
         $shippingFee = $finalTotal >= 500000 ? 0 : 30000;
 
         $finalTotalWithShipping = $finalTotal + $shippingFee;
-
         $paymentMethod = $request->input('payment_method', 'cod');
         $note = $request->input('c_order_notes');
         if ($request->has('ship_to_different')) {
@@ -128,10 +128,13 @@ if ($request->has('ship_to_different')) {
         }
         if ($paymentMethod === 'vnpay') {
             $txnRef = uniqid($userId . '_');
+            $orderCode = 'DH' . now()->format('HidmY') . strtoupper(Str::random(4));
             $pending = PendingOrder::create([
                 'txn_ref'     => $txnRef,
+                'order_code'     => $orderCode,
                 'user_id'     => $userId,
-                'total_price' => $finalTotal,
+                'total_price' => $finalTotal + $shippingFee,
+                'discount' => $discount,
                 'shipping_fee'=> $shippingFee,
                 'note'        => $note,
                 'user_info'   => [
@@ -221,8 +224,10 @@ if ($request->has('ship_to_different')) {
             $address = $request->input('shipping_address');
             $note = $request->input('shipping_note');
         }
+        $orderCode = 'DH' . now()->format('HidmY') . strtoupper(Str::random(4));
         $order = Order::create([
             'user_id'        => $userId,
+            'order_code'     => $orderCode,
             'total_price'    => $finalTotalWithShipping,
             'shipping_fee'   => $shippingFee,
             'discount'       => $discount,
@@ -384,24 +389,24 @@ public function vnpayReturn(Request $request)
 }
     $hashData = implode('&', $hashDataArr);
     $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
-    \Log::info('VNPay SecureHash DEBUG', [
-    'inputData' => $inputData,
-    'hashData' => $hashData,
-    'generatedHash' => $secureHash,
-    'receivedHash' => $vnp_SecureHash,
-    'match' => $secureHash === $vnp_SecureHash,
-    'responseCode' => $request->vnp_ResponseCode,
-]);
-    \Log::info('✅ VNPay Hash Check:', [
-        'expected' => $secureHash,
-        'actual' => $vnp_SecureHash,
-        'match' => $secureHash === $vnp_SecureHash,
-        'hashData' => $hashData,
-    ]);
+//     \Log::info('VNPay SecureHash DEBUG', [
+//     'inputData' => $inputData,
+//     'hashData' => $hashData,
+//     'generatedHash' => $secureHash,
+//     'receivedHash' => $vnp_SecureHash,
+//     'match' => $secureHash === $vnp_SecureHash,
+//     'responseCode' => $request->vnp_ResponseCode,
+// ]);
+    // \Log::info(' VNPay Hash Check:', [
+    //     'expected' => $secureHash,
+    //     'actual' => $vnp_SecureHash,
+    //     'match' => $secureHash === $vnp_SecureHash,
+    //     'hashData' => $hashData,
+    // ]);
 
     if ($secureHash === $vnp_SecureHash && $request->vnp_ResponseCode == '00') {
         $txnRef = $request->vnp_TxnRef ?? null;
-        \Log::info('🔍 Đang tìm pending order với txn_ref: ' . $txnRef);
+        // \Log::info(' tìm pending order với txn_ref: ' . $txnRef);
         $pendingOrder = PendingOrder::where('txn_ref', $txnRef)->first();
         if (!$pendingOrder) {
             return redirect()->route('client.checkout.index')->with('error', 'Không tìm thấy thông tin đơn hàng.');
@@ -412,7 +417,10 @@ public function vnpayReturn(Request $request)
         try {
             $order = Order::create([
                 'user_id'        => $pendingOrder['user_id'],
-                'total_price'    => $pendingOrder['total_price'],
+                'order_code'     => $pendingOrder->order_code,
+                'total_price'    => $pendingOrder['total_price'], 
+                'discount'       => $pendingOrder['discount'] ?? 0,
+                'shipping_fee'   => $pendingOrder['shipping_fee'] ?? 0, 
                 'status'         => 'pending',
                 'note'           => $pendingOrder['note'],
                 'payment_method' => 'vnpay',
@@ -455,12 +463,12 @@ public function vnpayReturn(Request $request)
 
         }
         } else {
-        \Log::warning('VNPay: Sai chữ ký hoặc thất bại.', [
-            'expected' => $secureHash,
-            'actual' => $vnp_SecureHash,
-            'hashData' => $hashData,
-            'responseCode' => $request->vnp_ResponseCode
-        ]);
+        // \Log::warning('VNPay: Sai chữ ký hoặc thất bại.', [
+        //     'expected' => $secureHash,
+        //     'actual' => $vnp_SecureHash,
+        //     'hashData' => $hashData,
+        //     'responseCode' => $request->vnp_ResponseCode
+        // ]);
         return redirect()->route('client.checkout.index')->with('error', 'Thanh toán thất bại hoặc bị hủy.');
     }
 }
