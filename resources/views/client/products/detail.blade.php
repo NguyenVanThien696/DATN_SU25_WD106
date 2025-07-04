@@ -2,7 +2,7 @@
 
 @section('content')
 
-<div class="product-section">
+<div class="product-section  py-2">
 
     @if (session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
@@ -15,9 +15,6 @@
     <div class="row">
         <!-- Cột trái: Ảnh sản phẩm -->
         <div class="col-md-6 d-flex">
-            
-            
-
             <div class="d-flex me-3 flex-column">
                 @php $uniqueColorVariants = collect(); @endphp
                 @foreach ($product->variants as $variant)
@@ -27,19 +24,19 @@
                         @endphp
                         <img src="{{ asset('storage/uploads'.$variant->image) }}" alt="Ảnh màu {{ $variant->color->name }}"
                             class="img-thumbnail thumbnail-variant" data-color="{{ $variant->color->id }}"
-                            data-image="{{ asset('storage/'.$variant->image)}}" style="width: 80px; height: 80px; object-fit: cover;">
+                            data-image="{{ asset('storage/'.$variant->image)}}" style="width: 100px; height: 150px; object-fit: cover;">
                     @endif
                 @endforeach
             </div>
             <div class="" style="position: relative">
-                <img id="main-image" src="{{ asset('storage/'. $product->image) }}" class="img-fluid mb-3" width="400px" alt="Ảnh chính">
+                <img id="main-image" src="{{ asset('storage/'. $product->image) }}" class="img-fluid mb-3" width="500   px" alt="Ảnh chính">
             </div>
         </div>
 
         <!-- Cột phải: Thông tin sản phẩm -->
         <div class="col-md-6">
-            <h3 class="fw-bold mb-3">{{ $product->name }}</h3>
-            <p class="text-muted">{{ $product->description }}</p>
+            <h1 class="fw-bold mb-3">{{ $product->name }}</h1>
+            <h7 class="text-muted">{{ $product->description }}</h7>
             <hr>
             <div class="d-flex gap-5 mb-4">
                 <p><strong>Tồn kho:</strong> {{ $stock }} sản phẩm</p>|
@@ -93,7 +90,7 @@
                 </div>
 
                 <input type="hidden" name="product_id" value="{{ $product->id }}">
-                <button type="submit" class="btn btn-success mt-2 px-4">Thêm vào giỏ hàng</button>
+                <button type="submit" class="btn btn-success mt-2 px-4 w-100">Thêm vào giỏ hàng</button>
             </form>
             <hr>
         </div>
@@ -190,6 +187,7 @@ label:hover span {
 .btn-success {
     background-color: #3b5d50;
     border-color: #3b5d50;
+    border-radius: 12px;
 }
 
 .btn-success:hover {
@@ -198,7 +196,7 @@ label:hover span {
 }
 
 /* Tên sản phẩm */
-.product-section h3,
+.product-section h1,
 .product-section h2 {
     color: #3b5d50;
 }
@@ -225,6 +223,7 @@ label:hover span {
     font-size: 20px;
     color: #3b5d50;
 }
+
 </style>
 
 <script>

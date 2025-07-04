@@ -10,7 +10,7 @@
                 <div class="card adaptable-card">
                     <div class="card-body">
                         <div class="lg:flex items-center justify-between mb-4">
-                            <h3 class="mb-4 lg:mb-0">Category</h3>
+                            <h3 class="mb-4 lg:mb-0">CATEGORY</h3>
                         </div>
                         @if (session('success'))
                         <div class="alert alert-success">
@@ -41,15 +41,15 @@
                                         <td>{{ $cate->description }}</td>
                                         <td>
                                             <a href="{{ route('admin.categories.show', $cate->id) }}"
-                                                class="btn btn-secondary">Detail </a>
+                                                class="btn btn-secondary">Xem </a>
                                             <a href="{{ route('admin.categories.edit', $cate->id) }}"
-                                                class="btn btn-warning">Edit</a>
+                                                class="btn btn-warning">Sửa</a>
                                             <form action="{{ route('admin.categories.delete', $cate->id) }} "
                                                 class="d-inline" method="POST">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button class="btn btn-danger" 
-                                                    onclick="return confirm('Bạn có chắc chắn xóa không? ')" type="submit">Delete
+                                                    onclick="return confirm('Bạn có chắc chắn xóa không? ')" type="submit">Xoá
                                                 </button>
                                             </form>
                                         </td>
