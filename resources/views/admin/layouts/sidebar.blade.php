@@ -21,7 +21,7 @@
                         <ul>
                             <li data-menu-item="modern-project-dashboard" class="menu-item">
                                 <i class="fa-regular fa-bell fa-sm"></i>
-                                <a class="h-full w-full flex items-center" href="">
+                                <a class="h-full w-full flex items-center" href="{{ route('admin.home') }}">
                                     <span>Thống kê</span>
                                 </a>
                             </li>

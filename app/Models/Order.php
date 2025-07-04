@@ -26,7 +26,7 @@ class Order extends Model
     // Quan hệ với User
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     // Quan hệ với các order item

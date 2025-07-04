@@ -40,6 +40,7 @@
                         @include('admin.layouts.footer')
 
                         <!-- Footer end -->
+                        @stack('scripts')
                     </div>
                 </div>
             </div>
