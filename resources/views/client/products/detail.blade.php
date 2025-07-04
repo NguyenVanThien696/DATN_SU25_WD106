@@ -14,21 +14,25 @@
     <div class="container mt-5">
     <div class="row">
         <!-- Cột trái: Ảnh sản phẩm -->
-        <div class="col-md-6">
-            <img id="main-image" src="{{ asset('storage/'. $product->image) }}" class="img-fluid mb-3" width="100%" alt="Ảnh chính">
+        <div class="col-md-6 d-flex">
+            
+            
 
-            <div class="d-flex gap-2 flex-wrap">
+            <div class="d-flex me-3 flex-column">
                 @php $uniqueColorVariants = collect(); @endphp
                 @foreach ($product->variants as $variant)
                     @if (!$uniqueColorVariants->contains('color_id', $variant->color_id))
                         @php
                             $uniqueColorVariants->push(['color_id' => $variant->color_id]);
                         @endphp
-                        <img src="{{ asset('storage/'.$variant->image) }}" alt="Ảnh màu {{ $variant->color->name }}"
+                        <img src="{{ asset('storage/uploads'.$variant->image) }}" alt="Ảnh màu {{ $variant->color->name }}"
                             class="img-thumbnail thumbnail-variant" data-color="{{ $variant->color->id }}"
                             data-image="{{ asset('storage/'.$variant->image)}}" style="width: 80px; height: 80px; object-fit: cover;">
                     @endif
                 @endforeach
+            </div>
+            <div class="" style="position: relative">
+                <img id="main-image" src="{{ asset('storage/'. $product->image) }}" class="img-fluid mb-3" width="400px" alt="Ảnh chính">
             </div>
         </div>
 
@@ -36,13 +40,18 @@
         <div class="col-md-6">
             <h3 class="fw-bold mb-3">{{ $product->name }}</h3>
             <p class="text-muted">{{ $product->description }}</p>
-            <p><strong>Tồn kho:</strong> {{ $stock }} sản phẩm</p>
+            <hr>
+            <div class="d-flex gap-5 mb-4">
+                <p><strong>Tồn kho:</strong> {{ $stock }} sản phẩm</p>|
 
-            <p><strong>Danh mục:</strong> {{ $product->category->name }}</p>
-            <p><strong>Thương hiệu:</strong> {{ $product->brand->name }}</p>
+                <p><strong>Danh mục:</strong> {{ $product->category->name }}</p>|
+                <p><strong>Thương hiệu:</strong> {{ $product->brand->name }}</p>
+            </div>
+            
 
             <form action="{{ route('client.cart.add') }}" method="POST">
                 @csrf
+                <div class="d-flex gap-5 mb-4">
                 <!-- Chọn size -->
                 @php $sizes = $product->variants->pluck('size')->filter()->unique('id'); @endphp
                 <div class="mb-3">
@@ -70,6 +79,7 @@
                         @endforeach
                     </div>
                 </div>
+                </div>
 
                 <div class="price-line mb-3">
                     <span class="label">Giá:</span>
@@ -85,7 +95,9 @@
                 <input type="hidden" name="product_id" value="{{ $product->id }}">
                 <button type="submit" class="btn btn-success mt-2 px-4">Thêm vào giỏ hàng</button>
             </form>
+            <hr>
         </div>
+        
             <div class="related-products mt-5">
                 <h4>Sản phẩm liên quan</h4>
                 <div class="row mt-5">
