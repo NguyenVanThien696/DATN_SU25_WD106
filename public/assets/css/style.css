@@ -730,3 +730,20 @@ a{
 .star-rating label:hover ~ label{
   color: gold;
 }
+
+.nav-item.dropdown:hover .dropdown-menu{
+  display: block;
+  margin-top: 0;
+}
+
+.nav-item.dropdown .dropdown-menu{
+  background-color: #3b5d50 !important;
+  color: #000000 !important;
+  border: 1px solid #ccc;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 6px;
+}
+
+.nav-item.dropdown .dropdown-item:hover{
+  color:#3b5d50 !important;
+}
