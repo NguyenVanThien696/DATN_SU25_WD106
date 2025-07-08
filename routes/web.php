@@ -67,7 +67,7 @@ Route::prefix('about')->group(function () {
 //Search
 Route::get('/search', [ProductController::class, 'search'])->name('client.search.index');
 
-
+Route::get('/client/reviews/{product}', [ProductReviewController::class, 'store'])->name('client.reviews.store');
 
 // Login routes (không cần auth)
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login.form');
