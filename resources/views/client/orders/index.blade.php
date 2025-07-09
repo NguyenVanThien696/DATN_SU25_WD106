@@ -32,7 +32,6 @@
                                 <tr>
                                     <th style="white-space: nowrap;">Mã đơn</th>
                                     <th style="white-space: nowrap;">Ngày đặt</th>
-                                    <th style="white-space: nowrap;">Khách hàng</th>
                                     <th>Ảnh</th>
                                     <th class="text-start">Sản phẩm</th>
                                     <th style="white-space: nowrap;">Phân loại</th>
@@ -41,7 +40,8 @@
                                     <th style="white-space: nowrap;">Phí ship</th>
                                     <th style="white-space: nowrap;">Thanh toán</th>
                                     <th style="white-space: nowrap;">Trạng thái</th>
-                                    <th style="white-space: nowrap;">Thanh toán</th>
+                                    <th style="white-space: nowrap;">Phương thức</th>
+                                    <th style="white-space: nowrap;">TT Thanh toán</th>
                                     <th>Thao tác</th>
                                 </tr>
                             </thead>
@@ -58,7 +58,6 @@
                                             <span class="text-dark fw-bold">{{ $order->created_at->format('H:i') }}</span>
                                             {{ $order->created_at->format('d/m/Y') }}
                                         </td>
-                                        <td>{{ $order->user->name }}</td>
                                         <td>
                                             @if ($firstItem && $firstItem->productVariant && $firstItem->productVariant->product)
                                                 <img src="{{ asset('storage/' . $firstItem->productVariant->product->image) }}"
@@ -100,6 +99,7 @@
                                             @php
                                                 $statusClass = [
                                                     'pending' => 'badge bg-warning',
+                                                    'confirmed' => 'badge bg-primary',
                                                     'processing' => 'badge bg-info',
                                                     'completed' => 'badge bg-success',
                                                     'cancelled' => 'badge bg-danger',
@@ -109,6 +109,7 @@
 
                                                 $statusList = [
                                                     'pending' => 'Đang chờ xử lí',
+                                                    'confirmed' => 'Đã xác nhận',
                                                     'processing' => 'Đang giao hàng',
                                                     'completed' => 'Đã hoàn thành',
                                                     'cancelled' => 'Đã hủy',
@@ -134,6 +135,13 @@
                                             @endphp
                                             <span class="badge {{ $paymentClass }} text-white">{{ $paymentText }}</span>
                                         </td>
+                                        <td>
+                                            @if ($order->payment_status === 'paid')
+                                                <span class="badge bg-success">Đã thanh toán</span>
+                                            @else
+                                                <span class="badge bg-warning text-dark">Chưa thanh toán</span>
+                                            @endif
+                                        </td>
                                         <td class="align-middle">
                                             <div class="d-flex justify-content-center align-items-center gap-1">
                                                 @if ($order->status === 'pending')
@@ -151,19 +159,19 @@
                                                             class="btn btn-sm btn-outline-dark px-2 py-1">
                                                             Xem
                                                         </button>
-                                                        </form">
-                                                        @if (
-                                                                $order->status === 'completed' &&
-                                                                $firstItem &&
-                                                                $order->orderItems->count() === 1 &&
-                                                                $firstItem->productVariant &&
-                                                                !in_array($firstItem->id, $reviewedOrderItemIds ?? [])
-                                                            )
-                                                            <a href="{{ route('client.products.detail', $firstItem->productVariant->product_id) }}#review"
-                                                                class="btn btn-sm btn-success px-2 py-1 d-inline-block">
-                                                                Đánh giá
-                                                            </a>
-                                                        @endif
+                                                    </form>
+                                                    @if (
+                                                        $order->status === 'completed' &&
+                                                        $firstItem &&
+                                                        $order->orderItems->count() === 1 &&
+                                                        $firstItem->productVariant &&
+                                                        !in_array($firstItem->id, $reviewedOrderItemIds ?? [])
+                                                    )
+                                                        <a href="{{ route('client.products.detail', $firstItem->productVariant->product_id) }}#review"
+                                                            class="btn btn-sm btn-success px-2 py-1 d-inline-block">
+                                                            Đánh giá
+                                                        </a>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </td>
