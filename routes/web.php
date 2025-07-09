@@ -123,12 +123,12 @@ Route::middleware(['auth'])->group(function () {
 
 // Admin Routes (yêu cầu đăng nhập + admin)
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', [AuthController::class, 'adminIndex'])->name('home');
+    Route::get('/', [AuthController::class, 'adminIndex'])->name('index');
+    Route::get('home', [DashboardController::class, 'index'])->name('home');
     Route::get('/dashboard', [AuthController::class, 'adminDashboard'])->name('dashboard');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('changePassword');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-    Route::get('/admin/user', [UserController::class, 'index'])->name('admin.users');
-    Route::get('admin/home', [DashboardController::class, 'index'])->name('admin.home');
+    Route::get('/user', [UserController::class, 'index'])->name('users');
 });
 
 

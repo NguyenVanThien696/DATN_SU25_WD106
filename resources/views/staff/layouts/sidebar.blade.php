@@ -18,7 +18,7 @@
                             </svg>
                             <a href="{{ route('admin.dashboard') }}"><span class="menu-item-text">Trang Chủ</span></a>
                         </div>
-                        {{-- <ul>
+                        <ul>
                             <li data-menu-item="modern-project-dashboard" class="menu-item">
                                 <i class="fa-regular fa-bell fa-sm"></i>
                                 <a class="h-full w-full flex items-center" href="{{ route('admin.home') }}">
@@ -26,9 +26,9 @@
                                 </a>
                             </li>
 
-                        </ul> --}}
+                        </ul>
                     </li>
-                    {{-- <li class="menu-collapse">
+                    <li class="menu-collapse">
                         <div class="menu-collapse-item">
                             <svg class="menu-item-icon" stroke="currentColor" fill="none" stroke-width="0"
                                 viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
@@ -46,7 +46,7 @@
                                 </a>
                             </li>
                         </ul>
-                    </li> --}}
+                    </li>
                     <li class="menu-collapse">
                         <div class="menu-collapse-item">
                             <i class="fa-brands fa-pagelines fa-lg"></i>
@@ -55,14 +55,14 @@
                         <ul>
                             <li data-menu-item="modern-product-list" class="menu-item">
                                 <i class="fa-solid fa-list-ul fa-sm"></i>
-                                <a class="h-full w-full flex items-center" href="{{ route('staff.products.index') }}">
+                                <a class="h-full w-full flex items-center" href="{{ route('admin.products.index') }}">
                                     <span>Danh Sách Sản Phẩm</span>
                                 </a>
                             </li>
 
                             <li data-menu-item="modern-new-product" class="menu-item">
                                 <i class="fa-solid fa-square-plus fa-sm"></i>
-                                <a class="h-full w-full flex items-center" href="{{ route('staff.products.create') }}">
+                                <a class="h-full w-full flex items-center" href="{{ route('admin.products.create') }}">
                                     <span>Thêm Sản Phẩm</span>
                                 </a>
                             </li>
@@ -131,7 +131,7 @@
                             </li>
                         </ul>
                     </li>
-                    {{-- <li class="menu-collapse">
+                    <li class="menu-collapse">
                         <div class="menu-collapse-item">
                             <i class="fa-solid fa-ticket fa-lg"></i>
                             <span class="menu-item-text">Quản Lý Voucher</span>
@@ -150,7 +150,7 @@
                                 </a>
                             </li>
                         </ul>
-                    </li> --}}
+                    </li>
                     <li class="menu-collapse">
                         <div class="menu-collapse-item">
                             <i class="fa-solid fa-layer-group fa-lg"></i>
