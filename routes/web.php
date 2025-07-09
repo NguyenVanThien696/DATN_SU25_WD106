@@ -127,18 +127,20 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/dashboard', [AuthController::class, 'adminDashboard'])->name('dashboard');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('changePassword');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-});
-
-
-
-// Route Admin
-Route::middleware(['auth'])->group(function () {
     Route::get('/admin/user', [UserController::class, 'index'])->name('admin.users');
     Route::get('admin/home', [DashboardController::class, 'index'])->name('admin.home');
 });
 
 
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+
+// Route Admin
+// Route::middleware(['auth'])->group(function () {
+//     Route::get('/admin/user', [UserController::class, 'index'])->name('admin.users');
+//     Route::get('admin/home', [DashboardController::class, 'index'])->name('admin.home');
+// });
+
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
 
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('users');
