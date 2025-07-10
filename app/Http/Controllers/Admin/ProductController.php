@@ -272,7 +272,7 @@ public function update(Request $request, $id)
     }
 
     public function createSize(){
-        return view('admin.sizes.create');
+        return view('admin.products.productvariants.sizes.create');
     }
 
     public function storeSize(Request $request)
@@ -289,7 +289,7 @@ public function update(Request $request, $id)
     }
 
     public function createColor(){
-        return view('admin.colors.create');
+        return view('admin.products.productvariants.colors.create');
     }
 
     public function storeColor(Request $request)

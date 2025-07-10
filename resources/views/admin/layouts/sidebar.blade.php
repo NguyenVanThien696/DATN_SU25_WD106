@@ -16,7 +16,7 @@
                                     d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
                                 </path>
                             </svg>
-                            <a href="{{ route('admin.dashboard') }}"><span class="menu-item-text">Trang Chủ</span></a>
+                            <a href=""><span class="menu-item-text">Trang Chủ</span></a>
                         </div>
                         <ul>
                             <li data-menu-item="modern-project-dashboard" class="menu-item">
@@ -60,10 +60,31 @@
                                 </a>
                             </li>
 
+                            <li data-menu-item="modern-voucher-list" class="menu-item">
+                                <i class="fa-solid fa-list fa-sm"></i>
+                                <a class="h-full w-full flex items-center" href="">
+                                    <span>Danh Sách Biến Thể</span>
+                                </a>
+                            </li>
+
                             <li data-menu-item="modern-new-product" class="menu-item">
                                 <i class="fa-solid fa-square-plus fa-sm"></i>
                                 <a class="h-full w-full flex items-center" href="{{ route('admin.products.create') }}">
                                     <span>Thêm Sản Phẩm</span>
+                                </a>
+                            </li>
+                            <li data-menu-item="modern-new-voucher" class="menu-item">
+                                <i class="fa-solid fa-square-plus fa-sm"></i>
+                                <a class="h-full w-full flex items-center"
+                                    href="{{ route('admin.products.createSize') }}">
+                                    <span>Thêm Kích Cỡ</span>
+                                </a>
+                            </li>
+                            <li data-menu-item="modern-new-voucher" class="menu-item">
+                                <i class="fa-solid fa-square-plus fa-sm"></i>
+                                <a class="h-full w-full flex items-center"
+                                    href="{{ route('admin.products.createColor') }}">
+                                    <span>Thêm Màu Sắc</span>
                                 </a>
                             </li>
 
@@ -151,34 +172,7 @@
                             </li>
                         </ul>
                     </li>
-                    <li class="menu-collapse">
-                        <div class="menu-collapse-item">
-                            <i class="fa-solid fa-layer-group fa-lg"></i>
-                            <span class="menu-item-text">Quản Lý Biến Thể</span>
-                        </div>
-                        <ul>
-                            <li data-menu-item="modern-voucher-list" class="menu-item">
-                                <i class="fa-solid fa-list fa-sm"></i>
-                                <a class="h-full w-full flex items-center" href="">
-                                    <span>Danh Sách Biến Thể</span>
-                                </a>
-                            </li>
-                            <li data-menu-item="modern-new-voucher" class="menu-item">
-                                <i class="fa-solid fa-square-plus fa-sm"></i>
-                                <a class="h-full w-full flex items-center"
-                                    href="{{ route('admin.products.createSize') }}">
-                                    <span>Thêm Kích Cỡ</span>
-                                </a>
-                            </li>
-                            <li data-menu-item="modern-new-voucher" class="menu-item">
-                                <i class="fa-solid fa-square-plus fa-sm"></i>
-                                <a class="h-full w-full flex items-center"
-                                    href="{{ route('admin.products.createColor') }}">
-                                    <span>Thêm Màu Sắc</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
+
 
 
                     <!-- <ul class="navbar-nav ms-auto">

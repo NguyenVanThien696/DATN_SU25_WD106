@@ -2,93 +2,115 @@
 
 @section('content')
 <div class="container mt-4">
-    <h2>Danh sách Voucher</h2>
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0 text-primary"><i class="fas fa-ticket-alt me-2"></i>Danh sách Voucher</h4>
+                <a href="{{ route('admin.vouchers.create') }}" class="btn btn-primary rounded-pill">
+                    <i class="fas fa-plus me-1"></i> Thêm Voucher
+                </a>
+            </div>
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
+            @if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
 
-    <a href="{{ route('admin.vouchers.create') }}" class="btn btn-primary mb-3">Thêm Voucher</a>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Mã</th>
+                            <th>Kiểu giảm</th>
+                            <th>Giá trị</th>
+                            <th>Đã dùng / Giới hạn</th>
+                            <th>Thời gian áp dụng</th>
+                            <th>Trạng thái</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($vouchers as $voucher)
+                        <tr>
+                            <td>{{ $voucher->id }}</td>
+                            <td><span class="fw-bold text-success">{{ $voucher->code }}</span></td>
 
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Mã</th>
-                <th>Kiểu giảm</th>
-                <th>Giá trị</th>
-                <th>Đã dùng / Giới hạn</th>
-                <th>Thời gian áp dụng</th>
-                <th>Trạng thái</th>
-                <th>Thao tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($vouchers as $voucher)
-                <tr>
-                    <td>{{ $voucher->id }}</td>
-                    <td>{{ $voucher->code }}</td>
+                            <td>
+                                <span class="badge bg-info">
+                                    {{ $voucher->discount_type === 'percent' ? '%' : 'VNĐ' }}
+                                </span>
+                            </td>
 
-                    <td>
-                        @if($voucher->discount_type === 'percent')
-                            %
-                        @elseif($voucher->discount_type === 'amount')
-                            VNĐ
-                        @endif
-                    </td>
+                            <td>
+                                @if($voucher->discount_type === 'percent')
+                                <span class="text-primary">{{ $voucher->discount_percent }}%</span>
+                                @else
+                                <span
+                                    class="text-primary">{{ number_format($voucher->discount_amount, 0, ',', '.') }}đ</span>
+                                @endif
+                            </td>
 
-                    <td>
-                        @if($voucher->discount_type === 'percent')
-                            {{ $voucher->discount_percent }}%
-                        @elseif($voucher->discount_type === 'amount')
-                            {{ number_format($voucher->discount_amount, 0, ',', '.') }}đ
-                        @endif
-                    </td>
+                            <td>
+                                {{ $voucher->users_count }} /
+                                {{ $voucher->usage_limit ?? '∞' }}
+                            </td>
 
-                    <td>
-                        {{ $voucher->users_count }} /
-                        {{ $voucher->usage_limit ?? '∞' }}
-                    </td>
+                            <td>
+                                @if($voucher->start_at && $voucher->end_at)
+                                {{ \Carbon\Carbon::parse($voucher->start_at)->format('d/m/Y') }}
+                                -
+                                {{ \Carbon\Carbon::parse($voucher->end_at)->format('d/m/Y') }}
+                                @else
+                                <span class="text-muted">Không giới hạn</span>
+                                @endif
+                            </td>
 
-                    <td>
-                        @if($voucher->start_at && $voucher->end_at)
-                            {{ \Carbon\Carbon::parse($voucher->start_at)->format('d/m/Y') }}
-                            -
-                            {{ \Carbon\Carbon::parse($voucher->end_at)->format('d/m/Y') }}
-                        @else
-                            Không giới hạn
-                        @endif
-                    </td>
-
-                    <td>
-                        @switch($voucher->status)
-                            @case('active')
-                                <span class="badge bg-success">Đang hoạt động</span>
+                            <td>
+                                @switch($voucher->status)
+                                @case('active')
+                                <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Đang hoạt
+                                    động</span>
                                 @break
-                            @case('inactive')
-                                <span class="badge bg-secondary">Tạm ngưng</span>
+                                @case('inactive')
+                                <span class="badge bg-secondary"><i class="fas fa-pause-circle me-1"></i>Tạm
+                                    ngưng</span>
                                 @break
-                            @case('expired')
-                                <span class="badge bg-danger">Hết hạn</span>
+                                @case('expired')
+                                <span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i>Hết hạn</span>
                                 @break
-                            @default
+                                @default
                                 <span class="badge bg-light">Không rõ</span>
-                        @endswitch
-                    </td>
+                                @endswitch
+                            </td>
 
-                    <td>
-                        <a href="{{ route('admin.vouchers.edit', $voucher->id) }}" class="btn btn-sm btn-warning">Sửa</a>
-                        <form action="{{ route('admin.vouchers.delete', $voucher->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?')">
-                            @csrf
-                            @method('DELETE')
-                            <button class="btn btn-sm btn-danger">Xoá</button>
-                        </form>
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+                            <td class="text-center">
+                                <a href="{{ route('admin.vouchers.edit', $voucher->id) }}"
+                                    class="btn btn-sm btn-warning rounded-pill">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form action="{{ route('admin.vouchers.delete', $voucher->id) }}" method="POST"
+                                    class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-sm btn-danger rounded-pill">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">Không có voucher nào</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
-    {{ $vouchers->links() }}
+            <div class="mt-3">
+                {{ $vouchers->links('pagination::bootstrap-5') }}
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
