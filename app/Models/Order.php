@@ -21,6 +21,7 @@ class Order extends Model
         'payment_status',       
         'discount',  
         'order_code',  
+        'coupon_id',
     ];
 
     // Quan hệ với User
@@ -40,8 +41,8 @@ class Order extends Model
     return $this->hasOne(ShippingAddress::class);
     }
 
-    public function Coupons()
+    public function coupons()
     {
-        return $this->belongsTo(Coupon::class);
+        return $this->belongsTo(Coupon::class, 'coupon_id');
     }
 }

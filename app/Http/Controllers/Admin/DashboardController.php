@@ -29,12 +29,15 @@ class DashboardController extends Controller
             : 0;
 
         // 4. Doanh thu hôm nay
-        $revenueToday = Order::whereDate('created_at', today())->sum('total_price');
+        $revenueToday = Order::whereDate('created_at', today())
+        ->where('status', 'completed') // Chỉ tính doanh thu từ đơn hàng đã hoàn thành
+        ->sum('total_price');
 
         // 5. Doanh thu tháng hiện tại
-        $revenueMonth = Order::whereMonth('created_at', date('m'))
-                             ->whereYear('created_at', date('Y'))
-                             ->sum('total_price');
+        $revenueMonth = Order::whereMonth('created_at', now()->month)
+                     ->whereYear('created_at', now()->year)
+                     ->where('status', 'completed')
+                     ->sum('total_price');
 
         // 6. Tổng khách hàng (role = 2 là khách)
         $totalCustomers = User::where('role', 2)->count();

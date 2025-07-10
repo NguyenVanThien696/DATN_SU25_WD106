@@ -135,6 +135,7 @@ if ($request->has('ship_to_different')) {
                 'user_id'     => $userId,
                 'total_price' => $finalTotalWithShipping,
                 'discount'    => $discount,
+                'coupon_id'      => optional(Coupon::where('code', session('coupon.code'))->first())->id,
                 'total_price' => $finalTotal + $shippingFee,
                 'discount' => $discount,
                 'shipping_fee'=> $shippingFee,
@@ -233,6 +234,7 @@ if ($request->has('ship_to_different')) {
             'total_price'    => $finalTotalWithShipping,
             'shipping_fee'   => $shippingFee,
             'discount'       => $discount,
+            'coupon_id'      => optional(Coupon::where('code', session('coupon.code'))->first())->id,
             'status'         => 'pending',
             'note' => $note,
             'payment_method' => 'cod',
@@ -308,7 +310,7 @@ public function apply(Request $request)
         'coupon_code' => 'required|string'
     ]);
 
-    $coupon = \App\Models\Coupon::where('code', $request->coupon_code)->first();
+    $coupon = Coupon::where('code', $request->coupon_code)->first();
 
     // Kiểm tra tồn tại
     if (!$coupon) {
@@ -331,9 +333,9 @@ public function apply(Request $request)
         return back()->withInput()->with('error', 'Mã giảm giá đã được sử dụng hết.');
     }
 
-    // Kiểm tra người dùng đã dùng chưa
-    $user = \Auth::user();
-    $used = \App\Models\UserCoupon::where('user_id', $user->id)
+    // Kiểm tra người dùng đã dùng mã này chưa
+    $user = Auth::user();
+    $used = UserCoupon::where('user_id', $user->id)
                                   ->where('coupon_id', $coupon->id)
                                   ->exists();
 
@@ -341,28 +343,34 @@ public function apply(Request $request)
         return back()->withInput()->with('error', 'Bạn đã sử dụng mã giảm giá này rồi.');
     }
 
-    // Giỏ hàng
-    $cart = \App\Models\Cart::with('items.variant.product')->where('user_id', $user->id)->first();
+    // Lấy giỏ hàng
+    $cart = Cart::with('items.variant.product')->where('user_id', $user->id)->first();
 
     if (!$cart || $cart->items->isEmpty()) {
         return back()->with('error', 'Giỏ hàng của bạn đang trống.');
     }
 
-    // Tổng tiền
+    // Tính tổng tiền giỏ hàng
     $cartTotal = $cart->items->sum(function ($item) {
         return $item->variant->product->price * $item->quantity;
     });
 
-    // Tính giảm giá
+    // Tính giá trị giảm
     if ($coupon->discount_type === 'percent') {
         $discount = round($cartTotal * ($coupon->discount_percent / 100));
+
+        // Áp dụng giới hạn giảm tối đa nếu có
+        if (!is_null($coupon->max_discount_amount)) {
+            $discount = min($discount, $coupon->max_discount_amount);
+        }
     } else {
         $discount = $coupon->discount_amount;
     }
 
-    $discount = min($discount, $cartTotal); // Không vượt quá tổng tiền
+    // Không để giảm quá tổng tiền
+    $discount = min($discount, $cartTotal);
 
-    // Lưu session
+    // Lưu vào session
     session()->forget('coupon');
     session()->put('coupon', [
         'code' => $coupon->code,
@@ -373,6 +381,7 @@ public function apply(Request $request)
 
     return back()->withInput()->with('success', 'Áp dụng mã giảm giá thành công!');
 }
+
 
 
 public function vnpayReturn(Request $request)
@@ -474,18 +483,33 @@ public function vnpayReturn(Request $request)
         return redirect()->route('client.checkout.index')->with('error', 'Thanh toán thất bại hoặc bị hủy.');
     }
 }
- private function saveUsedCoupon($userId)
-    {
-        if (session()->has('coupon')) {
-            $couponCode = session('coupon.code');
-            $coupon = Coupon::where('code', $couponCode)->first();
-
-            if ($coupon) {
-                UserCoupon::firstOrCreate([
-                    'user_id'   => $userId,
-                    'coupon_id' => $coupon->id,
-                ]);
-            }
-        }
+private function saveUsedCoupon($userId)
+{
+    if (!session()->has('coupon')) {
+        return;
     }
+
+    $couponCode = session('coupon.code');
+
+    $coupon = Coupon::where('code', $couponCode)->first();
+
+    if (!$coupon) {
+        return;
+    }
+
+    $coupon->increment('used');
+
+    UserCoupon::updateOrInsert(
+        [
+            'user_id'   => $userId,
+            'coupon_id' => $coupon->id,
+        ],
+        [
+            'used_at'    => now(),
+            'updated_at' => now(),
+            'created_at' => now(),
+        ]
+    );
+}
+
 }

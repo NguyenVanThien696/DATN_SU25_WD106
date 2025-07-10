@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Support\Facades\DB;
-
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -14,19 +14,40 @@ class OrderController extends Controller
     // Lọc đơn hàng theo trạng thái
     public function index(Request $request)
     {
-        $query = Order::with('user');
+        $query = Order::with(['user', 'orderItems.productVariant.product', 'shippingAddress']);
 
-        if ($request->has('status') && $request->status !== '') {
+        // Lọc theo trạng thái nếu có
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        $orders = $query->latest()->paginate(10);
-        if ($request->has('date')) {
-            $orders = $orders->whereDate('created_at', $request->date);
+        // Lọc theo ngày nếu có
+        if ($request->filled('date')) {
+            try {
+                // Hỗ trợ cả 'd/m/Y' và 'Y-m-d'
+                $inputDate = $request->date;
+
+                if (preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $inputDate)) {
+                    $date = Carbon::createFromFormat('d/m/Y', $inputDate)->toDateString();
+                } else {
+                    $date = Carbon::parse($inputDate)->toDateString();
+                }
+
+                $query->whereDate('created_at', $date);
+            } catch (\Exception $e) {
+                return back()->with('error', 'Ngày không hợp lệ!');
+            }
         }
 
-        return view('admin.orders.index', compact('orders'));
+        $orders = $query->latest()->paginate(10);
+
+        return view('admin.orders.index', [
+            'orders' => $orders,
+            'filteredDate' => $request->date,
+        ]);
     }
+
+
 
     public function listOrder()
     {
@@ -56,7 +77,7 @@ class OrderController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:pending,processing,completed,cancelled'
+            'status' => 'required|in:pending,confirmed,processing,completed,cancelled'
         ]);
 
         return DB::transaction(function () use ($request, $id) {

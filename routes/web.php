@@ -67,7 +67,7 @@ Route::prefix('about')->group(function () {
 //Search
 Route::get('/search', [ProductController::class, 'search'])->name('client.search.index');
 
-
+Route::get('/client/reviews/{product}', [ProductReviewController::class, 'store'])->name('client.reviews.store');
 
 // Login routes (không cần auth)
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login.form');
@@ -123,22 +123,24 @@ Route::middleware(['auth'])->group(function () {
 
 // Admin Routes (yêu cầu đăng nhập + admin)
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', [AuthController::class, 'adminIndex'])->name('home');
+    Route::get('/', [AuthController::class, 'adminIndex'])->name('index');
+    Route::get('home', [DashboardController::class, 'index'])->name('home');
     Route::get('/dashboard', [AuthController::class, 'adminDashboard'])->name('dashboard');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('changePassword');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/user', [UserController::class, 'index'])->name('users');
 });
 
 
 
 // Route Admin
-Route::middleware(['auth'])->group(function () {
-    Route::get('/admin/user', [UserController::class, 'index'])->name('admin.users');
-    Route::get('admin/home', [DashboardController::class, 'index'])->name('admin.home');
-});
+// Route::middleware(['auth'])->group(function () {
+//     Route::get('/admin/user', [UserController::class, 'index'])->name('admin.users');
+//     Route::get('admin/home', [DashboardController::class, 'index'])->name('admin.home');
+// });
 
 
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
 
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('users');
@@ -191,10 +193,32 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/edit/{id}', [AdminVoucherController::class, 'edit'])->name('edit');
         Route::put('/update/{id}', [AdminVoucherController::class, 'update'])->name('update');
         Route::delete('/delete/{id}', [AdminVoucherController::class, 'destroy'])->name('delete');
+        Route::patch('/toggle-status/{id}', [AdminVoucherController::class, 'toggleStatus'])->name('toggleStatus');
+
     });
     // Reviews admin
     Route::prefix('reviews')->name('reviews.')->group(function () {
         Route::get('/', [ReviewController::class, 'index'])->name('index');
         Route::delete('/delete/{id}', [ReviewController::class, 'destroy'])->name('destroy');
+    });
+});
+
+Route::middleware(['auth', 'staff'])->prefix('staff')->name('staff.')->group(function () {
+    Route::get('/dashboard', [AuthController::class, 'staffDashboard'])->name('dashboard');
+    Route::get('/', [AuthController::class, 'staffIndex'])->name('home');
+
+    Route::prefix('orders')->name('orders.')->group(function () {
+        Route::get('/', [AdminOrderController::class, 'listOrder'])->name('index'); // Xem tất cả đơn
+        Route::get('/detail/{id}', [AdminOrderController::class, 'detail'])->name('detail'); // Chi tiết đơn
+        Route::put('/status/{id}', [AdminOrderController::class, 'updateStatus'])->name('updateStatus'); // Cập nhật trạng thái
+    });
+    Route::prefix('products')->name('products.')->group(function () {
+        Route::get('/', [AdminProductController::class, 'listProduct'])->name('index');
+        Route::get('/edit/{id}', [AdminProductController::class, 'edit'])->name('edit'); // Chỉnh sửa số lượng tồn
+        Route::put('/update/{id}', [AdminProductController::class, 'update'])->name('update');
+    });
+    Route::prefix('reviews')->name('reviews.')->group(function () {
+        Route::get('/', [ReviewController::class, 'index'])->name('index'); // Xem tất cả
+        Route::delete('/delete/{id}', [ReviewController::class, 'destroy'])->name('destroy'); // Xoá nếu cần
     });
 });

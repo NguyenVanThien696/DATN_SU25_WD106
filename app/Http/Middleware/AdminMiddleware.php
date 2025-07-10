@@ -5,7 +5,6 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Symfony\Component\HttpFoundation\Response;
 
 class AdminMiddleware
 {
@@ -13,8 +12,14 @@ class AdminMiddleware
     {
         $user = Auth::user();
 
-        if (!$user || (int)trim($user->role) !== 1) {
-            return redirect()->route('login.form')->withErrors(['Bạn không có quyền truy cập trang này.']);
+        // Nếu chưa đăng nhập, chuyển về trang đăng nhập
+        if (!$user) {
+            return redirect()->route('login.form');
+        }
+
+        // Nếu đã đăng nhập nhưng không phải admin
+        if ((int) $user->role !== 1) {
+            abort(403); // hoặc abort(403) nếu bạn muốn hiện trang "Cấm truy cập"
         }
 
         return $next($request);
