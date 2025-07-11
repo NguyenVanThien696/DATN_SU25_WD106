@@ -92,6 +92,25 @@ public function cancel($id)
     });
 }
 
+public function confirmReceived($id)
+{
+    return DB::transaction(function () use ($id) {
+        $order = Order::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->lockForUpdate()
+            ->firstOrFail();
+
+        if ($order->status !== 'delivered') {
+            return back()->with('error', 'Chỉ xác nhận được các đơn hàng đã giao.');
+        }
+
+        $order->status = 'completed';
+        $order->save();
+
+        return back()->with('success', 'Cảm ơn bạn đã xác nhận! Đơn hàng đã được hoàn tất.');
+    });
+}
+
 
 
 }

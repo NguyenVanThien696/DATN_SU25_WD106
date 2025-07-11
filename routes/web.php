@@ -110,6 +110,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', [OrderController::class, 'listOrder'])->name('index');
             Route::get('/detail/{id}', [OrderController::class, 'detail'])->name('detail');
             Route::post('/cancel/{id}/', [OrderController::class, 'cancel'])->name('cancel');
+            Route::patch('/confirm-received/{id}', [OrderController::class, 'confirmReceived'])->name('confirmReceived');
         });
 
         //Reviews
@@ -186,6 +187,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/refund/{id}', [AdminOrderController::class, 'refund'])->name('refund');
     });
 
+    // Vouchers admin
     Route::prefix('vouchers')->name('vouchers.')->group(function () {
         Route::get('/', [AdminVoucherController::class, 'index'])->name('index');
         Route::get('/create', [AdminVoucherController::class, 'create'])->name('create');
@@ -196,6 +198,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::patch('/toggle-status/{id}', [AdminVoucherController::class, 'toggleStatus'])->name('toggleStatus');
 
     });
+
+    
     // Reviews admin
     Route::prefix('reviews')->name('reviews.')->group(function () {
         Route::get('/', [ReviewController::class, 'index'])->name('index');
