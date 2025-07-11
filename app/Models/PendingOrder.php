@@ -13,6 +13,9 @@ class PendingOrder extends Model
         'note',
         'user_info',
         'cart_items',
+        'discount',
+        'shipping_fee',
+        'order_code',
     ];
 
     protected $casts = [

@@ -5,12 +5,52 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Support\Facades\DB;
-
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
-    public function listOrder() {
+
+    // Lọc đơn hàng theo trạng thái
+    public function index(Request $request)
+    {
+        $query = Order::with(['user', 'orderItems.productVariant.product', 'shippingAddress']);
+
+        // Lọc theo trạng thái nếu có
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Lọc theo ngày nếu có
+        if ($request->filled('date')) {
+            try {
+                // Hỗ trợ cả 'd/m/Y' và 'Y-m-d'
+                $inputDate = $request->date;
+
+                if (preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $inputDate)) {
+                    $date = Carbon::createFromFormat('d/m/Y', $inputDate)->toDateString();
+                } else {
+                    $date = Carbon::parse($inputDate)->toDateString();
+                }
+
+                $query->whereDate('created_at', $date);
+            } catch (\Exception $e) {
+                return back()->with('error', 'Ngày không hợp lệ!');
+            }
+        }
+
+        $orders = $query->latest()->paginate(10);
+
+        return view('admin.orders.index', [
+            'orders' => $orders,
+            'filteredDate' => $request->date,
+        ]);
+    }
+
+
+
+    public function listOrder()
+    {
         $orders = Order::with(['user', 'shippingAddress'])->orderBy('created_at', 'desc')->paginate(10);
         return view('admin.orders.index', compact('orders'));
     }
@@ -24,7 +64,7 @@ class OrderController extends Controller
         ])->findOrFail($id);
 
         if (
-            ($order->status === 'completed' || $order->payment_method === 'momo') 
+            ($order->status === 'completed' || $order->payment_method === 'momo')
             && $order->payment_status !== 'paid'
         ) {
             $order->payment_status = 'paid';
@@ -36,19 +76,38 @@ class OrderController extends Controller
 
 public function updateStatus(Request $request, $id)
 {
+    $allStatuses = [
+        'pending', 'confirmed', 'processing', 'shipping', 'delivered',
+        'completed', 'cancelled', 'cancelled_paid', 'refunded', 'delivery_failed'
+    ];
+
     $request->validate([
-        'status' => 'required|in:pending,processing,completed,cancelled'
+        'status' => 'required|in:' . implode(',', $allStatuses),
     ]);
 
     return DB::transaction(function () use ($request, $id) {
         $order = Order::with('orderItems')->lockForUpdate()->findOrFail($id);
 
-        if (in_array($order->status, ['cancelled', 'completed'])) {
-            return back()->with('error', 'Không thể thay đổi trạng thái đơn hàng đã hoàn tất hoặc đã bị hủy.');
+        $currentStatus = $order->status;
+        $newStatus = $request->status;
+
+        if (in_array($currentStatus, ['cancelled', 'completed', 'refunded'])) {
+            return back()->with('error', 'Không thể thay đổi trạng thái đơn hàng đã hoàn tất hoặc bị hủy.');
         }
 
-        
-        if ($request->status === 'cancelled') {
+        $validTransitions = [
+            'pending' => ['confirmed', 'cancelled'],
+            'confirmed' => ['processing', 'cancelled'],
+            'processing' => ['shipping', 'cancelled'],
+            'shipping' => ['delivered', 'delivery_failed'],
+            'delivered' => ['completed'],
+        ];
+
+        if (!in_array($newStatus, $validTransitions[$currentStatus] ?? [])) {
+            return back()->with('error', 'Chuyển trạng thái không hợp lệ.');
+        }
+
+        if (in_array($newStatus, ['cancelled', 'cancelled_paid'])) {
             foreach ($order->orderItems as $item) {
                 if ($item->product_variant_id && $item->quantity > 0) {
                     DB::table('product_variants')
@@ -58,7 +117,7 @@ public function updateStatus(Request $request, $id)
             }
         }
 
-        $order->status = $request->status;
+        $order->status = $newStatus;
         $order->save();
 
         return back()->with('success', 'Cập nhật trạng thái đơn hàng thành công!');
@@ -66,28 +125,25 @@ public function updateStatus(Request $request, $id)
 }
 
 
-public function refund($id)
-{
-     $order = Order::findOrFail($id);
-    if ($order->status !== 'cancelled_paid' || $order->payment_status !== 'paid') {
-        return back()->with('error', 'Đơn hàng không hợp lệ để hoàn tiền.');
-    }
+    public function refund($id)
+    {
+        $order = Order::findOrFail($id);
+        if ($order->status !== 'cancelled_paid' || $order->payment_status !== 'paid') {
+            return back()->with('error', 'Đơn hàng không hợp lệ để hoàn tiền.');
+        }
         foreach ($order->orderItems as $item) {
-        $variant = $item->productVariant;
-        $variant->stock += $item->quantity;
-        $variant->save();
+            $variant = $item->productVariant;
+            $variant->stock += $item->quantity;
+            $variant->save();
+        }
+
+        $order->update([
+            'status' => 'refunded',
+            'payment_status' => 'refunded',
+        ]);
+
+
+
+        return back()->with('success', 'Đã hoàn tiền cho đơn hàng #' . $order->id);
     }
-
-    $order->update([
-        'status' => 'refunded',
-        'payment_status' => 'refunded',
-    ]);
-
-
-
-    return back()->with('success', 'Đã hoàn tiền cho đơn hàng #' . $order->id);
-}
-
-
-
 }

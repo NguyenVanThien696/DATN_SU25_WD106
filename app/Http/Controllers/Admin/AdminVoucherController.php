@@ -8,12 +8,18 @@ use App\Models\Coupon;
 
 class AdminVoucherController extends Controller
 {
-    // Hiển thị danh sách voucher
-    public function index()
-    {
-    $vouchers = \App\Models\Coupon::withCount('users')->latest()->paginate(10);
+public function index()
+{
+    Coupon::where('status', '!=', 'expired')
+        ->whereNotNull('end_at')
+        ->where('end_at', '<', now())
+        ->update(['status' => 'expired']);
+
+    $vouchers = Coupon::withCount('users')->latest()->paginate(10);
+
     return view('admin.vouchers.index', compact('vouchers'));
-    }
+}
+
 
     // Form thêm voucher
     public function create()
@@ -94,4 +100,16 @@ class AdminVoucherController extends Controller
 
         return redirect()->route('admin.vouchers.index')->with('success', 'Xóa mã giảm giá thành công!');
     }
+    public function toggleStatus(Request $request, $id)
+{
+    $request->validate([
+        'status' => 'required|in:active,inactive,expired'
+    ]);
+
+    $voucher = Coupon::findOrFail($id);
+    $voucher->status = $request->status;
+    $voucher->save();
+
+    return back()->with('success', 'Cập nhật trạng thái thành công!');
+}
 }

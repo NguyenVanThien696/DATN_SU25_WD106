@@ -163,12 +163,12 @@
                         </tr>
 
                         <tr>
-                            <td colspan="6">Giảm giá</td>
-                            <td>- {{ number_format($order->discount, 0, ',', '.') }}đ</td>
+                            <td colspan="6" class="text-danger fw-semibold">Giảm giá</td>
+                            <td class="text-danger">- {{ number_format($order->discount, 0, ',', '.') }}đ</td>
                         </tr>
                         <tr>
                             <td colspan="6">Tổng cộng</td>
-                            <td class="text-danger">
+                            <td class="text-dark fw-bold">
                                 {{ number_format($order->total_price, 0, ',', '.') }}đ
                             </td>
                         </tr>

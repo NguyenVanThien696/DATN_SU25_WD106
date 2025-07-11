@@ -19,25 +19,28 @@ class Product extends Model
         'description',
         'price',
         'image',
-        
+
     ];
 
 
-        public function category(){
-        return $this->belongsTo(Category::class, 'category_id');
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
-        public function brand(){
-        return $this->belongsTo(Brand::class, 'brand_id');
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
     }
-        public function tag(){
+    public function tag()
+    {
         return $this->belongsTo(Tag::class, 'tag_id');
     }
-        public function variants() {
+    public function variants()
+    {
         return $this->hasMany(ProductVariant::class);
     }
-        public function reviews() {
+    public function reviews()
+    {
         return $this->hasMany(ProductReview::class);
     }
-
-    
 }

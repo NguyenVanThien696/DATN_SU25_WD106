@@ -43,21 +43,29 @@
             @php
             $statusClass = match($order->status) {
             'pending' => 'bg-warning',
+            'confirmed' => 'bg-primary text-white',
             'processing' => 'bg-info',
             'completed' => 'bg-success',
             'cancelled' => 'bg-danger',
             'cancelled_paid' => 'bg-warning text-dark',
             'refunded' => 'bg-success',
+            'delivery_failed' => 'bg-danger',
             default => 'bg-secondary',
             };
 
+
+
             $statusText = match($order->status) {
             'pending' => 'Đang chờ xử lí',
-            'processing' => 'Đang giao hàng',
-            'completed' => 'Đã hoàn thành',
+            'confirmed' => 'Đã xác nhận',
+            'processing' => 'Đang chuẩn bị',
+            'shipping' => 'Đang giao hàng',
+            'delivered' => 'Đã giao (chờ khách xác nhận)',
+            'completed' => 'Đã hoàn tất',
             'cancelled' => 'Đã hủy',
-            'cancelled_paid' => 'Đã hủy (đang đợi hoàn tiền)',
+            'cancelled_paid' => 'Đã hủy (chờ hoàn tiền)',
             'refunded' => 'Đã hoàn tiền',
+            'delivery_failed' => 'Giao thất bại',
             default => 'Không xác định',
             };
 
@@ -73,17 +81,17 @@
             default => 'Không xác định',
             };
             $paymentStatusClass = match($order->payment_status) {
-                'paid' => 'bg-success',
-                'unpaid' => 'bg-warning',
-                'refunded' => 'bg-success',
-                default => 'bg-secondary',
+            'paid' => 'bg-success',
+            'unpaid' => 'bg-warning',
+            'refunded' => 'bg-success',
+            default => 'bg-secondary',
             };
 
             $paymentStatusText = match($order->payment_status) {
-                'paid' => 'Đã thanh toán',
-                'unpaid' => 'Chưa thanh toán',
-                'refunded' => 'Đã hoàn tiền',
-                default => 'Không xác định',
+            'paid' => 'Đã thanh toán',
+            'unpaid' => 'Chưa thanh toán',
+            'refunded' => 'Đã hoàn tiền',
+            default => 'Không xác định',
             };
             @endphp
 
@@ -157,6 +165,16 @@
                         @endforeach
                     </tbody>
                     <tfoot class="table-light fw-bold text-center">
+
+                        <tr>
+                            <td colspan="6">Phí vận chuyển</td>
+                            <td>{{ number_format($order->shipping_fee, 0, ',', '.') }}đ</td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="6" class="text-danger fw-semibold">Giảm giá</td>
+                            <td class="text-danger">- {{ number_format($order->discount, 0, ',', '.') }}đ</td>
+                        </tr>
                         <tr>
                             <td colspan="6">Tổng cộng</td>
                             <td class="text-danger">
