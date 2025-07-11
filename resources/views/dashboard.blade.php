@@ -21,7 +21,7 @@
                     </div>
 
                     @if (Auth::user()->role == 1)
-                        <a href="{{ route('admin.home') }}" class="btn btn-primary w-100 mt-2 py-2"
+                        <a href="{{ route('admin.index') }}" class="btn btn-primary w-100 mt-2 py-2"
                             style="border-radius: 30px;">
                             → Truy cập trang ADMIN
                         </a>

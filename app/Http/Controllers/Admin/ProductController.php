@@ -8,6 +8,7 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Color;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Size;
 use App\Models\Tag;
 
@@ -23,6 +24,8 @@ class ProductController extends Controller
     {
         return view('admin.index');
     }
+
+
 
     public function listProduct()
     {
@@ -254,49 +257,135 @@ class ProductController extends Controller
         return view('admin.products.detail', compact('product'));
     }
 
-<<<<<<< HEAD
+
+            public function indexVariant()
+    {
+            $colors = Color::all();
+            $sizes = Size::all();
+        return view('admin.products.productvariants.index', compact('colors', 'sizes'));
+    }
+
     public function createSize(){
         return view('admin.products.productvariants.sizes.create');
-=======
-    public function createSize()
-    {
-        return view('admin.sizes.create');
->>>>>>> eb724632d91859e2d0fdcf1177c5fb02d87baf91
+
     }
 
-    public function storeSize(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|min:2|max:100',
-        ]);
+public function storeSize(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string|min:2|max:100',
+    ]);
 
-        Size::create([
-            'name' => $request->name,
-        ]);
-        return redirect()->route('admin.products.createSize')->with('success', 'Thêm biến thể kích thước sản phẩm thành công');
+    $exists = Size::whereRaw('LOWER(name) = ?', [strtolower($request->name)])->exists();
+
+    if ($exists) {
+        return redirect()
+            ->back()
+            ->withInput()
+            ->with('error', 'Tên kích cỡ đã tồn tại.');
     }
 
-<<<<<<< HEAD
+    Size::create([
+        'name' => $request->name,
+    ]);
+
+    return redirect()
+        ->route('admin.products.indexVariant')
+        ->with('success', 'Thêm biến thể kích cỡ mới thành công!');
+}
+
+
+
+public function editSize($id)
+{
+    $item = Size::findOrFail($id);
+    return view('admin.products.productvariants.edit', [
+        'item' => $item,
+        'type' => 'size',
+    ]);
+}
+
+public function updateSize(Request $request, $id)
+{
+    $request->validate(['name' => 'required|string|max:255']);
+    $size = Size::findOrFail($id);
+    $size->update(['name' => $request->name]);
+    return redirect()->route('admin.products.indexVariant')->with('success', 'Cập nhật kích cỡ thành công!');
+}
+
+public function deleteSize($id)
+{
+    $size = Size::findOrFail($id);
+
+    $hasProduct = ProductVariant::where('size_id', $id)->exists();
+
+    if ($hasProduct) {
+        return redirect()->route('admin.products.indexVariant')->with('error', 'Không thể xoá kích cỡ vì đang được sử dụng trong sản phẩm hoặc đơn hàng.');
+    }
+
+    $size->delete();
+    return redirect()->route('admin.products.indexVariant')->with('success', 'Xoá kích cỡ thành công!');
+}
+
+
     public function createColor(){
         return view('admin.products.productvariants.colors.create');
-=======
-    public function createColor()
-    {
-        return view('admin.colors.create');
->>>>>>> eb724632d91859e2d0fdcf1177c5fb02d87baf91
     }
 
-    public function storeColor(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|min:2|max:100',
-        ]);
+public function storeColor(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string|min:2|max:100',
+    ]);
 
-        Color::create([
-            'name' => $request->name,
-        ]);
-        return redirect()->route('admin.products.createColor')->with('success', 'Thêm biến thể màu sản phẩm thành công');
+    $exists = Size::whereRaw('LOWER(name) = ?', [strtolower($request->name)])->exists();
+
+    if ($exists) {
+        return redirect()
+            ->back()
+            ->withInput()
+            ->with('error', 'Tên màu đã tồn tại.');
     }
+
+    Size::create([
+        'name' => $request->name,
+    ]);
+
+    return redirect()
+        ->route('admin.products.indexVariant')
+        ->with('success', 'Thêm biến thể màu mới thành công!');
+}
+
+    public function editColor($id)
+{
+    $item = Color::findOrFail($id);
+    return view('admin.products.productvariants.edit', [
+        'item' => $item,
+        'type' => 'color',
+    ]);
+}
+
+public function updateColor(Request $request, $id)
+{
+    $request->validate(['name' => 'required|string|max:255']);
+    $color = Color::findOrFail($id);
+    $color->update(['name' => $request->name]);
+    return redirect()->route('admin.products.indexVariant')->with('success', 'Cập nhật màu sắc thành công!');
+}
+
+public function deleteColor($id)
+{
+    $color = Color::findOrFail($id);
+
+    $hasProduct = ProductVariant::where('color_id', $id)->exists();
+
+    if ($hasProduct) {
+        return redirect()->route('admin.products.indexVariant')->with('error', 'Không thể xoá màu sắc vì đang được sử dụng trong sản phẩm hoặc đơn hàng.');
+    }
+
+    $color->delete();
+    return redirect()->route('admin.products.indexVariant')->with('success', 'Xoá màu sắc thành công!');
+}
 
     public function filter(Request $request)
     {
@@ -315,4 +404,8 @@ class ProductController extends Controller
 
         return view('admin.products.index', compact('listProducts'));
     }
+
+
+
+
 }

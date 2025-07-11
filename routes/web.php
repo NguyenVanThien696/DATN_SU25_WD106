@@ -160,10 +160,20 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/update/{id}', [AdminProductController::class, 'update'])->name('products.update');
         Route::delete('/delete/{id}', [AdminProductController::class, 'delete'])->name('products.delete');
         Route::get('/detail/{id}', [AdminProductController::class, 'show'])->name('products.show');
+
+        Route::get('/indexVariant', [AdminProductController::class, 'indexVariant'])->name('products.indexVariant');
+        
         Route::get('/create/size', [AdminProductController::class, 'createSize'])->name('products.createSize');
         Route::post('/store/size', [AdminProductController::class, 'storeSize'])->name('products.storeSize');
+        Route::get('/edit/size/{id}', [AdminProductController::class, 'editSize'])->name('products.editSize');
+        Route::put('/update/size/{id}', [AdminProductController::class, 'updateSize'])->name('products.updateSize');
+        Route::delete('/delete/size/{id}', [AdminProductController::class, 'deleteSize'])->name('products.deleteSize');
+
         Route::get('/create/color', [AdminProductController::class, 'createColor'])->name('products.createColor');
         Route::post('/store/color', [AdminProductController::class, 'storeColor'])->name('products.storeColor');
+        Route::get('/edit/color/{id}', [AdminProductController::class, 'editColor'])->name('products.editColor');
+        Route::put('/update/color/{id}', [AdminProductController::class, 'updateColor'])->name('products.updateColor');
+        Route::delete('/delete/color/{id}', [AdminProductController::class, 'deleteColor'])->name('products.deleteColor');
     });
 
     // Category admin

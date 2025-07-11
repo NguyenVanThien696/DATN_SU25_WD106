@@ -16,7 +16,7 @@
                                     d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
                                 </path>
                             </svg>
-                            <a href=""><span class="menu-item-text">Trang Chủ</span></a>
+                            <a href="{{ route('admin.index') }}"><span class="menu-item-text">Trang Chủ</span></a>
                         </div>
                         <ul>
                             <li data-menu-item="modern-project-dashboard" class="menu-item">
@@ -62,7 +62,7 @@
 
                             <li data-menu-item="modern-voucher-list" class="menu-item">
                                 <i class="fa-solid fa-list fa-sm"></i>
-                                <a class="h-full w-full flex items-center" href="">
+                                <a class="h-full w-full flex items-center" href="{{ route('admin.products.indexVariant') }}">
                                     <span>Danh Sách Biến Thể</span>
                                 </a>
                             </li>
