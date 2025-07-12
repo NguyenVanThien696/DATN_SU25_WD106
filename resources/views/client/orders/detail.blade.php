@@ -44,6 +44,8 @@
             'processing' => 'bg-info',
             'completed' => 'bg-success',
             'cancelled' => 'bg-danger',
+            'cancelled_paid' => 'bg-warning text-dark',
+            'refunded' => 'bg-success',
             default => 'bg-secondary',
             };
 
@@ -52,23 +54,36 @@
             'processing' => 'Đang giao hàng',
             'completed' => 'Đã hoàn thành',
             'cancelled' => 'Đã hủy',
+            'cancelled_paid' => 'Đã hủy (đang đợi hoàn tiền)',
+            'refunded' => 'Đã hoàn tiền',
             default => 'Không xác định',
             };
 
             $paymentClass = match($order->payment_method) {
             'cod' => 'bg-warning',
-            'momo' => 'bg-danger',
+            'vnpay' => 'bg-primary',
             default => 'bg-secondary',
             };
 
             $paymentText = match($order->payment_method) {
             'cod' => 'Thanh toán khi nhận hàng',
-            'momo' => 'Thanh toán Momo',
+            'vnpay' => 'Thanh toán VNPay',
             default => 'Không xác định',
             };
 
-            $paymentStatusClass = $order->payment_status == 'paid' ? 'bg-success' : 'bg-warning';
-            $paymentStatusText = $order->payment_status == 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán';
+            $paymentStatusClass = match($order->payment_status) {
+            'paid' => 'bg-success',
+            'unpaid' => 'bg-warning',
+            'refunded' => 'bg-success',
+            default => 'bg-secondary',
+            };
+
+            $paymentStatusText = match($order->payment_status) {
+            'paid' => 'Đã thanh toán',
+            'unpaid' => 'Chưa thanh toán',
+            'refunded' => 'Đã hoàn tiền',
+            default => 'Không xác định',
+            };
             @endphp
 
             <table class="table table-bordered table-striped mb-0">
@@ -141,9 +156,19 @@
                         @endforeach
                     </tbody>
                     <tfoot class="table-light fw-bold text-center">
+
+                        <tr>
+                            <td colspan="6">Phí vận chuyển</td>
+                            <td>{{ number_format($order->shipping_fee, 0, ',', '.') }}đ</td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="6" class="text-danger fw-semibold">Giảm giá</td>
+                            <td class="text-danger">- {{ number_format($order->discount, 0, ',', '.') }}đ</td>
+                        </tr>
                         <tr>
                             <td colspan="6">Tổng cộng</td>
-                            <td class="text-danger">
+                            <td class="text-dark fw-bold">
                                 {{ number_format($order->total_price, 0, ',', '.') }}đ
                             </td>
                         </tr>

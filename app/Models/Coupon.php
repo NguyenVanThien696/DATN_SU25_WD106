@@ -11,16 +11,33 @@ class Coupon extends Model
 
     protected $fillable = [
         'code',
+        'discount_type',
         'discount_percent',
+        'max_discount_amount',
+        'discount_amount',
         'expires_at',
+        'start_at',
+        'end_at',
+        'usage_limit',
+        'used',
+        'status',
     ];
 
-    protected $dates = ['expires_at'];
+    protected $casts = [
+        'start_at' => 'datetime',
+        'end_at' => 'datetime',
+        'expires_at' => 'datetime',
+    ];
+
+    public function isValid(): bool
+    {
+        return $this->expires_at === null || $this->expires_at->isFuture();
+    }
 
     public function users()
     {
         return $this->belongsToMany(User::class, 'user_coupons')
                     ->withPivot('used_at')
                     ->withTimestamps();
-    }
+    } 
 }

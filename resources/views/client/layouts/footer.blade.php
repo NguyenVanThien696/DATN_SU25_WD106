@@ -34,9 +34,9 @@
 		            <div class="col-lg-4">
 		                <div class="mb-4 footer-logo-wrap"><a href="{{ route('client.index') }}"
 		                        class="footer-logo">ModaVie<span>.</span></a></div>
-		                <p class="mb-4">Donec facilisis quam ut purus rutrum lobortis. Donec vitae odio quis nisl dapibus
-		                    malesuada. Nullam ac aliquet velit. Aliquam vulputate velit imperdiet dolor tempor tristique.
-		                    Pellentesque habitant</p>
+		                <p class="mb-4">Lấy cảm hứng từ những cảm xúc trong tâm hồn người phụ nữ – lúc dịu dàng như nốt trầm,
+		                    khi rực rỡ như nốt cao – Charming Notes là bản hòa tấu, nơi mỗi thiết kế là một thanh âm riêng,
+		                    khắc họa vẻ đẹp của từng cung bậc xúc cảm khác nhau.</p>
 
 		                <ul class="list-unstyled custom-social">
 		                    <li><a href="#"><span class="fa fa-brands fa-facebook-f"></span></a></li>

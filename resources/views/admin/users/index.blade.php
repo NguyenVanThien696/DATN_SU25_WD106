@@ -1,145 +1,96 @@
 @extends('admin.layouts.default')
 
-@section('styles')
-<style>
-    /* Font tiêu đề */
-    h2.custom-title {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        font-weight: 700;
-        font-size: 1.8rem;
-        color: #333;
-    }
+@section('title', 'Quản lý người dùng')
 
-    /* Form tìm kiếm */
-    form.search-form {
-        max-width: 320px;
-    }
+@push('styles')
+    <style>
+        .table th,
+        .table td {
+            vertical-align: middle !important;
+            white-space: nowrap;
+        }
 
-    form.search-form input[type="text"] {
-        border-radius: 25px 0 0 25px;
-        padding-left: 15px;
-        font-size: 0.9rem;
-        border: 1px solid #ced4da;
-        transition: border-color 0.3s ease;
-        height: 38px;
-    }
+        .table th {
+            background-color: #f1f3f5;
+        }
 
-    form.search-form input[type="text"]:focus {
-        border-color: #495057;
-        outline: none;
-        box-shadow: 0 0 6px rgba(73,80,87,0.5);
-    }
+        .badge {
+            font-size: 0.85em;
+            padding: 0.4em 0.6em;
+            border-radius: 0.25rem;
+        }
 
-    form.search-form button {
-        border-radius: 0 25px 25px 0;
-        border: 1px solid #ced4da;
-        border-left: none;
-        background-color: #6c757d;
-        color: white;
-        width: 42px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background-color 0.3s ease;
-        cursor: pointer;
-    }
-
-    form.search-form button:hover {
-        background-color: #5a6268;
-    }
-
-    form.search-form button i {
-        font-size: 1.1rem;
-    }
-
-    /* Nút Xóa */
-    .btn-danger.custom-delete-btn {
-        background-color: #f8d7da; /* đỏ nhạt */
-        color: #842029;
-        border: 1px solid #f5c2c7;
-        border-radius: 6px;
-        padding: 4px 12px;
-        font-size: 0.85rem;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        transition: background-color 0.3s ease, color 0.3s ease;
-    }
-
-    .btn-danger.custom-delete-btn:hover {
-        background-color: #dc3545; /* đỏ đậm */
-        color: white;
-        border-color: #dc3545;
-        text-decoration: none;
-    }
-
-    .btn-danger.custom-delete-btn i {
-        font-size: 1rem;
-    }
-    
-</style>
-@endsection
+        .search-form {
+            max-width: 320px;
+        }
+    </style>
+@endpush
 
 @section('content')
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="custom-title mb-0">Danh sách tài khoản người dùng</h2>
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0 text-primary">Danh sách người dùng</h4>
+            <form class="d-flex search-form" action="{{ route('admin.users') }}" method="GET">
+                <input type="text" class="form-control me-2" name="search" value="{{ request('search') }}"
+                    placeholder="Tìm tên hoặc email...">
+                <button type="submit" class="btn btn-outline-primary"><i class="fas fa-search"></i></button>
+            </form>
+        </div>
 
-        <!-- Ô tìm kiếm -->
-        <form method="GET" action="{{ route('admin.users') }}" class="search-form d-flex" role="search" autocomplete="off">
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Tìm kiếm tên hoặc email...">
-            <button type="submit" aria-label="Tìm kiếm">
-                <i class="fas fa-search"></i>
-            </button>
-        </form>
+        @if (session('status'))
+            <div class="alert alert-success mb-3">{{ session('status') }}</div>
+        @elseif (session('error'))
+            <div class="alert alert-danger mb-3">{{ session('error') }}</div>
+        @endif
+
+        <div class="table-responsive shadow rounded">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light">
+                    <tr class="text-center">
+                        <th>#</th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        <th>SĐT</th>
+                        <th>Vai trò</th>
+                        <th>Ngày tạo</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($users as $index => $user)
+                        <tr>
+                            <td class="text-center">{{ $loop->iteration + ($users->currentPage() - 1) * $users->perPage() }}
+                            </td>
+                            <td>{{ $user->name }}</td>
+                            <td>{{ $user->email }}</td>
+                            <td>{{ $user->phone ?? '—' }}</td>
+                            <td class="text-center">
+                                @if ($user->role == 1)
+                                    <span class="badge bg-success"><i class="fas fa-user-shield"></i> Admin</span>
+                                @elseif ($user->role == 3)
+                                    <span class="badge bg-info text-dark"><i class="fas fa-user-cog"></i> Nhân viên</span>
+                                @else
+                                    <span class="badge bg-secondary"><i class="fas fa-user"></i> Người dùng</span>
+                                @endif
+                            </td>
+                            <td class="text-center">{{ $user->created_at->format('d/m/Y H:i') }}</td>
+                            <td class="text-center">
+                                <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-sm btn-warning px-3">
+                                    <i class="fas fa-edit me-1"></i> Sửa
+                                </a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">Không có người dùng nào.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-3 d-flex justify-content-center">
+            {{ $users->links('pagination::bootstrap-5') }}
+        </div>
     </div>
-
-    <table class="table table-bordered align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>ID</th>
-                <th>Họ tên</th>
-                <th>Email</th>
-                <th>Số điện thoại</th>
-                <th>Username</th>
-
-                <th>Vai trò</th>
-                <th>Ngày tạo</th>
-                <th>Hành động</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($users as $user)
-            <tr>
-                <td>{{ $user->id }}</td>
-                <td>{{ $user->name }}</td>
-                <td>{{ $user->email }}</td>
-                <td>{{ $user->phone ?? 'Chưa có' }}</td>
-                <td>{{ $user->username ?? 'N/A' }}</td>
-
-                <td>
-                    <span class="badge {{ $user->role == 1 ? 'bg-success' : 'bg-secondary' }}">
-                        {{ $user->role == 1 ? 'Admin' : 'User' }}
-                    </span>
-                </td>
-                <td>{{ $user->created_at->format('Y-m-d H:i') }}</td>
-                <td class="d-flex gap-1">
-                    <!-- Nút sửa -->
-                    <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-sm btn-warning d-flex align-items-center gap-1">
-                        <i class="fas fa-edit"></i> Sửa
-                    </a>
-
-                    <!-- Nút xóa -->
-
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-
-    <!-- Phân trang -->
-    {{ $users->withQueryString()->links() }}
-</div>
 @endsection

@@ -12,49 +12,52 @@ use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
-    public function showLoginForm(){
-        return view ('auth.login');
+    public function showLoginForm()
+    {
+        return view('auth.login');
     }
 
-        public function login(Request $request){
-            $credentials = $request->only('email', 'password');
+    public function login(Request $request)
+    {
+        $credentials = $request->only('email', 'password');
 
-            if(Auth::attempt($credentials)){
-                $request->session()->regenerate();
-                $user = Auth::user();
-                if((int)$user->role===1){
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
+            $user = Auth::user();
+            switch ((int)$user->role) {
+                case 1: // Admin
                     return redirect()->route('admin.dashboard');
-                }
-                return redirect()->route('dashboard.form');
-            }
-            return redirect()->back()->withErrors([
-                'email' => 'Thông tin đăng nhập không chính xác.',
-            ]);
-        }
 
-    public function showRegisterForm(){
-        return view ('auth.register');
+                case 3: // Staff
+                    return redirect()->route('staff.dashboard');
+
+                default: // User thường
+                    return redirect()->route('dashboard.form');
+            }
+        }
+        return redirect()->back()->withErrors([
+            'email' => 'Thông tin đăng nhập không chính xác.',
+        ]);
     }
 
-    public function showDashboard(){
+    public function showRegisterForm()
+    {
+        return view('auth.register');
+    }
+
+    public function showDashboard()
+    {
         $user = Auth::user();
-        if(is_null($user)){
+        if (is_null($user)) {
             return redirect()->route('login.form');
         }
         return view('dashboard', ['user' => $user]);
     }
 
-    public function adminDashboard()
-{
-    $user = Auth::user();
-    if (is_null($user) ||(int) $user->role != 1) {
-        // Nếu không phải admin hoặc chưa đăng nhập, chuyển về login hoặc trang khác
-        return redirect()->route('login.form');
-    }
-    return view('admin.dashboard', ['user' => $user]);
-}
 
-    public function register(Request $request){
+
+    public function register(Request $request)
+    {
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email:max:255|unique:users',
@@ -76,28 +79,28 @@ class AuthController extends Controller
     }
 
     public function changePassword(Request $request)
-{
-    $request->validate([
-        'current_password' => 'required',
-        'new_password' => 'required|min:6|confirmed',
-    ]);
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|min:6|confirmed',
+        ]);
 
-    $user = Auth::user();
+        $user = Auth::user();
 
-    if (!Hash::check($request->current_password, $user->password)) {
-        return back()->withErrors(['current_password' => 'Mật khẩu cũ không đúng.'])->withInput();
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Mật khẩu cũ không đúng.'])->withInput();
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+        session()->put('status', 'Đổi mật khẩu thành công. Vui lòng đăng nhập lại.');
+        Auth::logout();
+
+        return redirect()->route('login.form')->with('status', 'Đổi mật khẩu thành công, vui lòng đăng nhập lại.');
     }
 
-    $user->password = Hash::make($request->new_password);
-    $user->save();
-    session()->put('status', 'Đổi mật khẩu thành công. Vui lòng đăng nhập lại.');
-    Auth::logout();
 
-    return redirect()->route('login.form')->with('status', 'Đổi mật khẩu thành công, vui lòng đăng nhập lại.');
-}
-
-
-     public function logout(Request $request)
+    public function logout(Request $request)
     {
         Auth::logout();
         $request->session()->invalidate();
@@ -107,12 +110,40 @@ class AuthController extends Controller
     }
 
     public function adminIndex()
-{
-    $user = Auth::user();
-    if (is_null($user) ||(int) $user->role !== 1) {
-        return redirect()->route('login.form');
+    {
+        $user = Auth::user();
+        if (is_null($user) || (int) $user->role !== 1) {
+            return redirect()->route('login.form');
+        }
+
+        return view('admin.index', ['user' => $user]);
     }
 
-    return view('admin.index', ['user' => $user]);
-}
+    public function adminDashboard()
+    {
+        $user = Auth::user();
+        if (is_null($user) || (int) $user->role != 1) {
+            // Nếu không phải admin hoặc chưa đăng nhập, chuyển về login hoặc trang khác
+            return redirect()->route('login.form');
+        }
+        return view('admin.dashboard', ['user' => $user]);
+    }
+    public function staffDashboard()
+    {
+        $user = Auth::user();
+        if (is_null($user) || (int)$user->role !== 3) {
+            return redirect()->route('login.form');
+        }
+
+        return view('staff.dashboard', ['user' => $user]);
+    }
+    public function staffIndex()
+    {
+        $user = Auth::user();
+        if (is_null($user) || (int) $user->role !== 3) {
+            return redirect()->route('login.form');
+        }
+
+        return view('staff.home', ['user' => $user]);
+    }
 }

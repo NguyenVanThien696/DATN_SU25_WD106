@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminVoucherController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Client\ClientController;
@@ -16,7 +17,10 @@ use App\Http\Controllers\Client\OrderController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+
+
 use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Client\CategoriesController;
@@ -31,11 +35,16 @@ Route::get('/', [ClientController::class, 'index'])->name('client.index');
 
 
 // Trang product phía user 
-Route::prefix('products')->group(function () {
-    Route::get('/', [ProductController::class, 'index'])->name('client.products.index');
-    Route::get('/detail/{id}', [ProductController::class, 'show'])->name('client.products.detail');
+Route::prefix('client')->name('client.')->group(function () {
 
-
+    Route::prefix('products')->name('products.')->group(function () {
+        Route::get('/', [ProductController::class, 'index'])->name('index');
+        Route::get('/detail/{id}', [ProductController::class, 'show'])->name('detail');
+        Route::get('/boy', [ProductController::class, 'boy'])->name('boy');
+        Route::get('/girl', [ProductController::class, 'girl'])->name('girl');
+        Route::get('/hot', [ProductController::class, 'hot'])->name('hot');
+        Route::get('/new', [ProductController::class, 'new'])->name('new');
+    });
 });
 
 // Danh mục phía user
@@ -63,7 +72,7 @@ Route::prefix('about')->group(function () {
 //Search
 Route::get('/search', [ProductController::class, 'search'])->name('client.search.index');
 
-
+Route::get('/client/reviews/{product}', [ProductReviewController::class, 'store'])->name('client.reviews.store');
 
 // Login routes (không cần auth)
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login.form');
@@ -77,7 +86,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('user.changePassword');
 
-      
+
     Route::prefix('client')->name('client.')->group(function () {
 
 
@@ -95,25 +104,24 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', [CheckoutController::class, 'index'])->name('index');
             Route::post('/', [CheckoutController::class, 'process'])->name('process');
             Route::post('/apply-coupon', [CheckoutController::class, 'apply'])->name('coupon.apply');
+            Route::get('/vnpay-return', [CheckoutController::class, 'vnpayReturn'])->name('vnpayReturn');
             Route::get('/momo-return', [CheckoutController::class, 'momoReturn'])->name('momoReturn');
             Route::post('/momo-ipn', [CheckoutController::class, 'momoIPN'])->name('momoIPN');
             Route::get('/thankyou', [CheckoutController::class, 'thankyou'])->name('thankyou');
-
         });
 
-            // Order user
+        // Order user
         Route::prefix('order')->name('order.')->group(function () {
             Route::get('/', [OrderController::class, 'listOrder'])->name('index');
             Route::get('/detail/{id}', [OrderController::class, 'detail'])->name('detail');
             Route::post('/cancel/{id}/', [OrderController::class, 'cancel'])->name('cancel');
-
+            Route::patch('/confirm-received/{id}', [OrderController::class, 'confirmReceived'])->name('confirmReceived');
         });
 
         //Reviews
         Route::prefix('reviews')->group(function () {
-        Route::post('/', [ProductReviewController::class, 'store'])->name('reviews.store');
+            Route::post('/', [ProductReviewController::class, 'store'])->name('reviews.store');
         });
-
     });
 });
 
@@ -121,25 +129,24 @@ Route::middleware(['auth'])->group(function () {
 
 // Admin Routes (yêu cầu đăng nhập + admin)
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', [AuthController::class, 'adminIndex'])->name('home');
+    Route::get('/', [AuthController::class, 'adminIndex'])->name('index');
+    Route::get('home', [DashboardController::class, 'index'])->name('home');
     Route::get('/dashboard', [AuthController::class, 'adminDashboard'])->name('dashboard');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('changePassword');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/user', [UserController::class, 'index'])->name('users');
 });
 
 
 
 // Route Admin
-Route::middleware(['auth'])->group(function () {
-    Route::get('/admin/user', [UserController::class, 'index'])->name('admin.users');
-});
+// Route::middleware(['auth'])->group(function () {
+//     Route::get('/admin/user', [UserController::class, 'index'])->name('admin.users');
+//     Route::get('admin/home', [DashboardController::class, 'index'])->name('admin.home');
+// });
 
 
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/users', [UserController::class, 'index'])->name('users');
-    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
-    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
-    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
 
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('users');
@@ -151,12 +158,27 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Product admin
     Route::prefix('product')->group(function () {
         Route::get('/index', [AdminProductController::class, 'listProduct'])->name('products.index');
+        Route::get('/filter', [AdminProductController::class, 'filter'])->name('product.filter');
         Route::get('/create', [AdminProductController::class, 'create'])->name('products.create');
         Route::post('/store', [AdminProductController::class, 'store'])->name('products.store');
         Route::get('/edit/{id}', [AdminProductController::class, 'edit'])->name('products.edit');
         Route::put('/update/{id}', [AdminProductController::class, 'update'])->name('products.update');
         Route::delete('/delete/{id}', [AdminProductController::class, 'delete'])->name('products.delete');
         Route::get('/detail/{id}', [AdminProductController::class, 'show'])->name('products.show');
+
+        Route::get('/indexVariant', [AdminProductController::class, 'indexVariant'])->name('products.indexVariant');
+        
+        Route::get('/create/size', [AdminProductController::class, 'createSize'])->name('products.createSize');
+        Route::post('/store/size', [AdminProductController::class, 'storeSize'])->name('products.storeSize');
+        Route::get('/edit/size/{id}', [AdminProductController::class, 'editSize'])->name('products.editSize');
+        Route::put('/update/size/{id}', [AdminProductController::class, 'updateSize'])->name('products.updateSize');
+        Route::delete('/delete/size/{id}', [AdminProductController::class, 'deleteSize'])->name('products.deleteSize');
+
+        Route::get('/create/color', [AdminProductController::class, 'createColor'])->name('products.createColor');
+        Route::post('/store/color', [AdminProductController::class, 'storeColor'])->name('products.storeColor');
+        Route::get('/edit/color/{id}', [AdminProductController::class, 'editColor'])->name('products.editColor');
+        Route::put('/update/color/{id}', [AdminProductController::class, 'updateColor'])->name('products.updateColor');
+        Route::delete('/delete/color/{id}', [AdminProductController::class, 'deleteColor'])->name('products.deleteColor');
     });
 
     // Category admin
@@ -174,13 +196,48 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Order admin
     Route::prefix('order')->name('order.')->group(function () {
         Route::get('/', [AdminOrderController::class, 'listOrder'])->name('index');
+        Route::get('/filter', [AdminOrderController::class, 'index'])->name('filter');
         Route::put('status/{id}', [AdminOrderController::class, 'updateStatus'])->name('updateStatus');
         Route::get('/detail/{id}', [AdminOrderController::class, 'detail'])->name('detail');
+        Route::post('/refund/{id}', [AdminOrderController::class, 'refund'])->name('refund');
     });
 
+    // Vouchers admin
+    Route::prefix('vouchers')->name('vouchers.')->group(function () {
+        Route::get('/', [AdminVoucherController::class, 'index'])->name('index');
+        Route::get('/create', [AdminVoucherController::class, 'create'])->name('create');
+        Route::post('/store', [AdminVoucherController::class, 'store'])->name('store');
+        Route::get('/edit/{id}', [AdminVoucherController::class, 'edit'])->name('edit');
+        Route::put('/update/{id}', [AdminVoucherController::class, 'update'])->name('update');
+        Route::delete('/delete/{id}', [AdminVoucherController::class, 'destroy'])->name('delete');
+        Route::patch('/toggle-status/{id}', [AdminVoucherController::class, 'toggleStatus'])->name('toggleStatus');
+
+    });
+
+    
     // Reviews admin
     Route::prefix('reviews')->name('reviews.')->group(function () {
         Route::get('/', [ReviewController::class, 'index'])->name('index');
         Route::delete('/delete/{id}', [ReviewController::class, 'destroy'])->name('destroy');
+    });
+});
+
+Route::middleware(['auth', 'staff'])->prefix('staff')->name('staff.')->group(function () {
+    Route::get('/dashboard', [AuthController::class, 'staffDashboard'])->name('dashboard');
+    Route::get('/', [AuthController::class, 'staffIndex'])->name('home');
+
+    Route::prefix('orders')->name('orders.')->group(function () {
+        Route::get('/', [AdminOrderController::class, 'listOrder'])->name('index'); // Xem tất cả đơn
+        Route::get('/detail/{id}', [AdminOrderController::class, 'detail'])->name('detail'); // Chi tiết đơn
+        Route::put('/status/{id}', [AdminOrderController::class, 'updateStatus'])->name('updateStatus'); // Cập nhật trạng thái
+    });
+    Route::prefix('products')->name('products.')->group(function () {
+        Route::get('/', [AdminProductController::class, 'listProduct'])->name('index');
+        Route::get('/edit/{id}', [AdminProductController::class, 'edit'])->name('edit'); // Chỉnh sửa số lượng tồn
+        Route::put('/update/{id}', [AdminProductController::class, 'update'])->name('update');
+    });
+    Route::prefix('reviews')->name('reviews.')->group(function () {
+        Route::get('/', [ReviewController::class, 'index'])->name('index'); // Xem tất cả
+        Route::delete('/delete/{id}', [ReviewController::class, 'destroy'])->name('destroy'); // Xoá nếu cần
     });
 });
