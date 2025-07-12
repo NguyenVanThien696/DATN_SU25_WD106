@@ -23,8 +23,10 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 
 use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Client\CategoriesController;
 use App\Http\Controllers\Client\ProductReviewController;
 use App\Models\ProductReview;
+use Illuminate\Support\Facades\App;
 
 // Trang chu
 Route::get('/', [ClientController::class, 'index'])->name('client.index');
@@ -44,6 +46,9 @@ Route::prefix('client')->name('client.')->group(function () {
         Route::get('/new', [ProductController::class, 'new'])->name('new');
     });
 });
+
+// Danh mục phía user
+Route::get('/categories/{id}', [CategoriesController::class, 'show'])->name('client.products.categories');
 
 
 // Trang blog phía user  

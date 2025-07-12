@@ -12,9 +12,15 @@
 		            <ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
 		                <li class="nav-item {{ request()->routeIs('client.index') ? 'active' : '' }}">
 		                    <a class="nav-link" href="{{ route('client.index') }}">Trang chủ </a>
+							
 		                </li>
-		                <li class="nav-item {{ request()->routeIs('client.products.index') ? 'active' : '' }}">
-		                    <a class="nav-link" href="{{ route('client.products.index') }}">Cửa hàng </a>
+		                <li class="nav-item dropdown {{ request()->routeIs('client.products.index') ? 'active' : '' }}">
+		                    <a class="nav-link dropdown-toggle" href="{{ route('client.products.index') }}" id="shopDropdown" role="button"  aria-expanded="false">Cửa hàng </a>
+							<ul class="dropdown-menu" aria-labelledby="shopDropdown">
+								@foreach ($categories as $category)
+									<li><a class="dropdown-item" href="{{route('client.products.categories', $category->id)}}">{{$category->name}}</a></li>
+								@endforeach
+							</ul>
 		                </li>
 		                <li class="nav-item {{ request()->routeIs('client.contact.index') ? 'active' : '' }}">
 		                    <a class="nav-link" href="{{ route('client.contact.index') }}">Về chúng tôi </a>

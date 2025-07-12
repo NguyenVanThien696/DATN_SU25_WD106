@@ -1,6 +1,9 @@
 @extends('client.master')
 
 @section('content')
+
+
+<div class="product-section  py-2">
     @if (session('success'))
         <div class="alert alert-success">
             {{ session('success') }}
@@ -12,6 +15,14 @@
             {{ session('error') }}
         </div>
     @endif
+    <div class="container mt-5">
+    <div class="row">
+        <!-- Cột trái: Ảnh sản phẩm -->
+        <div class="col-md-6 d-flex">
+            <div class="d-flex me-3 flex-column">
+                @php $uniqueColorVariants = collect(); @endphp
+                @foreach ($product->variants as $variant)
+                    @if (!$uniqueColorVariants->contains('color_id', $variant->color_id))
     <div class="product-section py-5">
         <div class="container" style="max-width: 1300px;">
             <div class="row">
@@ -21,6 +32,44 @@
                         @php
                             $variantImages = $product->variants->whereNotNull('image')->take(3);
                         @endphp
+                        <img src="{{ asset('storage/uploads'.$variant->image) }}" alt="Ảnh màu {{ $variant->color->name }}"
+                            class="img-thumbnail thumbnail-variant" data-color="{{ $variant->color->id }}"
+                            data-image="{{ asset('storage/'.$variant->image)}}" style="width: 100px; height: 150px; object-fit: cover;">
+                    @endif
+                @endforeach
+            </div>
+            <div class="" style="position: relative">
+                <img id="main-image" src="{{ asset('storage/'. $product->image) }}" class="img-fluid mb-3" width="500   px" alt="Ảnh chính">
+            </div>
+        </div>
+
+        <!-- Cột phải: Thông tin sản phẩm -->
+        <div class="col-md-6">
+            <h1 class="fw-bold mb-3">{{ $product->name }}</h1>
+            <h7 class="text-muted">{{ $product->description }}</h7>
+            <hr>
+            <div class="d-flex gap-5 mb-4">
+                <p><strong>Tồn kho:</strong> {{ $stock }} sản phẩm</p>|
+
+                <p><strong>Danh mục:</strong> {{ $product->category->name }}</p>|
+                <p><strong>Thương hiệu:</strong> {{ $product->brand->name }}</p>
+            </div>
+            
+
+            <form action="{{ route('client.cart.add') }}" method="POST">
+                @csrf
+                <div class="d-flex gap-5 mb-4">
+                <!-- Chọn size -->
+                @php $sizes = $product->variants->pluck('size')->filter()->unique('id'); @endphp
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Chọn kích cỡ:</label>
+                    <div class="d-flex gap-2 flex-wrap">
+                        @foreach ($sizes as $size)
+                            <label style="cursor: pointer;">
+                                <input type="radio" name="size_id" value="{{ $size->id }}" style="display: none;">
+                                <span class="border px-3 py-1 rounded">{{ $size->name }}</span>
+                            </label>
+                        @endforeach
 
                         <div class="d-flex flex-column align-items-center me-3" style="gap: 10px;">
                             @foreach ($variantImages as $variant)
@@ -45,6 +94,8 @@
                         <strong class="d-block mb-1">Mô tả sản phẩm:</strong>
                         <span class="text-muted">{{ $product->description }}</span>
                     </div>
+                </div>
+                </div>
 
                     <div class="product-info-group mb-3">
                         <div class="product-info-line">
@@ -121,6 +172,12 @@
                 </div>
             </div>
 
+                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                <button type="submit" class="btn btn-success mt-2 px-4 w-100">Thêm vào giỏ hàng</button>
+            </form>
+            <hr>
+        </div>
+        
             <!-- Sản phẩm liên quan -->
             <hr class="my-5" style="border-top: 2px dashed #ccc;">
             <div class="related-products mt-5">
@@ -226,6 +283,82 @@
             </div>
         </div>
     </div>
+</div>
+
+<style>
+/* Nút radio được chọn */
+input[type="radio"]:checked + span {
+    background-color: #3b5d50; /* Màu xanh */
+    color: white;
+    border-color: #3b5d50;
+}
+
+/* Hover size/màu */
+label:hover span {
+    border-color: #3b5d50;
+}
+
+/* Nút thêm vào giỏ hàng */
+.btn-success {
+    background-color: #3b5d50;
+    border-color: #3b5d50;
+    border-radius: 12px;
+}
+
+.btn-success:hover {
+    background-color: #3b5d50;
+    border-color: #3b5d50;
+}
+
+/* Tên sản phẩm */
+.product-section h1,
+.product-section h2 {
+    color: #3b5d50;
+}
+
+/* Giá sản phẩm */
+.product-section .text-danger {
+    color: #3b5d50 !important;
+}
+
+.price-line{
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.price-line .label{
+    font-weight: normal;
+    font-size: 16px;
+    color: #333;
+}
+
+.price-line .price{
+    font-weight: bold;
+    font-size: 20px;
+    color: #3b5d50;
+}
+
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form[action="{{route(
+            'client.cart.add')
+    }
+}
+"]');
+form.addEventListener('submit', function(e) {
+const sizeChecked = document.querySelector('input[name="size_id"]:checked');
+const colorChecked = document.querySelector('input[name="color_id"]:checked');
+
+if (!sizeChecked || !colorChecked) {
+    e.preventDefault();
+    alert('Vui lòng chọn size và màu sắc trước khi thêm vào giỏ hàng.');
+}
+});
+});
+</script>
 
     <!-- CSS -->
     <style>
