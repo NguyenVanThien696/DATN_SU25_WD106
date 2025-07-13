@@ -18,7 +18,7 @@
 		                    <a class="nav-link dropdown-toggle" href="{{ route('client.products.index') }}" id="shopDropdown" role="button"  aria-expanded="false">Cửa hàng </a>
 							<ul class="dropdown-menu" aria-labelledby="shopDropdown">
 								@foreach ($categories as $category)
-									<li><a class="dropdown-item" href="{{route('client.products.categories', $category->id)}}">{{$category->name}}</a></li>
+									<li><a class="dropdown-item" href="{{route('client.category.show', $category->id)}}">{{$category->name}}</a></li>
 								@endforeach
 							</ul>
 		                </li>

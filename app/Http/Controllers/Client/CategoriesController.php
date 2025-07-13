@@ -10,9 +10,10 @@ use Illuminate\Http\Request;
 class CategoriesController extends Controller
 {
     public function show($id){
-        $category = Category::findOrFail($id);
-        $products = Product::where('category_id', $id)->get();
+        $categories = Category::all();
+        $currentCategory = Category::findOrFail($id);
+        $listProducts = $currentCategory->products()->paginate(12);
 
-        return view('client.categories.index', compact('category', 'products'));
+        return view('client.products.index', compact('listProducts', 'categories', 'currentCategory'));
     }
 }

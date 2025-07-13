@@ -48,7 +48,7 @@ Route::prefix('client')->name('client.')->group(function () {
 });
 
 // Danh mục phía user
-Route::get('/categories/{id}', [CategoriesController::class, 'show'])->name('client.products.categories');
+Route::get('/categories/{id}', [CategoriesController::class, 'show'])->name('client.category.show');
 
 
 // Trang blog phía user  

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,9 +15,11 @@ class ProductController extends Controller
 {
     public function index()
     {
+        $currentCategory = null;
+        $categories = Category::all();
         $listProducts = Product::with(['tag', 'variants.size', 'variants.color'])->latest()->paginate(12);
 
-        return view('client.products.index', compact('listProducts'));
+        return view('client.products.index', compact('listProducts', 'categories', 'currentCategory'));
     }
 
     // ShopController
@@ -94,43 +97,12 @@ class ProductController extends Controller
         return view('client.search.index', compact('products', 'keyword'));
     }
 
-    public function boy()
+    public function showByCategory($id)
     {
-        $listboy = Product::with(['tag', 'variants.size', 'variants.color'])
-            ->where('category_id', 3)
-            ->latest()
-            ->paginate(12);
+        $categories = Category::all();
+        $currentCategory = Category::where('id', $id)->firstOrFail();
+        $listProducts = Product::whereHas(['categories', $currentCategory->id])->paginate(12);
 
-        return view('client.products.menu.boy', compact('listboy'));
-    }
-
-    public function girl()
-    {
-        $listgirl = Product::with(['tag', 'variants.size', 'variants.color'])
-            ->where('category_id', 4)
-            ->latest()
-            ->paginate(12);
-
-        return view('client.products.menu.girl', compact('listgirl'));
-    }
-
-    public function hot()
-    {
-        $listhot = Product::with(['tag', 'variants.size', 'variants.color'])
-            ->where('tag_id', 2)
-            ->latest()
-            ->paginate(12);
-
-        return view('client.products.menu.hot', compact('listhot'));
-    }
-
-    public function new()
-    {
-        $listnew = Product::with(['tag', 'variants.size', 'variants.color'])
-            ->where('tag_id', 1)
-            ->latest()
-            ->paginate(12);
-
-        return view('client.products.menu.new', compact('listnew'));
+        return view('client.products.layouts.category_sidebar', compact('listProducts', 'categories', 'currentCategory'));
     }
 }

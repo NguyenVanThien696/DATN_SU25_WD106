@@ -906,7 +906,7 @@ a.more {
 }
 
 .untree_co-section {
-  padding: 7rem 0;
+  padding: 2rem 0 2rem 0 !important;
 }
 
 .form-control {
