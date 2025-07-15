@@ -140,6 +140,8 @@
                                 <td>{{ $order->shippingAddress->phone ?? $order->user->phone ?? '---' }}</td>
                                 <td><strong>{{ number_format($order->total_price, 0, ',', '.') }} đ</strong></td>
                                 <td><span class="badge {{ $methodClass }} text-white">{{ $methodLabel }}</span></td>
+
+
                                 <td>
                                     @if (empty($availableTransitions))
                                     <span
@@ -168,7 +170,11 @@
                                     </div>
                                     @endif
                                 </td>
+
+
                                 <td>{!! $paymentStatusHtml !!}</td>
+
+
                                 <td>
                                     <a href="{{ route('admin.order.detail', $order->id) }}"
                                         class="btn btn-sm btn-outline-dark action-btn">

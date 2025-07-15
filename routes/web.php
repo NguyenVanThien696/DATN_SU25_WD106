@@ -217,6 +217,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     });
 });
 
+
+
+    // Reviews nhân viên
 Route::middleware(['auth', 'staff'])->prefix('staff')->name('staff.')->group(function () {
     Route::get('/dashboard', [AuthController::class, 'staffDashboard'])->name('dashboard');
     Route::get('/', [AuthController::class, 'staffIndex'])->name('home');

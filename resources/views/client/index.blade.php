@@ -8,6 +8,8 @@
 @if (session('error'))
 <div class="alert alert-danger">{{ session('error') }}</div>
 @endif
+
+<!-- Banner đây -->
 <div class="hero">
     <div class="container">
         <div class="row justify-content-between">
@@ -29,6 +31,8 @@
         </div>
     </div>
 </div>
+
+
 <!-- Start Product Section -->
 <div class="product-section">
     <div class="container">

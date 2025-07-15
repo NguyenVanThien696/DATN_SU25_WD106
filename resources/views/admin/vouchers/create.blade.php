@@ -11,13 +11,13 @@
                 @csrf
 
                 <div class="row">
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-10 mb-3">
                         <label class="form-label">Mã giảm giá</label>
                         <input type="text" name="code" class="form-control" value="{{ old('code') }}">
                         @error('code') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-10 mb-3">
                         <label class="form-label">Loại giảm giá</label>
                         <select name="discount_type" id="discount_type" class="form-select">
                             <option value="">-- Chọn loại --</option>
@@ -30,7 +30,7 @@
 
 
                 <div class="row d-none" id="discount_percent_group">
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-10 mb-3">
                         <label class="form-label">Phần trăm giảm (%)</label>
                         <div class="input-group">
                             <input type="number" name="discount_percent" class="form-control" value="{{ old('discount_percent') }}">
@@ -39,7 +39,7 @@
                         @error('discount_percent') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
-                    <div class="col-md-6 mb-3" id="max_discount_group">
+                    <div class="col-md-10 mb-3" id="max_discount_group">
                         <label class="form-label">Số tiền giảm tối đa (VNĐ)</label>
                         <div class="input-group">
                             <input type="number" name="max_discount_amount" class="form-control" value="{{ old('max_discount_amount') }}">
@@ -51,7 +51,7 @@
 
 
                 <div class="row d-none" id="discount_amount_group">
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-10 mb-3">
                         <label class="form-label">Số tiền giảm (VNĐ)</label>
                         <div class="input-group">
                             <input type="number" name="discount_amount" class="form-control" value="{{ old('discount_amount') }}">
@@ -62,13 +62,13 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-10 mb-3">
                         <label class="form-label">Số lượt sử dụng tối đa</label>
                         <input type="number" name="usage_limit" class="form-control" value="{{ old('usage_limit') }}">
                         @error('usage_limit') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-10 mb-3">
                         <label class="form-label">Trạng thái</label>
                         <select name="status" class="form-select">
                             <option value="active" {{ old('status') === 'active' ? 'selected' : '' }}>Đang hoạt động</option>
@@ -80,13 +80,13 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-10 mb-3">
                         <label class="form-label">Thời gian bắt đầu</label>
                         <input type="datetime-local" name="start_at" class="form-control" value="{{ old('start_at') }}">
                         @error('start_at') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
-                    <div class="col-md-6 mb-4">
+                    <div class="col-md-10 mb-4">
                         <label class="form-label">Thời gian kết thúc</label>
                         <input type="datetime-local" name="end_at" class="form-control" value="{{ old('end_at') }}">
                         @error('end_at') <small class="text-danger">{{ $message }}</small> @enderror

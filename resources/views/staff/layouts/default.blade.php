@@ -16,14 +16,13 @@
     <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> -->
 </head>
 
-<body>
+<body>  
     <!-- App Start-->
     <div id="root">
         <!-- App Layout-->
         <div class="app-layout-modern flex flex-auto flex-col">
             <div class="flex flex-auto min-w-0">
                 <!-- Side Nav start-->
-                @include('admin.layouts.sidebar')
                 <!-- Side Nav end-->
 
                 <!-- Header Nav start-->
