@@ -34,11 +34,7 @@
                                 <th style="white-space: nowrap;">Ngày đặt</th>
                                 <th>Ảnh</th>
                                 <th class="text-start">Sản phẩm</th>
-                                <th style="white-space: nowrap;">Phân loại</th>
-                                <th style="white-space: nowrap;">Đơn giá</th>
-                                <th style="white-space: nowrap;">Giảm giá</th>
-                                <th style="white-space: nowrap;">Phí ship</th>
-                                <th style="white-space: nowrap;">Thanh toán</th>
+                                <th style="white-space: nowrap;">Chi tiết thanh toán</th>
                                 <th style="white-space: nowrap;">Trạng thái</th>
                                 <th style="white-space: nowrap;">Phương thức</th>
                                 <th style="white-space: nowrap;">TT Thanh toán</th>
@@ -70,7 +66,15 @@
                                 <td class="text-start">
                                     <div>
                                         <strong>{{ $firstItem->productVariant->product->name }}</strong> x
-                                        {{ $firstItem->quantity }}<br>
+                                        {{ $firstItem->quantity }}
+                                        @if ($firstItem->productVariant)
+                                        <br>
+                                        <small class="text-muted">
+                                            {{ $firstItem->productVariant->color->name ?? '-' }} /
+                                            {{ $firstItem->productVariant->size->name ?? '-' }}
+                                        </small>
+                                        @endif
+                                        <br>
                                         <small class="text-muted">{{ number_format($firstItem->price, 0, ',', '.') }}
                                             đ</small>
                                     </div>
@@ -80,22 +84,31 @@
                                     </a>
                                     @endif
                                 </td>
-                                <td>
-                                    {{ $firstItem->productVariant->color->name ?? '-' }} /
-                                    {{ $firstItem->productVariant->size->name ?? '-' }}
+
+                                <td class="text-start">
+                                    <div class="text-muted small">Tổng tiền:
+                                        <strong>{{ number_format($goc, 0, ',', '.') }} đ</strong>
+                                    </div>
+
+                                    <div class="text-muted small">
+                                        Giảm giá: <strong class="text-success">
+                                            {{ $order->discount > 0 ? '-' . number_format($order->discount, 0, ',', '.') . ' đ' : '0 đ' }}
+                                        </strong>
+                                    </div>
+
+                                    <div class="text-muted small">
+                                        Phí ship:
+                                        <strong class="text-success">
+                                            {{ $goc >= 500000 ? 'Miễn phí' : number_format($order->shipping_fee, 0, ',', '.') . ' đ' }}
+                                        </strong>
+                                    </div>
+
+                                    <div class="fw-semibold text-dark mt-1">Thanh toán:
+                                        <span class="text-primary">{{ number_format($order->total_price, 0, ',', '.') }}
+                                            đ</span>
+                                    </div>
                                 </td>
-                                <td>{{ number_format($goc, 0, ',', '.') }} đ</td>
-                                <td class="text-success fw-semibold">
-                                    {{ $order->discount > 0 ? '-' . number_format($order->discount, 0, ',', '.') . ' đ' : '0 đ' }}
-                                </td>
-                                <td class="text-success fw-semibold">
-                                    @if ($goc >= 500000)
-                                    Miễn phí
-                                    @else
-                                    {{ number_format($order->shipping_fee, 0, ',', '.') }} đ
-                                    @endif
-                                </td>
-                                <td><strong>{{ number_format($order->total_price, 0, ',', '.') }} đ</strong></td>
+
                                 <td>
                                     @php
                                     $statusClass = [

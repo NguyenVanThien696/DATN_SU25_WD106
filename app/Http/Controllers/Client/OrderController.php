@@ -104,7 +104,9 @@ public function confirmReceived($id)
             return back()->with('error', 'Chỉ xác nhận được các đơn hàng đã giao.');
         }
 
-        $order->status = 'completed';
+        if ($order->payment_status !== 'paid') {
+            $order->payment_status = 'paid';
+        }
         $order->save();
 
         return back()->with('success', 'Cảm ơn bạn đã xác nhận! Đơn hàng đã được hoàn tất.');

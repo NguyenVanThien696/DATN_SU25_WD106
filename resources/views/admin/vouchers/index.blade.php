@@ -25,6 +25,7 @@
                             <th>Mã</th>
                             <th>Loại</th>
                             <th>Giá trị</th>
+                            <th>Đơn tối thiểu</th>
                             <th>Đã dùng / Giới hạn</th>
                             <th>Thời gian áp dụng</th>
                             <th>Trạng thái</th>
@@ -63,6 +64,14 @@
                             </td>
 
                             <td>
+                                @if($voucher->min_order_amount)
+                                {{ number_format($voucher->min_order_amount, 0, ',', '.') }}đ
+                                @else
+                                <span class="text-muted">Không yêu cầu</span>
+                                @endif
+                            </td>
+
+                            <td>
                                 {{ $voucher->users_count }} /
                                 {{ $voucher->usage_limit ?? '∞' }}
                             </td>
@@ -86,12 +95,14 @@
                                 'check-circle'],
                                 'inactive' => ['text' => 'Tạm ngưng', 'class' => 'secondary', 'icon' => 'pause-circle'],
                                 'expired' => ['text' => 'Hết hạn', 'class' => 'danger', 'icon' => 'times-circle'],
+                                'used_up' => ['text' => 'Đã dùng hết', 'class' => 'warning', 'icon' => 'ban'],
                                 ];
+
                                 $current = $statuses[$voucher->status] ?? ['text' => 'Không rõ', 'class' => 'light',
                                 'icon' => 'question-circle'];
                                 @endphp
 
-                                @if($voucher->status === 'expired')
+                                @if(in_array($voucher->status, ['expired', 'used_up']))
                                 <span class="badge bg-{{ $current['class'] }} rounded-pill py-2 px-3">
                                     <i class="fas fa-{{ $current['icon'] }} me-1"></i>{{ $current['text'] }}
                                 </span>
@@ -109,7 +120,7 @@
                                         </button>
                                         <ul class="dropdown-menu">
                                             @foreach($statuses as $key => $value)
-                                            @if($key !== $voucher->status && $key !== 'expired')
+                                            @if($key !== $voucher->status && !in_array($key, ['expired', 'used_up']))
                                             <li>
                                                 <button class="dropdown-item" type="submit" name="status"
                                                     value="{{ $key }}">
@@ -125,6 +136,7 @@
                                 </form>
                                 @endif
                             </td>
+
 
 
                             <td>
