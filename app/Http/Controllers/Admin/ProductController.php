@@ -347,7 +347,7 @@ public function storeColor(Request $request)
             ->with('error', 'Tên màu đã tồn tại.');
     }
 
-    Size::create([
+    Color::create([
         'name' => $request->name,
     ]);
 
