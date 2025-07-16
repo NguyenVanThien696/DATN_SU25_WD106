@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\BannerController as AdminBannerController;
 
 
 use App\Http\Controllers\Admin\ReviewController;
@@ -215,6 +216,19 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/', [ReviewController::class, 'index'])->name('index');
         Route::delete('/delete/{id}', [ReviewController::class, 'destroy'])->name('destroy');
     });
+
+
+    // Banner admin
+        Route::prefix('banners')->name('banners.')->group(function () {
+        Route::get('/', [AdminBannerController::class, 'index'])->name('index');
+        Route::get('/create', [AdminBannerController::class, 'create'])->name('create');
+        Route::post('/store', [AdminBannerController::class, 'store'])->name('store');
+        Route::get('/edit/{id}', [AdminBannerController::class, 'edit'])->name('edit');
+        Route::put('/update/{id}', [AdminBannerController::class, 'update'])->name('update');
+        Route::delete('/delete/{id}', [AdminBannerController::class, 'destroy'])->name('destroy');
+        Route::get('/detail/{id}', [AdminBannerController::class, 'show'])->name('show');
+    });
+
 });
 
 

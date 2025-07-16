@@ -22,47 +22,65 @@
 
         <div class="mb-3">
             <label class="form-label">Tên sản phẩm</label>
-            <input type="text" class="form-control" name="name" required value="{{ old('name', $product->name) }}">
+            <input type="text" class="form-control" name="name" value="{{ old('name', $product->name) }}">
+            @error('name')
+            <small class="text-danger">{{ $message }}</small>
+            @enderror
         </div>
 
         <div class="mb-3">
             <label class="form-label">Mô tả</label>
             <textarea class="form-control" name="description"
                 rows="3">{{ old('description', $product->description) }}</textarea>
+            @error('description')
+            <small class="text-danger">{{ $message }}</small>
+            @enderror
         </div>
 
         <div class="mb-3">
             <label class="form-label">Giá</label>
-            <input type="number" class="form-control" name="price" required value="{{ old('price', $product->price) }}">
+            <input type="number" class="form-control" name="price" value="{{ old('price', $product->price) }}">
+            @error('price')
+            <small class="text-danger">{{ $message }}</small>
+            @enderror
         </div>
 
         <div class="mb-3">
             <label class="form-label">Danh mục</label>
-            <select name="category_id" class="form-control" required>
+            <select name="category_id" class="form-control">
                 @foreach ($category as $cat)
                 <option value="{{ $cat->id }}" {{ $product->category_id == $cat->id ? 'selected' : '' }}>
                     {{ $cat->name }}</option>
                 @endforeach
             </select>
+            @error('category_id')
+            <small class="text-danger">{{ $message }}</small>
+            @enderror
         </div>
 
         <div class="mb-3">
             <label class="form-label">Thương hiệu</label>
-            <select name="brand_id" class="form-control" required>
+            <select name="brand_id" class="form-control">
                 @foreach ($brand as $br)
                 <option value="{{ $br->id }}" {{ $product->brand_id == $br->id ? 'selected' : '' }}>{{ $br->name }}
                 </option>
                 @endforeach
             </select>
+            @error('brand_id')
+            <small class="text-danger">{{ $message }}</small>
+            @enderror
         </div>
 
         <div class="mb-3">
             <label class="form-label">Tags</label>
-            <select name="tag_id" class="form-control" required>
+            <select name="tag_id" class="form-control">
                 @foreach ($tag as $t)
                 <option value="{{ $t->id }}" {{ $product->tag_id == $t->id ? 'selected' : '' }}>{{ $t->name }}</option>
                 @endforeach
             </select>
+            @error('tag_id')
+            <small class="text-danger">{{ $message }}</small>
+            @enderror
         </div>
 
         <div class="mb-3">
@@ -73,6 +91,9 @@
                 <img src="{{ asset('storage/' . $product->image) }}" alt="" style="max-width: 150px;">
             </div>
             @endif
+            @error('image')
+            <small class="text-danger">{{ $message }}</small>
+            @enderror
         </div>
 
         <table class="table table-bordered" id="variantTable">
@@ -86,37 +107,110 @@
                 </tr>
             </thead>
             <tbody>
+                @php
+                $variantsOld = old('variants', []);
+                @endphp
+
+                @forelse ($variantsOld as $i => $variant)
+                <tr>
+                    @if (isset($variant['id']))
+                    <input type="hidden" name="variants[{{ $i }}][id]" value="{{ $variant['id'] }}">
+                    @endif
+
+
+                    <td>
+                        <select name="variants[{{ $i }}][size_id]" class="form-control">
+                            <option value="" disabled>-- Chọn size --</option>
+                            @foreach ($sizes as $size)
+                            <option value="{{ $size->id }}"
+                                {{ (isset($variant['size_id']) && $variant['size_id'] == $size->id) ? 'selected' : '' }}>
+                                {{ $size->name }}
+                            </option>
+                            @endforeach
+                        </select>
+                        @error("variants.$i.size_id")
+                        <small class="text-danger d-block">{{ $message }}</small>
+                        @enderror
+                    </td>
+
+
+                    <td>
+                        <select name="variants[{{ $i }}][color_id]" class="form-control">
+                            <option value="" disabled>-- Chọn màu --</option>
+                            @foreach ($colors as $color)
+                            <option value="{{ $color->id }}"
+                                {{ (isset($variant['color_id']) && $variant['color_id'] == $color->id) ? 'selected' : '' }}>
+                                {{ $color->name }}
+                            </option>
+                            @endforeach
+                        </select>
+                        @error("variants.$i.color_id")
+                        <small class="text-danger d-block">{{ $message }}</small>
+                        @enderror
+                    </td>
+
+
+                    <td>
+                        <input type="number" name="variants[{{ $i }}][stock]" class="form-control"
+                            value="{{ $variant['stock'] ?? '' }}">
+                        @error("variants.$i.stock")
+                        <small class="text-danger d-block">{{ $message }}</small>
+                        @enderror
+                    </td>
+
+
+                    <td>
+                        <input type="file" name="variants[{{ $i }}][image]" class="form-control">
+                        @if (isset($product->variants[$i]) && $product->variants[$i]->image)
+                        <img src="{{ asset('storage/' . $product->variants[$i]->image) }}" width="60">
+                        @endif
+                        @error("variants.$i.image")
+                        <small class="text-danger d-block">{{ $message }}</small>
+                        @enderror
+                    </td>
+
+                    <td></td>
+                </tr>
+                @empty
+
                 @foreach ($product->variants as $i => $variant)
                 <tr>
                     <input type="hidden" name="variants[{{ $i }}][id]" value="{{ $variant->id }}">
                     <td>
-                        <select name="variants[{{ $i }}][size_id]" class="form-control" required>
+                        <select name="variants[{{ $i }}][size_id]" class="form-control">
+                            <option value="" disabled>-- Chọn size --</option>
                             @foreach ($sizes as $size)
                             <option value="{{ $size->id }}" {{ $variant->size_id == $size->id ? 'selected' : '' }}>
-                                {{ $size->name }}</option>
+                                {{ $size->name }}
+                            </option>
                             @endforeach
                         </select>
                     </td>
                     <td>
-                        <select name="variants[{{ $i }}][color_id]" class="form-control" required>
+                        <select name="variants[{{ $i }}][color_id]" class="form-control">
+                            <option value="" disabled>-- Chọn màu --</option>
                             @foreach ($colors as $color)
                             <option value="{{ $color->id }}" {{ $variant->color_id == $color->id ? 'selected' : '' }}>
-                                {{ $color->name }}</option>
+                                {{ $color->name }}
+                            </option>
                             @endforeach
                         </select>
                     </td>
-                    <td><input type="number" name="variants[{{ $i }}][stock]" class="form-control" required
+                    <td><input type="number" name="variants[{{ $i }}][stock]" class="form-control"
                             value="{{ $variant->stock }}"></td>
                     <td>
                         <input type="file" name="variants[{{ $i }}][image]" class="form-control mb-2">
                         @if ($variant->image)
-                        <img src="{{ asset('storage/' . $variant->image) }}" style="width: 60px;">
+                        <img src="{{ asset('storage/' . $variant->image) }}" width="60">
                         @endif
                     </td>
                     <td></td>
                 </tr>
                 @endforeach
+                @endforelse
             </tbody>
+
+
 
 
         </table>
@@ -128,29 +222,30 @@
 </div>
 
 <script>
-let variantIndex = {{ count($product ->variants) }};
+let variantIndex = {{count($product -> variants) }};
+
 
 document.getElementById('addVariant').addEventListener('click', function() {
     const newRow = document.createElement('tr');
     newRow.innerHTML = `
         <td>
-            <select name="variants[${variantIndex}][size_id]" class="form-control size-select" required>
-                <option disabled selected value="">Chọn size</option>
+            <select name="variants[${variantIndex}][size_id]" class="form-control size-select" >
+                <option disabled selected value="">-- Chọn size --</option>
                 @foreach ($sizes as $size)
                     <option value="{{ $size->id }}">{{ $size->name }}</option>
                 @endforeach
             </select>
         </td>
         <td>
-            <select name="variants[${variantIndex}][color_id]" class="form-control color-select" required>
-                <option disabled selected value="">Chọn màu</option>
+            <select name="variants[${variantIndex}][color_id]" class="form-control color-select" >
+                <option disabled selected value="">-- Chọn màu --</option>
                 @foreach ($colors as $color)
                     <option value="{{ $color->id }}">{{ $color->name }}</option>
                 @endforeach
             </select>
         </td>
         <td>
-            <input type="number" name="variants[${variantIndex}][stock]" class="form-control" required>
+            <input type="number" name="variants[${variantIndex}][stock]" class="form-control" >
         </td>
         <td>
             <input type="file" name="variants[${variantIndex}][image]" class="form-control">

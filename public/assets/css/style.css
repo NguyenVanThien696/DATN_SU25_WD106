@@ -185,15 +185,21 @@ a.more {
 
 .hero .hero-img-wrap {
   position: relative;
+  width: 100%;
+  max-width: 800px; /* Kích thước khung tối đa bạn muốn */
+  height: 600px; /* Chiều cao cố định để giữ tỷ lệ */
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
 .hero .hero-img-wrap img {
-  position: relative;
-  top: 0px;
-  right: 0px;
-  z-index: 2;
-  max-width: 780px;
-  left: -20px;
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Không cắt ảnh, vừa khung */
+  position: static; /* Xóa các kiểu position cũ */
 }
 
 @media (min-width: 768px) {
@@ -207,7 +213,7 @@ a.more {
   .hero .hero-img-wrap img {
     left: 0px;
     top: -80px;
-    position: absolute;
+    position: relative;
     right: -50px;
   }
 }

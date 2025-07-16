@@ -12,25 +12,61 @@
 <!-- Banner đây -->
 <div class="hero">
     <div class="container">
-        <div class="row justify-content-between">
+        @if ($banners->count())
+        <div id="homepageCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+            <div class="carousel-inner">
+                @foreach ($banners->take(5) as $index => $banner)
+                <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
+                    <div class="row justify-content-between align-items-center">
+                        <div class="col-lg-5">
+                            <div class="intro-excerpt">
+                                <h1>{{ $banner->title }}</h1>
+                                <p class="mb-4">
+                                    {{ $banner->description ?? 'Khám phá các thiết kế mới nhất từ bộ sưu tập của chúng tôi.' }}
+                                </p>
+                                <p>
+                                    <a href="{{ route('client.products.index') }}" class="btn btn-secondary me-2">Mua ngay</a>
+                                    <a href="{{ $banner->link ?? '#' }}" class="btn btn-white-outline">Khám phá</a>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-lg-7">
+                            <div class="hero-img-wrap">
+                                <img src="{{ asset('storage/' . $banner->image) }}" class="img-fluid">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @else
+        <div class="row justify-content-between align-items-center">
             <div class="col-lg-5">
                 <div class="intro-excerpt">
-                    <h1>Phong Cách <span clsas="d-block">Hiện Đại</span></h1>
-                    <p class="mb-4">Lấy cảm hứng từ những cảm xúc trong tâm hồn người phụ nữ – lúc dịu dàng như nốt
-                        trầm, khi rực rỡ như nốt cao – Charming Notes là bản hòa tấu, nơi mỗi thiết kế là một thanh
-                        âm riêng, khắc họa vẻ đẹp của từng cung bậc xúc cảm khác nhau.</p>
-                    <p><a href="" class="btn btn-secondary me-2">Mua ngay</a><a href="#"
-                            class="btn btn-white-outline">Khám phá</a></p>
+                    <h1>Phong Cách <span class="d-block">Hiện Đại</span></h1>
+                    <p class="mb-4">
+                        Lấy cảm hứng từ những cảm xúc trong tâm hồn người phụ nữ – lúc dịu dàng như nốt trầm,
+                        khi rực rỡ như nốt cao – Charming Notes là bản hòa tấu, nơi mỗi thiết kế là một thanh âm riêng,
+                        khắc họa vẻ đẹp của từng cung bậc xúc cảm khác nhau.
+                    </p>
+                    <p><a href="" class="btn btn-secondary me-2">Mua ngay</a>
+                        <a href="#" class="btn btn-white-outline">Khám phá</a>
+                    </p>
                 </div>
             </div>
             <div class="col-lg-7">
-                <div class="hero-img-wrap">
+                <div class="hero-img-wrap text-center">
                     <img src="{{ asset('assets/images/6250afbe6b178631d4baf39ce681c79f.jpg') }}" class="img-fluid">
                 </div>
             </div>
         </div>
+        @endif
     </div>
 </div>
+
+
+
 
 
 <!-- Start Product Section -->
