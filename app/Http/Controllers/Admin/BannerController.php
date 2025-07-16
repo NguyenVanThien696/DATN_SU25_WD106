@@ -1,10 +1,11 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
-
+use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class BannerController extends Controller
 {
@@ -39,7 +40,6 @@ public function store(Request $request)
         'position'    => 'nullable|string|max:50',
     ]);
 
-    // Xử lý lưu ảnh vào storage
     if ($request->hasFile('image')) {
         $imagePath = $request->file('image')->store('banners', 'public');
         $validated['image'] = $imagePath;
@@ -63,24 +63,76 @@ public function store(Request $request)
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
-    {
-        //
+public function edit(string $id)
+{
+    $banner = Banner::findOrFail($id);
+    return view('admin.banners.edit', compact('banner'));
+}
+
+public function update(Request $request, string $id)
+{
+    $banner = Banner::findOrFail($id);
+
+    $validated = $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'link' => 'nullable|url|max:255',
+        'status' => 'required|in:visible,hidden',
+        'image' => 'nullable|image|max:2048',
+    ]);
+
+    if ($request->hasFile('image')) {
+        if ($banner->image && Storage::exists('public/' . $banner->image)) {
+            Storage::delete('public/' . $banner->image);
+        }
+
+        $path = $request->file('image')->store('banners', 'public');
+        $validated['image'] = $path;
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
+    $banner->update($validated);
+
+    return redirect()->route('admin.banners.index')->with('success', 'Cập nhật banner thành công!');
+}
+
+public function destroy(string $id)
+{
+    $banner = Banner::findOrFail($id);
+
+    if ($banner->status === 'visible') {
+        return back()->with('error', 'Không thể xóa banner đang hiển thị. Vui lòng ẩn trước khi xóa.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+    if ($banner->image && Storage::exists('public/' . $banner->image)) {
+        Storage::delete('public/' . $banner->image);
     }
+
+    $banner->delete();
+
+    return redirect()->route('admin.banners.index')->with('success', 'Xóa banner thành công!');
+}
+
+public function toggleStatus(Request $request, $id)
+{
+    $banner = Banner::findOrFail($id);
+
+    $request->validate([
+        'status' => ['required', Rule::in(['visible', 'hidden'])],
+    ]);
+
+    if ($request->status === 'visible') {
+        $visibleCount = Banner::where('status', 'visible')->count();
+        if ($visibleCount >= 5 && $banner->status !== 'visible') {
+            return back()->with('error', 'Chỉ được phép hiển thị tối đa 5 banner.');
+        }
+    }
+
+    $banner->status = $request->status;
+    $banner->save();
+
+    return back()->with('success', 'Cập nhật trạng thái banner thành công!');
+}
+
+
+
 }

@@ -227,6 +227,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/update/{id}', [AdminBannerController::class, 'update'])->name('update');
         Route::delete('/delete/{id}', [AdminBannerController::class, 'destroy'])->name('destroy');
         Route::get('/detail/{id}', [AdminBannerController::class, 'show'])->name('show');
+        Route::patch('/toggle-status/{id}', [AdminBannerController::class, 'toggleStatus'])->name('toggleStatus');
+
     });
 
 });
