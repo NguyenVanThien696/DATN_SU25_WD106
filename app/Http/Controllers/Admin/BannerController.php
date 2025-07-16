@@ -40,16 +40,25 @@ public function store(Request $request)
         'position'    => 'nullable|string|max:50',
     ]);
 
+    if ($validated['status'] === 'visible') {
+        $visibleCount = Banner::where('status', 'visible')->count();
+        if ($visibleCount >= 5) {
+            return redirect()->back()
+                ->withErrors(['status' => 'Chỉ được phép hiển thị tối đa 5 banner.'])
+                ->withInput();
+        }
+    }
+
     if ($request->hasFile('image')) {
         $imagePath = $request->file('image')->store('banners', 'public');
         $validated['image'] = $imagePath;
     }
 
-    // Lưu dữ liệu
     Banner::create($validated);
 
     return redirect()->route('admin.banners.index')->with('success', 'Thêm banner thành công!');
 }
+
 
 
     /**

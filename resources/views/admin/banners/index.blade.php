@@ -3,6 +3,8 @@
 @section('title', 'Danh sách banner')
 
 @section('content')
+
+
 <main class="h-full">
     <div class="page-container relative h-full flex flex-auto flex-col px-4 sm:px-6 md:px-8 py-4 sm:py-6">
         <div class="container mx-auto">
@@ -24,11 +26,13 @@
                     </div>
 
                     {{-- Flash messages --}}
-                    @foreach (['success', 'error', 'warning'] as $msg)
-                    @if (session($msg))
-                    <div class="alert alert-{{ $msg }}">{{ session($msg) }}</div>
+                    @if (session('success'))
+                    <div class="alert alert-success">{{ session('success') }}</div>
                     @endif
-                    @endforeach
+
+                    @if (session('error'))
+                    <div class="alert alert-danger">{{ session('error') }}</div>
+                    @endif
 
                     <div class="table-responsive">
                         <table class="table table-striped table-hover text-nowrap"
