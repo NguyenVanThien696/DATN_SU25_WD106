@@ -13,8 +13,13 @@
 		                <li class="nav-item {{ request()->routeIs('client.index') ? 'active' : '' }}">
 		                    <a class="nav-link" href="{{ route('client.index') }}">Trang chủ </a>
 		                </li>
-		                <li class="nav-item {{ request()->routeIs('client.products.index') ? 'active' : '' }}">
-		                    <a class="nav-link" href="{{ route('client.products.index') }}">Cửa hàng </a>
+		                <li class="nav-item dropdown1 {{ request()->routeIs('client.products.index') ? 'active' : '' }}">
+		                    <a class="nav-link dropdown-toggle" href="{{ route('client.products.index') }}" id="shopDropdown" role="button"  aria-expanded="false">Cửa hàng </a>
+							<ul class="dropdown-menu" aria-labelledby="shopDropdown">
+								@foreach ($categories as $category)
+									<li><a class="dropdown-item" href="{{route('client.products.categories', $category->id)}}">{{$category->name}}</a></li>
+								@endforeach
+							</ul>
 		                </li>
 		                <li class="nav-item {{ request()->routeIs('client.contact.index') ? 'active' : '' }}">
 		                    <a class="nav-link" href="{{ route('client.contact.index') }}">Về chúng tôi </a>
@@ -101,3 +106,33 @@
 		        </form>
 		    </div>
 		</div>
+
+		<style>
+			.nav-item.dropdown1:hover .dropdown-menu{
+				display: block;
+				margin-top: 0;
+			}
+
+			ul.dropdown-menu{
+				background-color: white !important;
+				border: 1px solid #ccc !important;
+			}
+			.nav-item.dropdown1.active .dropdown-menu .dropdown-item{
+				color: black !important;
+			}
+			ul.dropdown-menu li a.dropdown-item{
+				color: black !important;
+				background-color: white !important;
+			}
+
+			ul.dropdown-menu li a.dropdown-item:hover{
+				background-color: #f2f2f2 !important;
+				/* color: black !important; */
+			}
+			.nav-item.dropdown1.active{
+				opacity: 1 !important;
+			}
+			.custom-navbar .custom-navbar-nav li a:before {
+				background: none !important;
+			}
+		</style>
