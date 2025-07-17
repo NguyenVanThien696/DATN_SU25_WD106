@@ -160,7 +160,7 @@
                 </tbody>
             </table>
 
-            <button type="button" class="btn btn-secondary" id="addVariant">Thêm biến thể</button>
+            <button type="button" class="btn btn-outline-dark mt-3" id="addVariant">Thêm biến thể</button>
 
             <script>
             let variantIndex = 1;
@@ -238,7 +238,7 @@
             });
             </script>
 
-            <button type="submit" class="btn btn-primary">Thêm sản phẩm</button>
+            <button class="btn btn-success mt-3"><i class="fas fa-save me-1"></i> Lưu</button>
         </form>
     </div>
 

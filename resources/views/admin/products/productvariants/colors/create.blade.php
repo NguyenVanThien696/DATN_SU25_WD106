@@ -46,9 +46,7 @@
                             <a href="{{ route('admin.products.indexVariant') }}#color" class="btn btn-secondary">
                                 <i class="bi bi-arrow-left"></i> Quay lại
                             </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-plus-circle"></i> Thêm màu sắc
-                            </button>
+                            <button class="btn btn-success mt-3"><i class="fas fa-save me-1"></i>Lưu</button>
                         </div>
                     </form>
                 </div>

@@ -67,7 +67,7 @@
         </div>
 
         <div class="d-flex justify-content-end">
-            <button type="submit" class="btn btn-primary">Cập nhật Banner</button>
+            <button class="btn btn-primary mt-3"><i class="fas fa-save me-1"></i> Cập Nhật</button>
         </div>
     </form>
 </div>

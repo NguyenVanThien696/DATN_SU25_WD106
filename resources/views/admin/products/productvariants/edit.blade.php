@@ -35,9 +35,7 @@
                                 }}" class="btn btn-secondary">
                                 <i class="bi bi-arrow-left"></i> Quay lại
                             </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-save"></i> Cập nhật
-                            </button>
+                            <button class="btn btn-success mt-3"><i class="fas fa-save me-1"></i>Cập nhật</button>
                         </div>
                     </form>
                 </div>

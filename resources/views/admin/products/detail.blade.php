@@ -77,7 +77,10 @@
                 @endif
 
                 <a href="{{ route('admin.products.index') }}" class="btn btn-secondary">Quay lại</a>
-                <a href="{{ route('admin.products.edit', ['id' => $product->id]) }}" class="btn btn-primary">Sửa</a>
+                <a href="{{ route('admin.products.edit', $product->id) }}" class="btn btn-sm btn-outline-warning"
+                    title="Sửa" style="margin: 2px;">
+                    <i class="fas fa-edit"></i>
+                </a>
             </div>
         </div>
     </div>
