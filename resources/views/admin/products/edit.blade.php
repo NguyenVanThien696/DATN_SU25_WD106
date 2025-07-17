@@ -217,12 +217,14 @@
 
         <button type="button" class="btn btn-outline-dark mt-3" id="addVariant">Thêm biến thể</button>
 
-        <button type="submit" class="btn btn-primary mt-3">Cập nhật sản phẩm</button>
+        <button class="btn btn-success px-4 mt-3">
+            <i class="fas fa-save me-1"></i> Cập nhật
+        </button>
     </form>
 </div>
 
 <script>
-let variantIndex = {{count($product -> variants) }};
+let variantIndex = {{ count($product -> variants )}};
 
 
 document.getElementById('addVariant').addEventListener('click', function() {

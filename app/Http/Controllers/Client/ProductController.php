@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,8 +16,10 @@ class ProductController extends Controller
     public function index()
     {
         $listProducts = Product::with(['tag', 'variants.size', 'variants.color'])->latest()->paginate(12);
-
-        return view('client.products.index', compact('listProducts'));
+        $breadcrumbs = [
+            (object)['name' =>  'Cửa hàng', 'route' =>route('client.products.index')],
+        ];
+        return view('client.products.index', compact('listProducts', 'breadcrumbs'));
     }
 
     // ShopController
@@ -92,45 +95,5 @@ class ProductController extends Controller
         $products = $products->get();
 
         return view('client.search.index', compact('products', 'keyword'));
-    }
-
-    public function boy()
-    {
-        $listboy = Product::with(['tag', 'variants.size', 'variants.color'])
-            ->where('category_id', 3)
-            ->latest()
-            ->paginate(12);
-
-        return view('client.products.menu.boy', compact('listboy'));
-    }
-
-    public function girl()
-    {
-        $listgirl = Product::with(['tag', 'variants.size', 'variants.color'])
-            ->where('category_id', 4)
-            ->latest()
-            ->paginate(12);
-
-        return view('client.products.menu.girl', compact('listgirl'));
-    }
-
-    public function hot()
-    {
-        $listhot = Product::with(['tag', 'variants.size', 'variants.color'])
-            ->where('tag_id', 2)
-            ->latest()
-            ->paginate(12);
-
-        return view('client.products.menu.hot', compact('listhot'));
-    }
-
-    public function new()
-    {
-        $listnew = Product::with(['tag', 'variants.size', 'variants.color'])
-            ->where('tag_id', 1)
-            ->latest()
-            ->paginate(12);
-
-        return view('client.products.menu.new', compact('listnew'));
     }
 }

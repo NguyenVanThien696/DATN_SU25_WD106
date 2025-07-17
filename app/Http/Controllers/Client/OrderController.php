@@ -11,26 +11,25 @@ use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
-    public function listOrder()
-    {
-        $user = Auth::user();
+public function listOrder()
+{
+    $user = Auth::user();
 
-        $orders = Order::with([
-            'shippingAddress',
-            'orderItems.productVariant.product',
-            'orderItems.productVariant.size',
-            'orderItems.productVariant.color'
-        ])
-            ->where('user_id', $user->id)
-            ->orderByDesc('created_at')
-            ->get();
-        $reviewedOrderItemIds = ProductReview::where('user_id', $user->id)->pluck('order_item_id')->toArray();
-        if ($orders->isEmpty()) {
-            return back()->with('error', 'Bạn chưa có đơn hàng nào.');
-        }
+    $orders = Order::with([
+        'shippingAddress',
+        'orderItems.productVariant.product',
+        'orderItems.productVariant.size',
+        'orderItems.productVariant.color'
+    ])
+        ->where('user_id', $user->id)
+        ->orderByDesc('created_at')
+        ->get();
 
-        return view('client.orders.index', compact('user', 'orders', 'reviewedOrderItemIds'));
-    }
+    $reviewedOrderItemIds = ProductReview::where('user_id', $user->id)->pluck('order_item_id')->toArray();
+
+    return view('client.orders.index', compact('user', 'orders', 'reviewedOrderItemIds'));
+}
+
 
     public function detail($id)
     {
@@ -107,11 +106,15 @@ public function confirmReceived($id)
         if ($order->payment_status !== 'paid') {
             $order->payment_status = 'paid';
         }
+
+        $order->status = 'completed';
+
         $order->save();
 
         return back()->with('success', 'Cảm ơn bạn đã xác nhận! Đơn hàng đã được hoàn tất.');
     });
 }
+
 
 
 

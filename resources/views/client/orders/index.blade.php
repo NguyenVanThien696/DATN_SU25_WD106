@@ -1,7 +1,9 @@
 @extends('client.master')
 
 @section('content')
+
 <main class="py-5">
+    @if ($orders->count() > 0)
     <div class="container-fluid">
         <div class="card shadow-sm">
             <div class="card-header text-dark fw-semibold" style="background-color: #e6f4ea;">
@@ -25,7 +27,6 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
                 @endif
-
                 <div class="table-responsive mt-4">
                     <table class="table table-bordered table-hover align-middle text-center" style="min-width:1400px;">
                         <thead class="table-light">
@@ -222,5 +223,10 @@
             </div>
         </div>
     </div>
+    @else
+    <div class="container py-5" style="min-height: 70vh">
+        <h4 class="text-center text-muted">Bạn chưa có đơn hàng nào.</h4>
+    </div>
+    @endif
 </main>
 @endsection
