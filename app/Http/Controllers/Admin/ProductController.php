@@ -29,8 +29,8 @@ class ProductController extends Controller
 
     public function listProduct()
     {
-        $listProducts = Product::with(['category', 'brand']) // Dùng quan hệ thay vì join
-            ->withSum('variants as total_stock', 'stock') // Tính tổng tồn kho
+        $listProducts = Product::with(['category', 'brand']) 
+            ->withSum('variants as total_stock', 'stock')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
@@ -53,19 +53,58 @@ class ProductController extends Controller
     {
         // dd($request->all());
         // dd($request->all(), $request->file('variants'));
-        $request->validate([
-            'name' => 'required|string|min:3|max:100',
-            'price' => 'required|numeric|min:0',
-            'category_id' => 'required|exists:categories,id',
-            'brand_id' => 'required|exists:brands,id',
-            'tag_id' => 'required|exists:tags,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'variants' => 'required|array|min:1',
-            'variants.*.size_id' => 'required|exists:sizes,id',
-            'variants.*.color_id' => 'required|exists:colors,id',
-            'variants.*.stock' => 'required|integer|min:0',
-            'variants.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+$request->validate([
+    'name' => 'required|string|min:3|max:100',
+    'price' => 'required|numeric|min:0',
+    'category_id' => 'required|exists:categories,id',
+    'brand_id' => 'required|exists:brands,id',
+    'tag_id' => 'required|exists:tags,id',
+    'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+
+    'variants' => 'required|array|min:1',
+    'variants.*.size_id' => 'required|exists:sizes,id',
+    'variants.*.color_id' => 'required|exists:colors,id',
+    'variants.*.stock' => 'required|integer|min:0',
+    'variants.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+], [
+    'name.required' => 'Tên sản phẩm không được để trống.',
+    'name.string' => 'Tên sản phẩm phải là chuỗi ký tự.',
+    'name.min' => 'Tên sản phẩm không hợp lệ.',
+    'name.max' => 'Tên sản phẩm không hợp lệ.',
+
+    'price.required' => 'Giá không được để trống.',
+    'price.numeric' => 'Giá phải là số.',
+    'price.min' => 'Giá không được âm.',
+
+    'category_id.required' => 'Vui lòng chọn danh mục.',
+    'category_id.exists' => 'Danh mục không hợp lệ.',
+
+    'brand_id.required' => 'Vui lòng chọn thương hiệu.',
+    'brand_id.exists' => 'Thương hiệu không hợp lệ.',
+
+    'tag_id.required' => 'Vui lòng chọn tag.',
+    'tag_id.exists' => 'Tag không hợp lệ.',
+
+    'image.image' => 'File tải lên phải là hình ảnh.',
+    'image.mimes' => 'Hình ảnh phải có định dạng jpeg, png, jpg hoặc gif.',
+    'image.max' => 'Hình ảnh không được vượt quá 2MB.',
+
+    'variants.required' => 'Cần thêm ít nhất một biến thể.',
+    'variants.min' => 'Phải có ít nhất một biến thể.',
+
+    'variants.*.size_id.required' => 'Vui lòng chọn size cho biến thể.',
+    'variants.*.size_id.exists' => 'Size của biến thể không hợp lệ.',
+
+    'variants.*.color_id.required' => 'Vui lòng chọn màu cho biến thể.',
+    'variants.*.color_id.exists' => 'Màu của biến thể không hợp lệ.',
+
+    'variants.*.stock.required' => 'Vui lòng nhập số lượng cho biến thể.',
+    'variants.*.stock.integer' => 'Số lượng của biến thể phải là số nguyên.',
+    'variants.*.stock.min' => 'Số lượng của biến thể không được âm.',
+
+    'variants.*.image.image' => 'Ảnh của biến thể phải là hình ảnh.',
+    'variants.*.image.mimes' => 'Ảnh của biến thể phải có định dạng jpeg, png, jpg hoặc gif.',
+]);
 
         $variantPairs = [];
         foreach ($request->variants as $variant) {
@@ -121,20 +160,55 @@ class ProductController extends Controller
 
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'category_id' => 'required',
-            'brand_id' => 'required',
-            'tag_id' => 'required',
-            'name' => 'required|min:3|max:100',
-            'description' => 'nullable|string|max:500',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'price' => 'required|numeric|min:0',
-            'variants' => 'required|array|min:1',
-            'variants.*.size_id' => 'required|exists:sizes,id',
-            'variants.*.color_id' => 'required|exists:colors,id',
-            'variants.*.stock' => 'required|integer|min:0',
-            'variants.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+    $request->validate([
+        'name' => 'required|string|min:3|max:100',
+        'price' => 'required|numeric|min:0',
+        'category_id' => 'required|exists:categories,id',
+        'brand_id' => 'required|exists:brands,id',
+        'tag_id' => 'required|exists:tags,id',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'variants' => 'required|array|min:1',
+        'variants.*.size_id' => 'required|exists:sizes,id',
+        'variants.*.color_id' => 'required|exists:colors,id',
+        'variants.*.stock' => 'required|integer|min:0',
+        'variants.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    ], [
+        // name
+        'name.required' => 'Tên sản phẩm không được để trống.',
+        'name.string' => 'Tên sản phẩm phải là chuỗi ký tự.',
+        'name.min' => 'Tên sản phẩm không hợp lệ.',
+        'name.max' => 'Tên sản phẩm không hợp lệ.',
+        // price
+        'price.required' => 'Giá không được để trống.',
+        'price.numeric' => 'Giá phải là số.',
+        'price.min' => 'Giá không được âm.',
+        // category
+        'category_id.required' => 'Vui lòng chọn danh mục.',
+        'category_id.exists' => 'Danh mục không hợp lệ.',
+        // brand
+        'brand_id.required' => 'Vui lòng chọn thương hiệu.',
+        'brand_id.exists' => 'Thương hiệu không hợp lệ.',
+        // tag
+        'tag_id.required' => 'Vui lòng chọn tag.',
+        'tag_id.exists' => 'Tag không hợp lệ.',
+        // image
+        'image.image' => 'File tải lên phải là hình ảnh.',
+        'image.mimes' => 'Hình ảnh phải có định dạng jpeg, png, jpg hoặc gif.',
+        'image.max' => 'Hình ảnh không được vượt quá 2MB.',
+        // variants
+        'variants.required' => 'Phải có ít nhất một biến thể.',
+        'variants.array' => 'Biến thể phải là một mảng.',
+        'variants.*.size_id.required' => 'Vui lòng chọn size cho từng biến thể.',
+        'variants.*.size_id.exists' => 'Size không hợp lệ.',
+        'variants.*.color_id.required' => 'Vui lòng chọn màu cho từng biến thể.',
+        'variants.*.color_id.exists' => 'Màu không hợp lệ.',
+        'variants.*.stock.required' => 'Vui lòng nhập số lượng cho từng biến thể.',
+        'variants.*.stock.integer' => 'Số lượng phải là số nguyên.',
+        'variants.*.stock.min' => 'Số lượng không được âm.',
+        'variants.*.image.image' => 'Ảnh biến thể phải là hình ảnh.',
+        'variants.*.image.mimes' => 'Ảnh biến thể phải có định dạng jpeg, png, jpg hoặc gif.',
+        'variants.*.image.max' => 'Ảnh biến thể không được vượt quá 2MB.',
+    ]);
 
         // Kiểm tra biến thể trùng size & màu
         $variantPairs = [];

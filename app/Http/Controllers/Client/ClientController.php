@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Models\Banner;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
@@ -18,7 +19,12 @@ public function index()
         ->take(3)
         ->get();
 
-    return view('client.index', compact('listProducts'));
+    $banners = Banner::active()
+        ->where('position', 'homepage')
+        ->orderByDesc('created_at')
+        ->get();
+
+    return view('client.index', compact('listProducts', 'banners'));
 }
 
 

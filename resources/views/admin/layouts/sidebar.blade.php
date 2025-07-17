@@ -5,7 +5,7 @@
     <div class="side-nav-content relative side-nav-scroll">
         <nav class="menu menu-transparent px-4 pb-4">
             <div class="menu-group">
-                <span class="nav-link mt-5">Xin chào, </span>
+                <span class="nav-link mt-5">Xin chào, {{ Auth::user()->name }}</span>
                 <div class="menu-title"><a href="">Menu</a></div>
                 <ul>
                     <li class="menu-collapse">
@@ -62,7 +62,8 @@
 
                             <li data-menu-item="modern-voucher-list" class="menu-item">
                                 <i class="fa-solid fa-list fa-sm"></i>
-                                <a class="h-full w-full flex items-center" href="{{ route('admin.products.indexVariant') }}">
+                                <a class="h-full w-full flex items-center"
+                                    href="{{ route('admin.products.indexVariant') }}">
                                     <span>Danh Sách Biến Thể</span>
                                 </a>
                             </li>
@@ -172,6 +173,40 @@
                             </li>
                         </ul>
                     </li>
+
+                    <li class="menu-collapse">
+                        <div class="menu-collapse-item">
+                            <i class="fa-solid fa-image fa-lg"></i>
+                            <span class="menu-item-text">Quản Lý Banner</span>
+                        </div>
+                        <ul>
+                            <li data-menu-item="modern-banner-list" class="menu-item">
+                                <i class="fa-solid fa-list-ul fa-sm"></i>
+                                <a class="h-full w-full flex items-center" href="{{ route('admin.banners.index') }}">
+                                    <span>Danh Sách Banner</span>
+                                </a>
+                            </li>
+                            <li data-menu-item="modern-new-banner" class="menu-item">
+                                <i class="fa-solid fa-square-plus fa-sm"></i>
+                                <a class="h-full w-full flex items-center" href="{{ route('admin.banners.create') }}">
+                                    <span>Thêm Banner</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="menu-collapse">
+                        <div class="menu-collapse-item">
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button class="dropdown-item d-flex align-items-center gap-2" type="submit">
+                                    <i class="fas fa-sign-out-alt fa-lg"></i> <span class="menu-item-text">Đăng
+                                        xuất</span>
+                                </button>
+                            </form>
+                        </div>
+                    </li>
+
 
 
 
