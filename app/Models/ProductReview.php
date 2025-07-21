@@ -23,4 +23,9 @@ class ProductReview extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    public function orderItem()
+    {
+        return $this->belongsTo(OrderItem::class);
+    }
 }
