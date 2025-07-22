@@ -67,8 +67,6 @@
                             <td class="text-center">
                                 @if ($user->role == 1)
                                     <span class="badge bg-success"><i class="fas fa-user-shield"></i> Admin</span>
-                                @elseif ($user->role == 3)
-                                    <span class="badge bg-info text-dark"><i class="fas fa-user-cog"></i> Nhân viên</span>
                                 @else
                                     <span class="badge bg-secondary"><i class="fas fa-user"></i> Người dùng</span>
                                 @endif

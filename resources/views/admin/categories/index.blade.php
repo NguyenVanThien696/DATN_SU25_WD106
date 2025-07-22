@@ -58,9 +58,9 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                            <div class="mt-5">
+                            {{-- <div class="mt-5">
                                 {{ $categories ->links('pagination::bootstrap-5') }}
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                 </div>

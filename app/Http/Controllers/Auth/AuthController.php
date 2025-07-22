@@ -28,9 +28,6 @@ class AuthController extends Controller
                 case 1: // Admin
                     return redirect()->route('admin.dashboard');
 
-                case 3: // Staff
-                    return redirect()->route('staff.dashboard');
-
                 default: // User thường
                     return redirect()->route('dashboard.form');
             }
@@ -127,23 +124,5 @@ class AuthController extends Controller
             return redirect()->route('login.form');
         }
         return view('admin.dashboard', ['user' => $user]);
-    }
-    public function staffDashboard()
-    {
-        $user = Auth::user();
-        if (is_null($user) || (int)$user->role !== 3) {
-            return redirect()->route('login.form');
-        }
-
-        return view('staff.dashboard', ['user' => $user]);
-    }
-    public function staffIndex()
-    {
-        $user = Auth::user();
-        if (is_null($user) || (int) $user->role !== 3) {
-            return redirect()->route('login.form');
-        }
-
-        return view('staff.home', ['user' => $user]);
     }
 }

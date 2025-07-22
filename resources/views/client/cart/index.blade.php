@@ -12,7 +12,9 @@
         if (!$isLoggedIn && is_array($cart) && count($cart) > 0) {
             $hasCartItems = true;
         }
+        
     @endphp
+
 
     @if (session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -28,22 +30,12 @@
                 <h2 class="mb-4">Giỏ hàng</h2>
                 <form method="POST" action="{{ route('client.cart.update') }}">
                     @csrf
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Ảnh</th>
-                                <th>Tên</th>
-                                <th>Size</th>
-                                <th>Màu</th>
-                                <th>Giá</th>
-                                <th>Số lượng</th>
-                                <th>Tổng</th>
-                                <th>Xóa</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php $total = 0; @endphp
+                    <div class="row">
 
+                        <div class="col-lg-8">
+                            <div class="card p-3">
+                            
+                            @php $total = 0; @endphp
                             @if ($isLoggedIn)
                                 @foreach ($cart->items as $item)
                                     @php
@@ -54,22 +46,21 @@
                                         $subtotal = $product->price * $item->quantity;
                                         $total += $subtotal;
                                     @endphp
-                                    <tr>
-                                        <td><img src="{{ asset('storage/' . $variant->image) }}" width="80"></td>
-                                        <td>{{ $product->name }}</td>
-                                        <td>{{ $variant->size->name ?? '—' }}</td>
-                                        <td>{{ $variant->color->name ?? '—' }}</td>
-                                        <td>{{ number_format($product->price) }}</td>
-                                        <td>
-                                            <input type="number" name="quantity[{{ $variant->id }}]" value="{{ $item->quantity }}"
-                                                min="1" class="form-control quantity-input" style="width: 70px;">
-                                        </td>
-                                        <td class="item-subtotal">{{ number_format($subtotal) }}</td>
-                                        <td>
-                                            <a href="{{ route('client.cart.delete', $variant->id) }}"
+                                        <div class="d-flex border-bottom py-3">
+                                            <img src="{{asset('storage/' . $variant->image)}}" width="200px" class="me-3" alt="">
+                                            <div class="flex-grow-1">
+                                                <h6>{{$product->name}}</h6>
+                                                <p class="mb-1">Kích cỡ: {{$variant->size->name ?? '_'}}</p>
+                                                <p class="mb-1">Màu: {{$variant->color->name ?? '_'}}</p>
+                                                <p class="mb-1">Giá: {{number_format($product->price)}} VNĐ</p>
+                                                <div class="d-flex align-items-center gap-2 mt-1">
+                                                    <input type="number" name="quantity[{{$variant->id}}]" value="{{$item->quantity}}" min="1" class="form-control me-2" style="width: 80px;">
+                                                    <span class="me-2"><Strong>{{number_format($subtotal)}} VNĐ</Strong></span>
+                                                    <a href="{{ route('client.cart.delete', $variant->id) }}"
                                                 class="btn btn-sm btn-danger">X</a>
-                                        </td>
-                                    </tr>
+                                                </div>
+                                            </div>
+                                        </div>
                                 @endforeach
                             @else
                                 @foreach ($cart as $item)
@@ -81,47 +72,57 @@
                                         $subtotal = $product->price * $item['quantity'];
                                         $total += $subtotal;
                                     @endphp
-                                    <tr>
-                                        <td><img src="{{ asset('storage/' . $variant->image) }}" width="80"></td>
-                                        <td>{{ $product->name }}</td>
-                                        <td>{{ $variant->size->name ?? '—' }}</td>
-                                        <td>{{ $variant->color->name ?? '—' }}</td>
-                                        <td>{{ number_format($product->price) }}</td>
-                                        <td>
-                                            <input type="number" name="quantity[{{ $variant->id }}]" value="{{ $item['quantity'] }}"
-                                                min="1" class="form-control quantity-input" style="width: 70px;">
-                                        </td>
-                                        <td class="item-subtotal">{{ number_format($subtotal) }}</td>
-                                        <td>
-                                            <a href="{{ route('client.cart.delete', $variant->id) }}"
+                                        <div class="d-flex border-bottom py-3">
+                                            <img src="{{asset('storage/' . $variant->image)}}" width="200px" class="me-3" alt="">
+                                            <div class="flex-grow-1">
+                                                <h6>{{$product->name}}</h6>
+                                                <p class="mb-1">Kích cỡ: {{$variant->size->name ?? '_'}}</p>
+                                                <p class="mb-1">Màu: {{$variant->color->name ?? '_'}}</p>
+                                                <p class="mb-1">Giá: {{number_format($product->price)}} VNĐ</p>
+                                                <div class="d-flex align-items-center gap-2 mt-1">
+                                                    <input type="number" name="quantity[{{$variant->id}}]" value="{{$item->quantity}}" min="1" class="form-control me-2" style="width: 80px;">
+                                                    <span class="me-2"><Strong>{{number_format($subtotal)}} VNĐ</Strong></span>
+                                                    <a href="{{ route('client.cart.delete', $variant->id) }}"
                                                 class="btn btn-sm btn-danger">X</a>
-                                        </td>
-                                    </tr>
+                                                </div>
+                                            </div>
+                                        </div>
                                 @endforeach
                             @endif
-                        </tbody>
-                    </table>
+                            <div class="d-flex justify-content-end gap-2 mt-4">
+                                <button type="submit" class="btn btn-primary btn-update-cart">Cập nhật giỏ hàng</button>
+                                <a href="{{ route('client.cart.clear') }}" class="btn btn-danger btn-delete-all">Xoá toàn bộ</a>
+                            </div>
 
-                    <div class="d-flex justify-content-between align-items-center mt-4">
-                        <h4>Tổng tiền: <strong id="cart-total">{{ number_format($total) }} VNĐ</strong></h4>
-                        <div>
-                            <button type="submit" class="btn btn-primary me-2">Cập nhật giỏ hàng</button>
-                            <a href="{{ route('client.cart.clear') }}" class="btn btn-danger">Xoá toàn bộ</a>
+                            </div>
+                        </div>
+                        
+                    {{-- Cột đơn hàng --}}
+                    <div class="col-lg-4">
+                        <div class="card p-4 shadow-sm border-0">
+                            {{-- <div class="d-flex justify-content-between mb-2">
+                                <span>Tổng tiền</span>
+                                <strong id="cart-total">{{ number_format($total) }} VNĐ</strong>
+                            </div> --}}
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Tổng tiền</span>
+                                <strong id="cart-total">{{ number_format($total) }} VNĐ</strong>
+                            </div>
+                            <div class="d-grip gap-2">
+                                @auth
+                                    <a href="{{ route('client.checkout.index') }}" class="btn btn-black btn-checkout-cart w-100 py-2" style="font-size: 16px;">
+                                        Đặt hàng ->
+                                    </a>
+                                @else
+                                    <a href="{{ route('login') }}" class="btn btn-danger btn-lg py-3 btn-block">
+                                        Đăng nhập để thanh toán
+                                    </a>
+                                @endauth
+                            </div>
                         </div>
                     </div>
+                    </div>
                 </form>
-
-                <div class="mt-5">
-                    @auth
-                        <a href="{{ route('client.checkout.index') }}" class="btn btn-black btn-lg py-3 btn-block">
-                            Tiến hành thanh toán
-                        </a>
-                    @else
-                        <a href="{{ route('login') }}" class="btn btn-danger btn-lg py-3 btn-block">
-                            Đăng nhập để thanh toán
-                        </a>
-                    @endauth
-                </div>
             </div>
         </section>
     @else
@@ -151,17 +152,17 @@
                 return subtotal;
             };
 
-            const updateCartTotal = () => {
-                let total = 0;
-                document.querySelectorAll("tbody tr").forEach(row => {
-                    total += updateRowSubtotal(row);
-                });
+            // const updateCartTotal = () => {
+            //     let total = 0;
+            //     document.querySelectorAll("tbody tr").forEach(row => {
+            //         total += updateRowSubtotal(row);
+            //     });
 
-                const totalDisplay = document.getElementById("cart-total");
-                if (totalDisplay) {
-                    totalDisplay.textContent = formatCurrency(total);
-                }
-            };
+            //     const totalDisplay = document.getElementById("cart-total");
+            //     if (totalDisplay) {
+            //         totalDisplay.textContent = formatCurrency(total);
+            //     }
+            // };
 
             document.querySelectorAll(".quantity-input").forEach(input => {
                 input.addEventListener("change", () => {
@@ -173,4 +174,25 @@
             updateCartTotal();
         });
     </script>
+
+    <style>
+        .btn-update-cart{
+            padding: 6px 16px;
+            font-size: 14px;
+            height: 38px;
+            width: auto;
+        }
+        .btn-delete-all{
+            padding: 6px 16px;
+            font-size: 14px;
+            height: 38px;
+            width: auto;
+        }
+        .btn-checkout-cart{
+            background-color: #3b5d50;
+        }
+        .btn-checkout-cart:hover{
+            background-color: #324f45;
+        }
+    </style>
 @endsection

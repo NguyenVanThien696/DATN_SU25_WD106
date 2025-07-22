@@ -10,9 +10,9 @@ use App\Http\Controllers\Client\ContactController;
 use App\Http\Controllers\Client\AboutController;
 use App\Http\Controllers\Client\CartController;
 use App\Http\Controllers\Client\CheckoutController;
-use App\Http\Controllers\Client\CouponController;
 use App\Http\Controllers\Client\OrderController;
-
+use App\Http\Controllers\Client\CategoriesController;
+use App\Http\Controllers\Client\ProductReviewController;
 
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
@@ -20,12 +20,10 @@ use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\BannerController as AdminBannerController;
-
-
 use App\Http\Controllers\Admin\ReviewController;
+
+
 use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Client\CategoriesController;
-use App\Http\Controllers\Client\ProductReviewController;
 use App\Models\ProductReview;
 
 // Trang chu
@@ -236,25 +234,3 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
 });
 
-
-
-    // Reviews nhân viên
-Route::middleware(['auth', 'staff'])->prefix('staff')->name('staff.')->group(function () {
-    Route::get('/dashboard', [AuthController::class, 'staffDashboard'])->name('dashboard');
-    Route::get('/', [AuthController::class, 'staffIndex'])->name('home');
-
-    Route::prefix('orders')->name('orders.')->group(function () {
-        Route::get('/', [AdminOrderController::class, 'listOrder'])->name('index'); // Xem tất cả đơn
-        Route::get('/detail/{id}', [AdminOrderController::class, 'detail'])->name('detail'); // Chi tiết đơn
-        Route::put('/status/{id}', [AdminOrderController::class, 'updateStatus'])->name('updateStatus'); // Cập nhật trạng thái
-    });
-    Route::prefix('products')->name('products.')->group(function () {
-        Route::get('/', [AdminProductController::class, 'listProduct'])->name('index');
-        Route::get('/edit/{id}', [AdminProductController::class, 'edit'])->name('edit'); // Chỉnh sửa số lượng tồn
-        Route::put('/update/{id}', [AdminProductController::class, 'update'])->name('update');
-    });
-    Route::prefix('reviews')->name('reviews.')->group(function () {
-        Route::get('/', [ReviewController::class, 'index'])->name('index'); // Xem tất cả
-        Route::delete('/delete/{id}', [ReviewController::class, 'destroy'])->name('destroy'); // Xoá nếu cần
-    });
-});
