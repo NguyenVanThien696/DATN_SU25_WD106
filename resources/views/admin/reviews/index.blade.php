@@ -33,7 +33,7 @@
                                         <th>Đánh giá</th>
                                         <th>Bình luận</th>
                                         <th>Thời gian</th>
-                                        <th>#</th>
+                                        {{-- <th>#</th> --}}
                                     </tr>
                                 <tbody>
                                     @foreach ($reviews as $review)
@@ -44,7 +44,7 @@
                                         <td>{{ $review->rating }} ⭐</td>
                                         <td>{{ $review->comment }}</td>
                                         <td>{{ $review->created_at->format('d/m/Y H:i') }}</td>
-                                        <td>
+                                        {{-- <td>
                                             <form action="{{ route('admin.reviews.destroy', $review->id) }} "
                                                 class="d-inline" method="POST">
                                                 @csrf
@@ -53,7 +53,7 @@
                                                     onclick="return confirm('Bạn có chắc chắn xóa không? ')" type="submit">Delete
                                                 </button>
                                             </form>
-                                        </td>
+                                        </td> --}}
                                     </tr>
 
                                     @endforeach
