@@ -7,7 +7,7 @@
         <div class="col-md-4 mb-4">
             <div class="card p-4 text-center shadow-sm" style="border-radius: 16px;">
                 <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center bg-light border shadow"
-                     style="width: 100px; height: 100px;">
+                    style="width: 100px; height: 100px;">
                     <i class="fas fa-user fa-2x text-secondary"></i>
                 </div>
                 <h5 class="mb-1 text-capitalize">{{ Auth::user()->name }}</h5>
@@ -22,17 +22,18 @@
 
 
                 @if (Auth::user()->role == 1)
-                    <a href="{{ route('admin.index') }}" class="btn btn-primary w-100 mt-2 py-2" style="border-radius: 30px;">
-                        → Truy cập trang ADMIN
-                    </a>
+                <a href="{{ route('admin.index') }}" class="btn btn-primary w-100 mt-2 py-2"
+                    style="border-radius: 30px;">
+                    → Truy cập trang ADMIN
+                </a>
                 @endif
 
                 <form method="POST" action="{{ route('logout') }}">
-    @csrf
-    <button type="submit" class="btn btn-danger w-100 mt-2 py-2" style="border-radius: 30px;">
-        Đăng xuất
-    </button>
-</form>
+                    @csrf
+                    <button type="submit" class="btn btn-danger w-100 mt-2 py-2" style="border-radius: 30px;">
+                        Đăng xuất
+                    </button>
+                </form>
             </div>
         </div>
 
@@ -42,7 +43,7 @@
                 <h5 class="mb-4 text-primary">Đổi Mật Khẩu</h5>
 
                 @if (session('status'))
-                    <div class="alert alert-success">{{ session('status') }}</div>
+                <div class="alert alert-success">{{ session('status') }}</div>
                 @endif
 
                 <form method="POST" action="{{ route('user.changePassword') }}">
@@ -63,7 +64,8 @@
                         <input type="password" name="new_password_confirmation" class="form-control" required>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100 py-2" style="border-radius: 30px;">Đổi ngay</button>
+                    <button type="submit" class="btn btn-primary w-100 py-2" style="border-radius: 30px;">Đổi
+                        ngay</button>
                 </form>
             </div>
         </div>

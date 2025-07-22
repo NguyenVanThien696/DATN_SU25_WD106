@@ -26,14 +26,6 @@
                 </a>
                 @endif
 
-
-                @if (Auth::user()->role == 3)
-                <a href="{{ route('staff.home') }}" class="btn btn-primary w-100 mt-2 py-2"
-                    style="border-radius: 30px;">
-                    → Truy cập trang Nhân viên
-                </a>
-                @endif
-
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="btn btn-danger w-100 mt-2 py-2" style="border-radius: 30px;">

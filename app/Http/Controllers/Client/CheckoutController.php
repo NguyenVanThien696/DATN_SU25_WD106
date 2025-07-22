@@ -169,8 +169,6 @@ $request->validate([
                 'total_price' => $finalTotalWithShipping,
                 'discount'    => $discount,
                 'coupon_id'      => optional(Coupon::where('code', session('coupon.code'))->first())->id,
-                'total_price' => $finalTotal + $shippingFee,
-                'discount' => $discount,
                 'shipping_fee'=> $shippingFee,
                 'note'        => $note,
                 'user_info'   => [

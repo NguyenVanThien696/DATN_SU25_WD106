@@ -73,7 +73,6 @@
                             @else
                             <select name="role" class="form-select">
                                 <option value="2" {{ $user->role == 2 ? 'selected' : '' }}>User</option>
-                                <option value="3" {{ $user->role == 3 ? 'selected' : '' }}>Staff</option>
                                 <option value="1" {{ $user->role == 1 ? 'selected' : '' }}>Admin</option>
                             </select>
                             @endif
