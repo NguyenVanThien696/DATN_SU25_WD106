@@ -58,16 +58,25 @@
                                 <td>
                                     @if ($firstItem && $firstItem->productVariant &&
                                     $firstItem->productVariant->product)
-                                    <img src="{{ asset('storage/' . $firstItem->productVariant->product->image) }}"
-                                        alt="Ảnh SP" width="70" class="rounded border">
+                                    <a
+                                        href="{{ route('client.products.detail', $firstItem->productVariant->product->id) }}">
+                                        <img src="{{ asset('storage/' . $firstItem->productVariant->product->image) }}"
+                                            alt="Ảnh SP" width="70" class="rounded border">
+                                    </a>
                                     @else
                                     <span class="text-muted">Không có ảnh</span>
                                     @endif
                                 </td>
+
                                 <td class="text-start">
                                     <div>
-                                        <strong>{{ $firstItem->productVariant->product->name }}</strong> x
-                                        {{ $firstItem->quantity }}
+                                        <strong>
+                                            <a href="{{ route('client.products.detail', $firstItem->productVariant->product->id) }}"
+                                                class="text-decoration-none text-dark">
+                                                {{ $firstItem->productVariant->product->name }}
+                                            </a>
+                                        </strong> x {{ $firstItem->quantity }}
+
                                         @if ($firstItem->productVariant)
                                         <br>
                                         <small class="text-muted">
@@ -75,16 +84,20 @@
                                             {{ $firstItem->productVariant->size->name ?? '-' }}
                                         </small>
                                         @endif
+
                                         <br>
-                                        <small class="text-muted">{{ number_format($firstItem->price, 0, ',', '.') }}
-                                            đ</small>
+                                        <small class="text-muted">
+                                            {{ number_format($firstItem->price, 0, ',', '.') }} đ
+                                        </small>
                                     </div>
+
                                     @if ($order->orderItems->count() > 1)
                                     <a href="{{ route('client.order.detail', $order->id) }}" class="text-primary">
                                         +{{ $order->orderItems->count() - 1 }} sản phẩm
                                     </a>
                                     @endif
                                 </td>
+
 
                                 <td class="text-start">
                                     <div class="text-muted small">Tổng tiền:

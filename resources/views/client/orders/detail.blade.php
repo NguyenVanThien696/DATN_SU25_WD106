@@ -2,179 +2,151 @@
 
 @section('content')
 <div class="container my-5">
-    <h2 class="mb-4 text-center">Chi tiết đơn hàng</h2>
+    <h2 class="text-center mb-4">Chi tiết đơn hàng</h2>
 
-    <div class="card mb-4 shadow">
+    {{-- Địa chỉ nhận hàng + trạng thái giao hàng --}}
+    <div class="card shadow mb-4">
         <div class="card-header bg-primary text-white fw-semibold">
-            <i class="bi bi-person-circle me-2"></i>Thông tin khách hàng
+            <i class="bi bi-geo-alt-fill me-2"></i>Địa Chỉ Nhận Hàng
         </div>
-        <div class="card-body p-0">
-            <table class="table table-bordered table-striped mb-0">
-                <tbody>
-                    <tr>
-                        <th class="w-25">Họ tên người nhận:</th>
-                        <td>{{ $order->shippingAddress->name ?? $order->user->name }}</td>
-                    </tr>
-                    <tr>
-                        <th>Email:</th>
-                        <td>{{ $order->user->email }}</td>
-                    </tr>
-                    <tr>
-                        <th>Số điện thoại:</th>
-                        <td>{{ $order->shippingAddress->phone ?? $order->user->phone }}</td>
-                    </tr>
-                    <tr>
-                        <th>Địa chỉ nhận hàng:</th>
-                        <td>{{ $order->shippingAddress->address ?? $order->user->address }}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+        <div class="card-body">
+            <h5 class="mb-2 fw-semibold">{{ $order->shippingAddress->name ?? $order->user->name }}</h5>
+            <p class="mb-1">{{ $order->shippingAddress->phone ?? $order->user->phone }}</p>
+            <p class="mb-0">{{ $order->shippingAddress->address ?? $order->user->address }}</p>
+
+            <hr>
+            <h6 class="fw-semibold text-muted">Trạng thái vận chuyển</h6>
+            <ul class="timeline">
+                @if ($order->status === 'completed')
+                <li class="timeline-item completed">
+                    <span class="time">{{ $order->updated_at->format('H:i d/m/Y') }}</span>
+                    <span class="desc fw-bold text-success">Đã hoàn thành</span>
+                    <small class="text-muted">Giao hàng thành công</small>
+                </li>
+                @elseif ($order->status === 'cancelled')
+                <li class="timeline-item completed">
+                    <span class="time">{{ $order->updated_at->format('H:i d/m/Y') }}</span>
+                    <span class="desc fw-bold text-danger">Đã hủy</span>
+                    <small class="text-muted">Đơn hàng đã bị hủy</small>
+                </li>
+                @endif
+
+                @if (in_array($order->status, ['shipping', 'completed']))
+                <li class="timeline-item completed">
+                    <span class="time">{{ $order->updated_at->format('H:i d/m/Y') }}</span>
+                    <span class="desc fw-bold text-warning">Đang giao</span>
+                    <small class="text-muted">Đơn hàng đang được vận chuyển</small>
+                </li>
+                @endif
+
+                @if (in_array($order->status, ['confirmed', 'shipping', 'completed']))
+                <li class="timeline-item completed">
+                    <span class="time">{{ $order->updated_at->format('H:i d/m/Y') }}</span>
+                    <span class="desc fw-bold text-primary">Đã xác nhận</span>
+                    <small class="text-muted">Đơn hàng đã được xác nhận</small>
+                </li>
+                @endif
+
+                <li class="timeline-item completed">
+                    <span class="time">{{ $order->created_at->format('H:i d/m/Y') }}</span>
+                    <span class="desc fw-bold">Đã đặt hàng</span>
+                    <small class="text-muted">Chờ xác nhận</small>
+                </li>
+            </ul>
 
 
-    <div class="card mb-4 shadow">
-        <div class="card-header bg-success text-white fw-semibold">
-            <i class="bi bi-receipt me-2"></i>Thông tin đơn hàng
-        </div>
-        <div class="card-body p-0">
-            @php
-            $statusClass = match($order->status) {
-            'pending' => 'bg-warning',
-            'processing' => 'bg-info',
-            'completed' => 'bg-success',
-            'cancelled' => 'bg-danger',
-            'cancelled_paid' => 'bg-warning text-dark',
-            'refunded' => 'bg-success',
-            default => 'bg-secondary',
-            };
-
-            $statusText = match($order->status) {
-            'pending' => 'Đang chờ xử lí',
-            'processing' => 'Đang giao hàng',
-            'completed' => 'Đã hoàn thành',
-            'cancelled' => 'Đã hủy',
-            'cancelled_paid' => 'Đã hủy (đang đợi hoàn tiền)',
-            'refunded' => 'Đã hoàn tiền',
-            default => 'Không xác định',
-            };
-
-            $paymentClass = match($order->payment_method) {
-            'cod' => 'bg-warning',
-            'vnpay' => 'bg-primary',
-            default => 'bg-secondary',
-            };
-
-            $paymentText = match($order->payment_method) {
-            'cod' => 'Thanh toán khi nhận hàng',
-            'vnpay' => 'Thanh toán VNPay',
-            default => 'Không xác định',
-            };
-
-            $paymentStatusClass = match($order->payment_status) {
-            'paid' => 'bg-success',
-            'unpaid' => 'bg-warning',
-            'refunded' => 'bg-success',
-            default => 'bg-secondary',
-            };
-
-            $paymentStatusText = match($order->payment_status) {
-            'paid' => 'Đã thanh toán',
-            'unpaid' => 'Chưa thanh toán',
-            'refunded' => 'Đã hoàn tiền',
-            default => 'Không xác định',
-            };
-            @endphp
-
-            <table class="table table-bordered table-striped mb-0">
-                <tbody>
-                    <tr>
-                        <th class="w-25">Ngày đặt hàng:</th>
-                        <td>{{ $order->created_at->format('H:i d/m/Y') }}</td>
-                    </tr>
-                    <tr>
-                        <th>Trạng thái đơn hàng:</th>
-                        <td><span class="badge {{ $statusClass }}">{{ $statusText }}</span></td>
-                    </tr>
-                    <tr>
-                        <th>Phương thức thanh toán:</th>
-                        <td><span class="badge {{ $paymentClass }}">{{ $paymentText }}</span></td>
-                    </tr>
-                    <tr>
-                        <th>Trạng thái thanh toán:</th>
-                        <td><span class="badge {{ $paymentStatusClass }}">{{ $paymentStatusText }}</span></td>
-                    </tr>
-                    <tr>
-                        <th class="w-25">Ghi chú</th>
-                        <td>{{ $order->shippingAddress->note ?? $order->user->note }}</td>
-                    </tr>
-                    <tr>
-                        <th>Tổng tiền:</th>
-                        <td class="text-danger fw-bold fs-5">{{ number_format($order->total_price, 0, ',', '.') }}đ</td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
     </div>
 
+    {{-- Sản phẩm --}}
+    <div class="card shadow mb-4">
+        <div class="card-header bg-info text-white fw-semibold">
+            <i class="bi bi-box-seam me-2"></i> Sản phẩm trong đơn hàng
+        </div>
+        <div class="card-body">
+            @foreach ($order->orderItems as $item)
+            <div class="d-flex border-bottom py-3">
+                <a href="{{ route('client.products.detail', $item->productVariant->product->id) }}">
+                    <img src="{{ asset('storage/' . $item->productVariant->product->image) }}" alt="Ảnh SP" width="80"
+                        class="rounded border me-3">
+                </a>
+                <div class="flex-grow-1">
+                    <div class="fw-semibold">
+                        <a href="{{ route('client.products.detail', $item->productVariant->product->id) }}"
+                            class="text-decoration-none text-dark">
+                            {{ $item->productVariant->product->name }}
+                        </a>
+                    </div>
+                    <div class="text-muted">
+                        Phân loại: {{ $item->productVariant->color->name ?? '-' }} /
+                        {{ $item->productVariant->size->name ?? '-' }}
+                    </div>
+                    <div>Số lượng: x{{ $item->quantity }}</div>
+                </div>
+                <div class="text-end fw-bold text-danger">
+                    {{ number_format($item->price * $item->quantity, 0, ',', '.') }}đ
+                </div>
+            </div>
+            @endforeach
+        </div>
+
+    </div>
+
+    {{-- Thanh toán --}}
+    @php
+    $paymentClass = match($order->payment_method) {
+    'cod' => 'bg-warning',
+    'vnpay' => 'bg-primary',
+    default => 'bg-secondary',
+    };
+    $paymentText = match($order->payment_method) {
+    'cod' => 'Thanh toán khi nhận hàng',
+    'vnpay' => 'Thanh toán VNPay',
+    default => 'Không xác định',
+    };
+    @endphp
 
     <div class="card shadow">
-        <div class="card-header bg-info text-white fw-semibold">
-            <i class="bi bi-box-seam me-2"></i>Sản phẩm trong đơn hàng
+        <div class="card-header bg-success text-white fw-semibold">
+            <i class="bi bi-cash-stack me-2"></i> Thanh toán
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover align-middle mb-0">
-                    <thead class="table-light text-center">
-                        <tr>
-                            <th>#</th>
-                            <th>Ảnh</th>
-                            <th>Tên sản phẩm</th>
-                            <th>Phân loại</th>
-                            <th>Đơn giá</th>
-                            <th>Số lượng</th>
-                            <th>Thành tiền</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-center">
-                        @foreach ($order->orderItems as $index => $item)
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>
-                                <img src="{{ asset('storage/' . $item->productVariant->product->image) }}" alt="Ảnh SP"
-                                    width="70" class="rounded border">
-                            </td>
-                            <td>{{ $item->productVariant->product->name }}</td>
-                            <td>{{ $item->productVariant->color->name ?? '-' }} /
-                                {{ $item->productVariant->size->name ?? '-' }}</td>
-                            <td>{{ number_format($item->price, 0, ',', '.') }}đ</td>
-                            <td>{{ $item->quantity }}</td>
-                            <td class="text-danger fw-semibold">
-                                {{ number_format($item->price * $item->quantity, 0, ',', '.') }}đ
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot class="table-light fw-bold text-center">
+        <div class="card-body">
+            <table class="table table-borderless mb-0">
+                <tr>
+                    <td class="text-end">Tạm tính:</td>
+                    <td class="text-end">
+                        {{ number_format($order->orderItems->sum(fn($item) => $item->price * $item->quantity), 0, ',', '.') }}đ
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-end">Phí vận chuyển:</td>
+                    <td class="text-end">
+                        @if ($order->shipping_fee == 0)
+                        Miễn phí
+                        @else
+                        {{ number_format($order->shipping_fee, 0, ',', '.') }}đ
+                        @endif
+                    </td>
+                </tr>
 
-                        <tr>
-                            <td colspan="6">Phí vận chuyển</td>
-                            <td>{{ number_format($order->shipping_fee, 0, ',', '.') }}đ</td>
-                        </tr>
+                @if ($order->discount > 0)
+                <tr>
+                    <td class="text-end text-danger">Giảm giá:</td>
+                    <td class="text-end text-danger">- {{ number_format($order->discount, 0, ',', '.') }}đ</td>
+                </tr>
+                @endif
 
-                        <tr>
-                            <td colspan="6" class="text-danger fw-semibold">Giảm giá</td>
-                            <td class="text-danger">- {{ number_format($order->discount, 0, ',', '.') }}đ</td>
-                        </tr>
-                        <tr>
-                            <td colspan="6">Tổng cộng</td>
-                            <td class="text-dark fw-bold">
-                                {{ number_format($order->total_price, 0, ',', '.') }}đ
-                            </td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+                <tr class="fw-bold fs-5">
+                    <td class="text-end">Tổng thanh toán:</td>
+                    <td class="text-end text-danger">{{ number_format($order->total_price, 0, ',', '.') }}đ</td>
+                </tr>
+                <tr>
+                    <td class="text-end">Phương thức thanh toán:</td>
+                    <td class="text-end">
+                        <span class="badge {{ $paymentClass }}">{{ $paymentText }}</span>
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
 
@@ -184,4 +156,53 @@
         </a>
     </div>
 </div>
+
+{{-- CSS timeline --}}
+<style>
+.timeline {
+    list-style: none;
+    padding-left: 0;
+    position: relative;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 30px;
+    margin-bottom: 1rem;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #adb5bd;
+}
+
+.timeline-item.completed::before {
+    background: #198754;
+}
+
+.time {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.desc {
+    display: block;
+}
+</style>
 @endsection

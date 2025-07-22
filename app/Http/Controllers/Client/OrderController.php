@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\OrderStatusLog;
 use App\Models\ProductReview;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -113,6 +114,23 @@ public function confirmReceived($id)
 
         return back()->with('success', 'Cảm ơn bạn đã xác nhận! Đơn hàng đã được hoàn tất.');
     });
+}
+public function updateStatus(Request $request, $id)
+{
+    $order = Order::findOrFail($id);
+
+    $newStatus = $request->input('status');
+
+    $order->status = $newStatus;
+    $order->save();
+
+    OrderStatusLog::create([
+        'order_id' => $order->id,
+        'status' => $newStatus,
+        'note' => $request->input('note', null),
+    ]);
+
+    return back()->with('success', 'Cập nhật trạng thái thành công');
 }
 
 

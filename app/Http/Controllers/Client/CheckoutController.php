@@ -50,7 +50,7 @@ public function index()
     $finalTotal = $total - $discount;
 
     // Tính phí ship
-    $shippingFee = $finalTotal >= 500000 ? 0 : 30000;
+    $shippingFee = $total >= 500000 ? 0 : 30000;
 
     // Tổng cần thanh toán sau khi cộng phí ship
     $finalWithShipping = $finalTotal + $shippingFee;

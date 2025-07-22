@@ -45,4 +45,9 @@ class Order extends Model
     {
         return $this->belongsTo(Coupon::class, 'coupon_id');
     }
+
+public function statusLogs()
+{
+    return $this->hasMany(OrderStatusLog::class)->latest();
+}
 }

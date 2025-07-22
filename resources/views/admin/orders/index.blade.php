@@ -101,7 +101,7 @@
                             'pending' => 'bg-warning text-dark',
                             'confirmed' => 'bg-primary text-white',
                             'processing' => 'bg-info text-white',
-                            'shipping' => 'bg-indigo text-white',
+                            'shipping' => 'bg-warning text-dark',
                             'delivered' => 'bg-secondary text-white',
                             'completed' => 'bg-success text-white',
                             'cancelled' => 'bg-danger text-white',
