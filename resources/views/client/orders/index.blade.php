@@ -129,7 +129,7 @@
                                     'pending' => 'badge bg-warning',
                                     'confirmed' => 'badge bg-primary',
                                     'processing' => 'badge bg-info',
-                                    'shipping' => 'badge bg-indigo',
+                                    'shipping' => 'badge bg-warning text-dark',
                                     'delivered' => 'badge bg-secondary',
                                     'completed' => 'badge bg-success',
                                     'cancelled' => 'badge bg-danger',
