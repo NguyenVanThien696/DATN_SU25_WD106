@@ -58,6 +58,8 @@ public function index()
     session([
         'cart_total' => $total,
         'shipping_fee' => $shippingFee,
+        'final_total' => $finalTotal,
+        'final_with_shipping' => $finalWithShipping,
     ]);
 
     return view('client.checkout.index', compact(
