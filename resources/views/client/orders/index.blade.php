@@ -104,123 +104,125 @@
                                         <strong>{{ number_format($goc, 0, ',', '.') }} đ</strong>
                                     </div>
 
-                                    <div class="text-muted small">
-                                        Giảm giá: <strong class="text-success">
-                                            {{ $order->discount > 0 ? '-' . number_format($order->discount, 0, ',', '.') . ' đ' : '0 đ' }}
-                                        </strong>
-                                    </div>
+                            @if ($order->discount > 0)
+                            <div class="text-muted small">
+                                Giảm giá: <strong class="text-success">
+                                    {{ $order->discount > 0 ? '-' . number_format($order->discount, 0, ',', '.') . ' đ' : '0 đ' }}
+                                </strong>
+                            </div>
+                            @endif
 
-                                    <div class="text-muted small">
-                                        Phí ship:
-                                        <strong class="text-success">
-                                            {{ $goc >= 500000 ? 'Miễn phí' : number_format($order->shipping_fee, 0, ',', '.') . ' đ' }}
-                                        </strong>
-                                    </div>
+                            <div class="text-muted small">
+                                Phí ship:
+                                <strong class="text-success">
+                                    {{ $goc >= 500000 ? 'Miễn phí' : number_format($order->shipping_fee, 0, ',', '.') . ' đ' }}
+                                </strong>
+                            </div>
 
-                                    <div class="fw-semibold text-dark mt-1">Thanh toán:
-                                        <span class="text-primary">{{ number_format($order->total_price, 0, ',', '.') }}
-                                            đ</span>
-                                    </div>
-                                </td>
+                            <div class="fw-semibold text-dark mt-1">Thanh toán:
+                                <span class="text-primary">{{ number_format($order->total_price, 0, ',', '.') }}
+                                    đ</span>
+                            </div>
+                            </td>
 
-                                <td>
-                                    @php
-                                    $statusClass = [
-                                    'pending' => 'badge bg-warning',
-                                    'confirmed' => 'badge bg-primary',
-                                    'processing' => 'badge bg-info',
-                                    'shipping' => 'badge bg-warning text-dark',
-                                    'delivered' => 'badge bg-secondary',
-                                    'completed' => 'badge bg-success',
-                                    'cancelled' => 'badge bg-danger',
-                                    'cancelled_paid' => 'badge bg-warning text-dark',
-                                    'refunded' => 'badge bg-success',
-                                    'delivery_failed' => 'badge bg-dark',
-                                    ][$order->status] ?? 'badge bg-secondary';
+                            <td>
+                                @php
+                                $statusClass = [
+                                'pending' => 'badge bg-warning',
+                                'confirmed' => 'badge bg-primary',
+                                'processing' => 'badge bg-info',
+                                'shipping' => 'badge bg-warning text-dark',
+                                'delivered' => 'badge bg-secondary',
+                                'completed' => 'badge bg-success',
+                                'cancelled' => 'badge bg-danger',
+                                'cancelled_paid' => 'badge bg-warning text-dark',
+                                'refunded' => 'badge bg-success',
+                                'delivery_failed' => 'badge bg-dark',
+                                ][$order->status] ?? 'badge bg-secondary';
 
-                                    $statusList = [
-                                    'pending' => 'Chờ xác nhận',
-                                    'confirmed' => 'Đã xác nhận',
-                                    'processing' => 'Đang chuẩn bị',
-                                    'shipping' => 'Đang giao hàng',
-                                    'delivered' => 'Đã giao (chờ xác nhận)',
-                                    'completed' => 'Đã hoàn tất',
-                                    'cancelled' => 'Đã huỷ',
-                                    'cancelled_paid' => 'Chờ hoàn tiền',
-                                    'refunded' => 'Đã hoàn tiền',
-                                    'delivery_failed' => 'Giao thất bại',
-                                    ];
-                                    @endphp
-                                    <span class="{{ $statusClass }}">
-                                        {{ $statusList[$order->status] ?? 'Không xác định' }}
-                                    </span>
-                                </td>
-                                <td>
-                                    @php
-                                    $paymentText = [
-                                    'cod' => 'COD',
-                                    'vnpay' => 'VNPay',
-                                    ][$order->payment_method] ?? 'Không xác định';
+                                $statusList = [
+                                'pending' => 'Chờ xác nhận',
+                                'confirmed' => 'Đã xác nhận',
+                                'processing' => 'Đang chuẩn bị',
+                                'shipping' => 'Đang giao hàng',
+                                'delivered' => 'Đã giao (chờ xác nhận)',
+                                'completed' => 'Đã hoàn tất',
+                                'cancelled' => 'Đã huỷ',
+                                'cancelled_paid' => 'Chờ hoàn tiền',
+                                'refunded' => 'Đã hoàn tiền',
+                                'delivery_failed' => 'Giao thất bại',
+                                ];
+                                @endphp
+                                <span class="{{ $statusClass }}">
+                                    {{ $statusList[$order->status] ?? 'Không xác định' }}
+                                </span>
+                            </td>
+                            <td>
+                                @php
+                                $paymentText = [
+                                'cod' => 'COD',
+                                'vnpay' => 'VNPay',
+                                ][$order->payment_method] ?? 'Không xác định';
 
-                                    $paymentClass = [
-                                    'cod' => 'bg-secondary',
-                                    'vnpay' => 'bg-primary',
-                                    ][$order->payment_method] ?? 'bg-light';
-                                    @endphp
-                                    <span class="badge {{ $paymentClass }} text-white">{{ $paymentText }}</span>
-                                </td>
-                                <td>
-                                    @if ($order->payment_status === 'paid')
-                                    <span class="badge bg-success">Đã thanh toán</span>
-                                    @else
-                                    <span class="badge bg-warning text-dark">Chưa thanh toán</span>
+                                $paymentClass = [
+                                'cod' => 'bg-secondary',
+                                'vnpay' => 'bg-primary',
+                                ][$order->payment_method] ?? 'bg-light';
+                                @endphp
+                                <span class="badge {{ $paymentClass }} text-white">{{ $paymentText }}</span>
+                            </td>
+                            <td>
+                                @if ($order->payment_status === 'paid')
+                                <span class="badge bg-success">Đã thanh toán</span>
+                                @else
+                                <span class="badge bg-warning text-dark">Chưa thanh toán</span>
+                                @endif
+                            </td>
+                            <td class="align-middle">
+                                <div class="d-flex justify-content-center align-items-center gap-1">
+                                    @if ($order->status === 'pending')
+                                    <form action="{{ route('client.order.cancel', $order->id) }}" method="POST"
+                                        onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-danger px-2 py-1">
+                                            Hủy
+                                        </button>
+                                    </form>
                                     @endif
-                                </td>
-                                <td class="align-middle">
-                                    <div class="d-flex justify-content-center align-items-center gap-1">
-                                        @if ($order->status === 'pending')
-                                        <form action="{{ route('client.order.cancel', $order->id) }}" method="POST"
-                                            onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-danger px-2 py-1">
-                                                Hủy
+
+                                    @if ($order->status === 'delivered')
+                                    <form action="{{ route('client.order.confirmReceived', $order->id) }}" method="POST"
+                                        onsubmit="return confirm('Bạn đã nhận được hàng?')">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn btn-sm btn-success px-2 py-1">
+                                            Đã nhận
+                                        </button>
+                                    </form>
+                                    @endif
+
+                                    <div class="d-flex gap-1">
+                                        <form action="{{ route('client.order.detail', $order->id) }}" method="GET">
+                                            <button type="submit" class="btn btn-sm btn-outline-dark px-2 py-1">
+                                                Xem
                                             </button>
                                         </form>
+
+                                        @if (
+                                        $order->status === 'completed' &&
+                                        $firstItem &&
+                                        $order->orderItems->count() === 1 &&
+                                        $firstItem->productVariant &&
+                                        !in_array($firstItem->id, $reviewedOrderItemIds ?? [])
+                                        )
+                                        <a href="{{ route('client.products.detail', $firstItem->productVariant->product_id) }}#review"
+                                            class="btn btn-sm btn-success px-2 py-1 d-inline-block">
+                                            Đánh giá
+                                        </a>
                                         @endif
-
-                                        @if ($order->status === 'delivered')
-                                        <form action="{{ route('client.order.confirmReceived', $order->id) }}"
-                                            method="POST" onsubmit="return confirm('Bạn đã nhận được hàng?')">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button type="submit" class="btn btn-sm btn-success px-2 py-1">
-                                                Đã nhận
-                                            </button>
-                                        </form>
-                                        @endif
-
-                                        <div class="d-flex gap-1">
-                                            <form action="{{ route('client.order.detail', $order->id) }}" method="GET">
-                                                <button type="submit" class="btn btn-sm btn-outline-dark px-2 py-1">
-                                                    Xem
-                                                </button>
-                                            </form>
-
-                                            @if (
-                                            $order->status === 'completed' &&
-                                            $firstItem &&
-                                            $order->orderItems->count() === 1 &&
-                                            $firstItem->productVariant &&
-                                            !in_array($firstItem->id, $reviewedOrderItemIds ?? [])
-                                            )
-                                            <a href="{{ route('client.products.detail', $firstItem->productVariant->product_id) }}#review"
-                                                class="btn btn-sm btn-success px-2 py-1 d-inline-block">
-                                                Đánh giá
-                                            </a>
-                                            @endif
-                                        </div>
                                     </div>
-                                </td>
+                                </div>
+                            </td>
 
                             </tr>
                             @empty

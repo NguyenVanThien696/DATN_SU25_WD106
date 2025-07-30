@@ -16,14 +16,18 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 
 class ProductController extends Controller
 {
-    public function index()
-    {
-        return view('admin.index');
-    }
+public function index()
+{
+    $notifications = Auth::user()->unreadNotifications; // hoặc thông báo tùy chỉnh
+    $totalNotifications = $notifications->count();
+
+    return view('admin.index', compact('notifications', 'totalNotifications'));
+}
 
 
 
