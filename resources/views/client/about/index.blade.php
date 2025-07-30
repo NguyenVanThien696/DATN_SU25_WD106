@@ -44,7 +44,7 @@
                                     </svg>
                                 </div> <!-- /.icon -->
                                 <div class="service-contents">
-                                    <p>43 Raymouth Rd. Baltemoer, London 3910</p>
+                                    <p>172 Phú Diễn - Bắc Từ Niêm - Hà Nội</p>
                                 </div> <!-- /.service-contents-->
                             </div> <!-- /.service -->
                         </div>
@@ -60,7 +60,7 @@
                                     </svg>
                                 </div> <!-- /.icon -->
                                 <div class="service-contents">
-                                    <p>info@yourdomain.com</p>
+                                    <p>modavieshop@gmail.com</p>
                                 </div> <!-- /.service-contents-->
                             </div> <!-- /.service -->
                         </div>
@@ -76,7 +76,7 @@
                                     </svg>
                                 </div> <!-- /.icon -->
                                 <div class="service-contents">
-                                    <p>+1 294 3925 3939</p>
+                                    <p>+84 987654321</p>
                                 </div> <!-- /.service-contents-->
                             </div> <!-- /.service -->
                         </div>
@@ -84,30 +84,24 @@
 
                     <form>
                         <div class="row">
-                            <div class="col-6">
+                            <div class="col-12">
                                 <div class="form-group">
-                                    <label class="text-black" for="fname">First name</label>
+                                    <label class="text-black" for="fname">Họ tên</label>
                                     <input type="text" class="form-control" id="fname">
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="form-group">
-                                    <label class="text-black" for="lname">Last name</label>
-                                    <input type="text" class="form-control" id="lname">
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="text-black" for="email">Email address</label>
+                            <label class="text-black" for="email">Email</label>
                             <input type="email" class="form-control" id="email">
                         </div>
 
                         <div class="form-group mb-5">
-                            <label class="text-black" for="message">Message</label>
+                            <label class="text-black" for="message">Tin nhắn</label>
                             <textarea name="" class="form-control" id="message" cols="30" rows="5"></textarea>
                         </div>
 
-                        <button type="submit" class="btn btn-primary-hover-outline">Send Message</button>
+                        <button type="submit" class="btn btn-primary-hover-outline">Gửi tin nhắn</button>
                     </form>
 
                 </div>

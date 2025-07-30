@@ -132,6 +132,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('changePassword');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/user', [UserController::class, 'index'])->name('users');
+    
 });
 
 
@@ -154,6 +155,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Product admin
     Route::prefix('product')->group(function () {
+
         Route::get('/index', [AdminProductController::class, 'listProduct'])->name('products.index');
         Route::get('/filter', [AdminProductController::class, 'filter'])->name('product.filter');
         Route::get('/create', [AdminProductController::class, 'create'])->name('products.create');
