@@ -63,13 +63,13 @@ $request->validate([
     'category_id' => 'required|exists:categories,id',
     'brand_id' => 'required|exists:brands,id',
     'tag_id' => 'required|exists:tags,id',
-    'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
 
     'variants' => 'required|array|min:1',
     'variants.*.size_id' => 'required|exists:sizes,id',
     'variants.*.color_id' => 'required|exists:colors,id',
     'variants.*.stock' => 'required|integer|min:0',
-    'variants.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    'variants.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
 ], [
     'name.required' => 'Tên sản phẩm không được để trống.',
     'name.string' => 'Tên sản phẩm phải là chuỗi ký tự.',
@@ -170,12 +170,12 @@ $request->validate([
         'category_id' => 'required|exists:categories,id',
         'brand_id' => 'required|exists:brands,id',
         'tag_id' => 'required|exists:tags,id',
-        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
         'variants' => 'required|array|min:1',
         'variants.*.size_id' => 'required|exists:sizes,id',
         'variants.*.color_id' => 'required|exists:colors,id',
         'variants.*.stock' => 'required|integer|min:0',
-        'variants.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'variants.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
     ], [
         // name
         'name.required' => 'Tên sản phẩm không được để trống.',
