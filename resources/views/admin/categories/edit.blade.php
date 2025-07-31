@@ -22,7 +22,9 @@
                 <textarea class="form-control" name="description" rows="3"
                     value="{{ old('description') }}">{{ old('description', $category->description) }}</textarea>
             </div>
-            <button type="submit" class="btn btn-primary">Cập nhật danh mục</button>
+            <button class="btn btn-success px-4 mt-3">
+            <i class="fas fa-save me-1"></i> Cập nhật
+        </button>
         </form>
     </div>
 

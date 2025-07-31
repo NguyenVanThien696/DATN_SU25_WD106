@@ -39,20 +39,27 @@
                                         <td>{{ $cate->id }}</td>
                                         <td>{{ $cate->name }}</td>
                                         <td>{{ $cate->description }}</td>
-                                        <td>
-                                            <a href="{{ route('admin.categories.show', $cate->id) }}"
-                                                class="btn btn-secondary">Detail </a>
-                                            <a href="{{ route('admin.categories.edit', $cate->id) }}"
-                                                class="btn btn-warning">Edit</a>
-                                            <form action="{{ route('admin.categories.delete', $cate->id) }} "
-                                                class="d-inline" method="POST">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button class="btn btn-danger" 
-                                                    onclick="return confirm('Bạn có chắc chắn xóa không? ')" type="submit">Delete
-                                                </button>
-                                            </form>
-                                        </td>
+                                        <td
+                                                style="text-align: center; vertical-align: middle; padding: 10px; border: 1px solid #dee2e6;">
+                                                <a href="{{ route('admin.categories.show', $cate->id) }}"
+                                                    class="btn btn-sm btn-outline-secondary" title="Xem" style="margin: 2px;">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ route('admin.categories.edit', $cate->id) }}"
+                                                    class="btn btn-sm btn-outline-warning" title="Sửa" style="margin: 2px;">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <form action="{{ route('admin.categories.delete', $cate->id) }}" method="POST"
+                                                    class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button class="btn btn-sm btn-outline-danger" title="Xóa"
+                                                        style="margin: 2px;"
+                                                        onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?')">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
                                     </tr>
 
                                     @endforeach

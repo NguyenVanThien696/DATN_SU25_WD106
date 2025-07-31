@@ -70,16 +70,15 @@
 
 
 <!-- Start Product Section -->
-<div class="product-section">
+<div class="product-section" id="hot">
     <div class="container">
         <div class="row">
 
             <!-- Start Column 1 -->
             <div class="col-md-12 col-lg-3 mb-5 mb-lg-0">
-                <h2 class="mb-4 section-title">Crafted with excellent material.</h2>
-                <p class="mb-4">Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate
-                    velit imperdiet dolor tempor tristique. </p>
-                <p><a href="{{ route('client.products.index') }}" class="btn">Explore</a></p>
+                <h2 class="mb-4 section-title">SẢN PHẨM HOT</h2>
+                <p class="mb-4">Hãy sống tránh xa sự thù ghét, mà hãy chọn lối sống nhẹ nhàng và linh hoạt. Đừng để tâm trí bị chi phối bởi những lo âu, mà hãy tập trung vào những điều tích cực. </p>
+                <p><a href="{{ route('client.products.index') }}" class="btn">Mua ngay</a></p>
             </div>
             <!-- End Column 1 -->
 
@@ -112,13 +111,12 @@
 <!-- End Product Section -->
 
 <!-- Start Why Choose Us Section -->
-<div class="why-choose-section">
+<div class="why-choose-section" id="about-us">
     <div class="container">
         <div class="row justify-content-between">
             <div class="col-lg-6">
-                <h2 class="section-title">Why Choose Us</h2>
-                <p>Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate velit
-                    imperdiet dolor tempor tristique.</p>
+                <h2 class="section-title">TẠI SAO LỰA CHỌN CHÚNG TÔI</h2>
+                <p>Modavie là thương hiệu thời trang hàng đầu Việt Nam thành lập vào năm 2025 bởi WD106 Fpoly, hướng tới sự phóng khoáng, lịch lãm và trẻ trung.</p>
 
                 <div class="row my-5">
                     <div class="col-6 col-md-6">
@@ -126,8 +124,8 @@
                             <div class="icon">
                                 <img src="{{asset('assets/images/truck.svg')}}" alt="Image" class="imf-fluid">
                             </div>
-                            <h3>Fast &amp; Free Shipping</h3>
-                            <p>Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate.
+                            <h3>Miễn phí giao hàng</h3>
+                            <p>Áp dụng cho mọi đơn hàng từ 500k
                             </p>
                         </div>
                     </div>
@@ -137,8 +135,8 @@
                             <div class="icon">
                                 <img src="{{asset('assets/images/bag.svg')}}" alt="Image" class="imf-fluid">
                             </div>
-                            <h3>Easy to Shop</h3>
-                            <p>Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate.
+                            <h3>Mua hàng dễ dàng</h3>
+                            <p>Giao diện thân thiện với khách hàng
                             </p>
                         </div>
                     </div>
@@ -148,8 +146,8 @@
                             <div class="icon">
                                 <img src="{{asset('assets/images/support.svg')}}" alt="Image" class="imf-fluid">
                             </div>
-                            <h3>24/7 Support</h3>
-                            <p>Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate.
+                            <h3>Hỗ trợ 24/7</h3>
+                            <p>HOTLINE 24/7 : 0388728681
                             </p>
                         </div>
                     </div>
@@ -159,8 +157,8 @@
                             <div class="icon">
                                 <img src="{{asset('assets/images/return.svg')}}" alt="Image" class="imf-fluid">
                             </div>
-                            <h3>Hassle Free Returns</h3>
-                            <p>Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate.
+                            <h3>Đổi hàng dễ dàng</h3>
+                            <p>7 ngày đổi hàng vì bất kì lí do gì
                             </p>
                         </div>
                     </div>
@@ -170,7 +168,7 @@
 
             <div class="col-lg-5">
                 <div class="img-wrap">
-                    <img src="{{asset('assets/images/why-choose-us-img.jpg')}}" alt="Image" class="img-fluid">
+                    <img src="{{asset('assets/images/taisaochon.jpg')}}" alt="Image" class="img-fluid">
                 </div>
             </div>
 
@@ -185,24 +183,22 @@
         <div class="row justify-content-between">
             <div class="col-lg-7 mb-5 mb-lg-0">
                 <div class="imgs-grid">
-                    <div class="grid grid-1"><img src="{{asset('assets/images/img-grid-1.jpg')}}" alt="Untree.co"></div>
-                    <div class="grid grid-2"><img src="{{asset('assets/images/img-grid-2.jpg')}}" alt="Untree.co"></div>
-                    <div class="grid grid-3"><img src="{{asset('assets/images/img-grid-3.jpg')}}" alt="Untree.co"></div>
+                    <div class="grid grid-1"><img src="{{asset('assets/images/shakeit.png')}}" alt="Untree.co"></div>
+                    <div class="grid grid-2"><img src="{{asset('assets/images/shakeit2.png')}}" alt="Untree.co"></div>
+                    <div class="grid grid-3"><img src="{{asset('assets/images/shakeit1.png')}}" alt="Untree.co"></div>
                 </div>
             </div>
             <div class="col-lg-5 ps-lg-5">
-                <h2 class="section-title mb-4">We Help You Make Modern Interior Design</h2>
-                <p>Donec facilisis quam ut purus rutrum lobortis. Donec vitae odio quis nisl dapibus malesuada. Nullam
-                    ac aliquet velit. Aliquam vulputate velit imperdiet dolor tempor tristique. Pellentesque habitant
-                    morbi tristique senectus et netus et malesuada</p>
-
+                <h2 class="section-title mb-4">SHAKE IT UP</h2>
+                <p>Nguồn cảm hứng rực rỡ, sống động từ Bữa tiệc được tái hiện hoàn hảo trên từng chi tiết trang phục thời trang dành cho nữ giới tới từ Modavie! Cổ vũ cho mỗi cô gái hãy khuấy động giai điệu thời trang của chính mình mỗi ngày. Shake It Up!</p>
+{{-- 
                 <ul class="list-unstyled custom-list my-4">
                     <li>Donec vitae odio quis nisl dapibus malesuada</li>
                     <li>Donec vitae odio quis nisl dapibus malesuada</li>
                     <li>Donec vitae odio quis nisl dapibus malesuada</li>
                     <li>Donec vitae odio quis nisl dapibus malesuada</li>
-                </ul>
-                <p><a herf="#" class="btn">Explore</a></p>
+                </ul> --}}
+                <p><a href="{{ route('client.products.categories', 3) }}" class="btn">Khám phá ngay</a></p>
             </div>
         </div>
     </div>
@@ -210,7 +206,7 @@
 <!-- End We Help Section -->
 
 <!-- Start Popular Product -->
-<div class="popular-product">
+{{-- <div class="popular-product">
     <div class="container">
         <div class="row">
 
@@ -255,11 +251,11 @@
 
         </div>
     </div>
-</div>
+</div> --}}
 <!-- End Popular Product -->
 
 <!-- Start Testimonial Slider -->
-<div class="testimonial-section">
+{{-- <div class="testimonial-section">
     <div class="container">
         <div class="row">
             <div class="col-lg-7 mx-auto text-center">
@@ -368,11 +364,11 @@
             </div>
         </div>
     </div>
-</div>
+</div> --}}
 <!-- End Testimonial Slider -->
 
 <!-- Start Blog Section -->
-<div class="blog-section">
+{{-- <div class="blog-section">
     <div class="container">
         <div class="row mb-5">
             <div class="col-md-6">
@@ -426,7 +422,7 @@
 
         </div>
     </div>
-</div>
+</div> --}}
 <!-- End Blog Section -->
 
 
