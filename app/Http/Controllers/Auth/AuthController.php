@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
@@ -140,4 +141,42 @@ public function adminIndex()
         }
         return view('admin.dashboard', ['user' => $user]);
     }
+
+public function edit(Request $request)
+{
+    $user = Auth::user();
+
+    return view('auth.users.edit', compact('user'));
+}
+
+public function update(Request $request)
+{
+    $user = Auth::user();
+
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+        'phone' => 'required|numeric',
+        'address' => 'required|string|max:255',
+        'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+    ]);
+
+    $user->name = $validated['name'];
+    $user->email = $validated['email'];
+    $user->phone = $validated['phone'];
+    $user->address = $validated['address'];
+
+    if ($request->hasFile('avatar')) {
+        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+
+        $avatarPath = $request->file('avatar')->store('avatars', 'public');
+        $user->avatar = $avatarPath;
+    }
+
+    $user->save();
+
+    return redirect()->route('dashboard.form')->with('status', 'Cập nhật thông tin thành công.');
+}
 }
