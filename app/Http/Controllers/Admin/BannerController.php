@@ -35,7 +35,7 @@ public function store(Request $request)
         'title'       => 'required|string|max:255',
         'description' => 'nullable|string',
         'link'        => 'nullable|url|max:255',
-        'image'       => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
+        'image'       => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
         'status'      => 'required|in:hidden,visible',
         'position'    => 'nullable|string|max:50',
     ]);
@@ -87,7 +87,7 @@ public function update(Request $request, string $id)
         'description' => 'nullable|string',
         'link' => 'nullable|url|max:255',
         'status' => 'required|in:visible,hidden',
-        'image' => 'nullable|image|max:2048',
+        'image' => 'nullable|image|max:5120',
     ]);
 
     if ($request->hasFile('image')) {

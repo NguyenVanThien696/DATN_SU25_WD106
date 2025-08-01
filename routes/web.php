@@ -82,6 +82,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [AuthController::class, 'showDashboard'])->name('dashboard.form');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('user.changePassword');
+    Route::get('/user/edit', [AuthController::class, 'edit'])->name('user.edit');
+    Route::put('/user/update', [AuthController::class, 'update'])->name('user.update');
 
 
     Route::prefix('client')->name('client.')->group(function () {
@@ -132,6 +134,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('changePassword');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/user', [UserController::class, 'index'])->name('users');
+    
 });
 
 
@@ -154,6 +157,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Product admin
     Route::prefix('product')->group(function () {
+
         Route::get('/index', [AdminProductController::class, 'listProduct'])->name('products.index');
         Route::get('/filter', [AdminProductController::class, 'filter'])->name('product.filter');
         Route::get('/create', [AdminProductController::class, 'create'])->name('products.create');

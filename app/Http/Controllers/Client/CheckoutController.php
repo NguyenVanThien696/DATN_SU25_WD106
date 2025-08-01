@@ -20,8 +20,124 @@ use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
 {
-    public function index()
-    {
+
+public function index()
+{
+    $user = Auth::user();
+
+    $cart = Cart::with([
+        'items.variant.product',
+        'items.variant.size',
+        'items.variant.color'
+    ])->where('user_id', $user->id)->first();
+
+    if (!$cart || $cart->items->isEmpty()) {
+        return back()->with('error', 'Giỏ hàng của bạn đang trống.');
+    }
+
+    $products = $cart->items;
+
+    // Tính tổng tiền hàng
+    $total = 0;
+    foreach ($products as $item) {
+        $product = $item->variant->product;  
+        $total += $product->price * $item->quantity;
+    }
+
+    // Áp dụng mã giảm giá (nếu có)
+    $discount = session('coupon.discount_amount', 0);
+    $couponCode = session('coupon.code', null);
+
+    $finalTotal = $total - $discount;
+
+    // Tính phí ship
+    $shippingFee = $total >= 500000 ? 0 : 30000;
+
+    // Tổng cần thanh toán sau khi cộng phí ship
+    $finalWithShipping = $finalTotal + $shippingFee;
+
+    session([
+        'cart_total' => $total,
+        'shipping_fee' => $shippingFee,
+        'final_total' => $finalTotal,
+        'final_with_shipping' => $finalWithShipping,
+    ]);
+
+    return view('client.checkout.index', compact(
+        'user',
+        'products',
+        'total',
+        'discount',
+        'couponCode',
+        'shippingFee',
+        'finalTotal',
+        'finalWithShipping'
+    ));
+}
+
+
+public function thankyou(){
+    return view('client.checkout.thankyou');
+}
+
+public function process(Request $request)
+{
+    // dd($request->all());
+      if ($request->has('apply_coupon')) {
+        return $this->apply($request);  // Gọi hàm apply khi bấm "Áp dụng"
+    }
+if ($request->has('ship_to_different')) {
+$request->validate([
+    'shipping_name'    => 'required|string|max:255',
+    'shipping_email'   => 'required|email|max:255',
+    'shipping_phone'   => 'required|string|max:20',
+    'shipping_address' => 'required|string|max:255',
+], [
+    'shipping_name.required'    => 'Tên người nhận không được để trống.',
+    'shipping_name.string'      => 'Tên người nhận phải là chuỗi.',
+    'shipping_name.max'         => 'Tên người nhận không được vượt quá 255 ký tự.',
+
+    'shipping_email.required'   => 'Email người nhận không được để trống.',
+    'shipping_email.email'      => 'Email người nhận không đúng định dạng.',
+    'shipping_email.max'        => 'Email người nhận không được vượt quá 255 ký tự.',
+
+    'shipping_phone.required'   => 'Số điện thoại người nhận không được để trống.',
+    'shipping_phone.string'     => 'Số điện thoại người nhận phải là chuỗi.',
+    'shipping_phone.max'        => 'Số điện thoại người nhận không được vượt quá 20 ký tự.',
+
+    'shipping_address.required' => 'Địa chỉ người nhận không được để trống.',
+    'shipping_address.string'   => 'Địa chỉ người nhận phải là chuỗi.',
+    'shipping_address.max'      => 'Địa chỉ người nhận không được vượt quá 255 ký tự.',
+]);
+} else {
+$request->validate([
+    'name'    => 'required|string|max:255',
+    'email'   => 'required|email|max:255',
+    'phone'   => 'required|string|max:20',
+    'address' => 'required|string|max:255',
+], [
+    'name.required'    => 'Tên người dùng không được để trống.',
+    'name.string'      => 'Tên người dùng phải là chuỗi.',
+    'name.max'         => 'Tên người dùng không được vượt quá 255 ký tự.',
+
+    'email.required'   => 'Email không được để trống.',
+    'email.email'      => 'Email không đúng định dạng.',
+    'email.max'        => 'Email không được vượt quá 255 ký tự.',
+
+    'phone.required'   => 'Số điện thoại không được để trống.',
+    'phone.string'     => 'Số điện thoại phải là chuỗi.',
+    'phone.max'        => 'Số điện thoại không được vượt quá 20 ký tự.',
+
+    'address.required' => 'Địa chỉ không được để trống.',
+    'address.string'   => 'Địa chỉ phải là chuỗi.',
+    'address.max'      => 'Địa chỉ không được vượt quá 255 ký tự.',
+]);
+
+}
+    DB::beginTransaction();
+
+    try {
+        $userId = Auth::id();
         $user = Auth::user();
 
         $cart = Cart::with([
@@ -70,11 +186,9 @@ class CheckoutController extends Controller
             'finalTotal',
             'finalWithShipping'
         ));
-    }
+}
 
-
-    public function thankyou()
-    {
+public function thankyou(){
         return view('client.checkout.thankyou');
     }
 

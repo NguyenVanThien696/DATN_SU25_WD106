@@ -8,21 +8,31 @@
             <div class="card p-4 text-center shadow-sm" style="border-radius: 16px;">
                 <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center bg-light border shadow"
                     style="width: 100px; height: 100px;">
+                    @if ($user->avatar && Storage::disk('public')->exists($user->avatar))
+                    <img src="{{ asset('storage/' . $user->avatar) }}" alt="Avatar" class="rounded-circle"
+                        style="width: 100px; height: 100px; object-fit: cover;">
+                    @else
                     <i class="fas fa-user fa-2x text-secondary"></i>
+                    @endif
                 </div>
                 <h5 class="mb-1 text-capitalize">{{ Auth::user()->name }}</h5>
 
                 <div class="text-start mt-3">
                     <p class="mb-2"><strong>Email:</strong> {{ Auth::user()->email }}</p>
-                    <p class="mb-2"><strong>Phone:</strong> {{ Auth::user()->phone ?? 'Chưa cập nhật' }}</p>
                     <p class="mb-2"><strong>Tài khoản:</strong> {{ Auth::user()->username ?? Auth::user()->name }}</p>
+                    <p class="mb-2"><strong>Phone:</strong> {{ Auth::user()->phone ?? 'Chưa cập nhật' }}</p>
+                    <p class="mb-2"><strong>Địa chỉ:</strong> {{ Auth::user()->address ?? 'Chưa cập nhật' }}</p>
                     <p class="mb-0"><strong>Ngày tạo:</strong> {{ Auth::user()->created_at->format('Y-m-d H:i:s') }}</p>
                 </div>
 
 
+                <a href="{{ route('user.edit') }}" class="btn btn-sm btn-outline-warning mt-3" title="Cập nhật thông tin"
+                    style="margin: 2px;">
+                    <i class="fas fa-edit"></i>
+                </a>
 
                 @if (Auth::user()->role == 1)
-                <a href="{{ route('admin.index') }}" class="btn btn-primary w-100 mt-2 py-2"
+                <a href="{{ route('admin.index') }}" class="btn btn-primary w-100 mt-4 py-2"
                     style="border-radius: 30px;">
                     → Truy cập trang ADMIN
                 </a>
@@ -35,6 +45,7 @@
                     </button>
                 </form>
             </div>
+
         </div>
 
         <!-- Form đổi mật khẩu -->

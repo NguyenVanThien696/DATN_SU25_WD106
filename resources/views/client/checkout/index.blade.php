@@ -169,10 +169,14 @@
                                     <td colspan="3">Tạm tính</td>
                                     <td>{{ number_format($total) }} đ</td>
                                 </tr>
+
+                                @if ($discount > 0)
                                 <tr>
                                     <td colspan="3">Giảm giá</td>
                                     <td>- {{ number_format($discount) }} đ</td>
                                 </tr>
+                                @endif
+
                                 <tr>
                                     <td colspan="3">Phí vận chuyển</td>
                                     <td>
