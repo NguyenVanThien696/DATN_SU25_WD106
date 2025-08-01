@@ -41,6 +41,7 @@
 	<link rel="stylesheet" href="{{ asset('assets/css1/magnific-popup.css') }}">
 	<link rel="stylesheet" href="{{ asset('assets/css1/main.css') }}"> -->
     @stack('styles')
+    @yield('scripts')
     <title>ModaVie - Trang chu</title>
 </head>
 

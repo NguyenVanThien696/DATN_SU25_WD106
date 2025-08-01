@@ -115,6 +115,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/detail/{id}', [OrderController::class, 'detail'])->name('detail');
             Route::post('/cancel/{id}/', [OrderController::class, 'cancel'])->name('cancel');
             Route::patch('/confirm-received/{id}', [OrderController::class, 'confirmReceived'])->name('confirmReceived');
+            Route::get('/order-status/{id}', [OrderController::class, 'getStatus'])->name('getStatus');
         });
 
         //Reviews
@@ -134,7 +135,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('changePassword');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/user', [UserController::class, 'index'])->name('users');
-    
 });
 
 
@@ -168,7 +168,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/detail/{id}', [AdminProductController::class, 'show'])->name('products.show');
 
         Route::get('/indexVariant', [AdminProductController::class, 'indexVariant'])->name('products.indexVariant');
-        
+
         Route::get('/create/size', [AdminProductController::class, 'createSize'])->name('products.createSize');
         Route::post('/store/size', [AdminProductController::class, 'storeSize'])->name('products.storeSize');
         Route::get('/edit/size/{id}', [AdminProductController::class, 'editSize'])->name('products.editSize');
@@ -212,10 +212,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/update/{id}', [AdminVoucherController::class, 'update'])->name('update');
         Route::delete('/delete/{id}', [AdminVoucherController::class, 'destroy'])->name('delete');
         Route::patch('/toggle-status/{id}', [AdminVoucherController::class, 'toggleStatus'])->name('toggleStatus');
-
     });
 
-    
+
     // Reviews admin
     Route::prefix('reviews')->name('reviews.')->group(function () {
         Route::get('/', [ReviewController::class, 'index'])->name('index');
@@ -224,7 +223,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
 
     // Banner admin
-        Route::prefix('banners')->name('banners.')->group(function () {
+    Route::prefix('banners')->name('banners.')->group(function () {
         Route::get('/', [AdminBannerController::class, 'index'])->name('index');
         Route::get('/create', [AdminBannerController::class, 'create'])->name('create');
         Route::post('/store', [AdminBannerController::class, 'store'])->name('store');
@@ -233,8 +232,5 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::delete('/delete/{id}', [AdminBannerController::class, 'destroy'])->name('destroy');
         Route::get('/detail/{id}', [AdminBannerController::class, 'show'])->name('show');
         Route::patch('/toggle-status/{id}', [AdminBannerController::class, 'toggleStatus'])->name('toggleStatus');
-
     });
-
 });
-
