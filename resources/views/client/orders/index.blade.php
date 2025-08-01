@@ -176,6 +176,8 @@
                                             <td>
                                                 @if ($order->payment_status === 'paid')
                                                     <span class="badge bg-success">Đã thanh toán</span>
+                                                @elseif ($order->payment_method === 'cod')
+                                                    <span class="badge bg-secondary">Thanh toán khi nhận hàng</span>
                                                 @else
                                                     <span class="badge bg-warning text-dark">Chưa thanh toán</span>
                                                 @endif
@@ -275,13 +277,51 @@
                 };
                 return map[code] || 'badge bg-secondary';
             }
+            function updateActionButtons(tr, status, orderId, reviewedOrderIds) {
+                const actionTd = tr.querySelector('td:last-child');
+                let html = `<div class="d-flex justify-content-center align-items-center gap-1">`;
+
+                if (status === 'pending') {
+                    html += `
+                                                            <form action="/client/order/cancel/${orderId}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                                                <button type="submit" class="btn btn-sm btn-danger px-2 py-1">Hủy</button>
+                                                            </form>
+                                                        `;
+                }
+
+                if (status === 'delivered') {
+                    html += `
+                                                            <form action="/client/order/confirm-received/${orderId}" method="POST" onsubmit="return confirm('Bạn đã nhận được hàng?')">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                                                <input type="hidden" name="_method" value="PATCH">
+                                                                <button type="submit" class="btn btn-sm btn-success px-2 py-1">Đã nhận</button>
+                                                            </form>
+                                                        `;
+                }
+
+                html += `
+                                                        <form action="/client/order/detail/${orderId}" method="GET">
+                                                            <button type="submit" class="btn btn-sm btn-outline-dark px-2 py-1">Xem</button>
+                                                        </form>
+                                                    `;
+
+                if (status === 'completed' && reviewedOrderIds && !reviewedOrderIds.includes(Number(orderId))) {
+                    html += `
+                                                            <a href="/client/products/${orderId}#review" class="btn btn-sm btn-success px-2 py-1 d-inline-block">Đánh giá</a>
+                                                        `;
+                }
+
+                html += `</div>`;
+                actionTd.innerHTML = html;
+            }
 
             setInterval(() => {
                 document.querySelectorAll('tr[data-order-id]').forEach(tr => {
                     const orderId = tr.dataset.orderId;
                     const currentStatus = tr.dataset.orderStatus;
 
-                    fetch(`{{ route('client.order.getStatus', ['id' => $order->id]) }}`)
+                    fetch(`/client/order/order-status/${orderId}`)
                         .then(res => res.json())
                         .then(data => {
                             if (data.status && data.status !== currentStatus) {
@@ -289,6 +329,7 @@
                                 const statusCell = tr.querySelector('td:nth-child(6) span');
                                 statusCell.className = statusClass(data.status);
                                 statusCell.innerText = statusText(data.status);
+                                updateActionButtons(tr, data.status, orderId, @json($reviewedOrderItemIds ?? []));
                             }
                         });
                 });

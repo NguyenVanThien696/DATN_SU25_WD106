@@ -201,6 +201,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('status/{id}', [AdminOrderController::class, 'updateStatus'])->name('updateStatus');
         Route::get('/detail/{id}', [AdminOrderController::class, 'detail'])->name('detail');
         Route::post('/refund/{id}', [AdminOrderController::class, 'refund'])->name('refund');
+        Route::get('/statuses/{id}', [AdminOrderController::class, 'getStatuses'])->name('getStatuses');
     });
 
     // Vouchers admin
