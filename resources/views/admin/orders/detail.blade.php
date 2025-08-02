@@ -153,9 +153,10 @@
                                 <img src="{{ asset('storage/' . $item->productVariant->product->image) }}" alt="Ảnh SP"
                                     width="70" class="rounded border">
                             </td>
-                            <td>{{ $item->productVariant->product->name }}</td>
-                            <td>{{ $item->productVariant->color->name ?? '-' }} /
-                                {{ $item->productVariant->size->name ?? '-' }}</td>
+                            <td>{{ $item->product_name ?? ($item->productVariant->product->name ?? 'Sản phẩm đã bị xóa') }}
+                            </td>
+                            <td>{{ $item->variant_name ?? (($item->productVariant->color->name ?? '-') . ' / ' . ($item->productVariant->size->name ?? '-')) }}
+                            </td>
                             <td>{{ number_format($item->price, 0, ',', '.') }}đ</td>
                             <td>{{ $item->quantity }}</td>
                             <td class="text-danger fw-semibold">
