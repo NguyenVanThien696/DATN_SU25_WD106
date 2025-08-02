@@ -133,197 +133,93 @@ class CheckoutController extends Controller
                 'address.max'      => 'Địa chỉ không được vượt quá 255 ký tự.',
             ]);
         }
-        DB::beginTransaction();
+DB::beginTransaction();
 
-        try {
-            $userId = Auth::id();
-            $user = Auth::user();
+try {
+    $userId = Auth::id();
+    $user = Auth::user();
 
-            $cart = Cart::with('items.variant.product')->where('user_id', $userId)->first();
-            if (!$cart || $cart->items->isEmpty()) {
-                return back()->with('error', 'Giỏ hàng của bạn đang trống.');
-            }
+    $cart = Cart::with('items.variant.product')->where('user_id', $userId)->first();
+    if (!$cart || $cart->items->isEmpty()) {
+        return back()->with('error', 'Giỏ hàng của bạn đang trống.');
+    }
 
+    $total = $cart->items->sum(fn($item) => $item->variant->product->price * $item->quantity);
+    $discount = session('coupon.discount_amount', 0);
+    $finalTotal = $total - $discount;
+    $shippingFee = $total >= 500000 ? 0 : 30000;
+    $finalTotalWithShipping = $finalTotal + $shippingFee;
 
-            $total = $cart->items->sum(function ($item) {
-                return $item->variant->product->price * $item->quantity;
-            });
+    // Lấy thông tin người nhận (dù ship khác hay không)
+    $name    = $request->input($request->has('ship_to_different') ? 'shipping_name' : 'name');
+    $email   = $request->input($request->has('ship_to_different') ? 'shipping_email' : 'email');
+    $phone   = $request->input($request->has('ship_to_different') ? 'shipping_phone' : 'phone');
+    $address = $request->input($request->has('ship_to_different') ? 'shipping_address' : 'address');
+    $note    = $request->input($request->has('ship_to_different') ? 'shipping_note' : 'c_order_notes');
 
-            // dd(session('coupon'));
-            $discount = session('coupon.discount_amount', 0);
-            $finalTotal = $total - $discount;
+    $orderCode = 'DH' . now()->format('HidmY') . strtoupper(Str::random(4));
 
-            $shippingFee = $total >= 500000 ? 0 : 30000;
+    $order = Order::create([
+        'user_id'         => $userId,
+        'order_code'      => $orderCode,
+        'total_price'     => $finalTotalWithShipping,
+        'shipping_fee'    => $shippingFee,
+        'discount'        => $discount,
+        'coupon_id'       => optional(Coupon::where('code', session('coupon.code'))->first())->id,
+        'status'          => 'pending',
+        'note'            => $note,
+        'payment_method'  => $request->input('payment_method', 'cod'),
+        'payment_status'  => 'unpaid',
+        'customer_name'   => $name,
+        'customer_email'  => $email,
+        'customer_phone'  => $phone,
+        'customer_address'=> $address,
+    ]);
 
-            $finalTotalWithShipping = $finalTotal + $shippingFee;
-            $paymentMethod = $request->input('payment_method', 'cod');
-            $note = $request->input('c_order_notes');
-            if ($request->has('ship_to_different')) {
-                $note = $request->input('shipping_note');
-            }
-            if ($paymentMethod === 'vnpay') {
-                $txnRef = uniqid($userId . '_');
-                $orderCode = 'DH' . now()->format('HidmY') . strtoupper(Str::random(4));
-                $pending = PendingOrder::create([
-                    'txn_ref'     => $txnRef,
-                    'order_code'  => $orderCode,
-                    'user_id'     => $userId,
-                    'total_price' => $finalTotalWithShipping,
-                    'discount'    => $discount,
-                    'coupon_id'      => optional(Coupon::where('code', session('coupon.code'))->first())->id,
-                    'shipping_fee' => $shippingFee,
-                    'note'        => $note,
-                    'user_info'   => [
-                        'name'    => $request->input('name'),
-                        'email'   => $request->input('email'),
-                        'phone'   => $request->input('phone'),
-                        'address' => $request->input('address'),
-                    ],
-                    'cart_items'  => $cart->items->map(function ($item) {
-                        return [
-                            'product_variant_id' => $item->product_variant_id,
-                            'quantity'           => $item->quantity,
-                            'price'              => $item->variant->product->price,
-                        ];
-                    })->toArray()
-                ]);
+    if ($request->has('ship_to_different')) {
+        ShippingAddress::create([
+            'order_id' => $order->id,
+            'name'     => $name,
+            'phone'    => $phone,
+            'email'    => $email,
+            'address'  => $address,
+            'note'     => $note,
+        ]);
+    }
 
-                $vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-                $vnp_Returnurl = route('client.checkout.vnpayReturn');
-                $vnp_TmnCode = '1615H65S';
-                $vnp_HashSecret = config('services.vnpay.hash_secret');
-                $vnp_OrderInfo = 'payment';
-                $vnp_OrderType = 'billpayment';
-                $vnp_Amount = (int)round($finalTotalWithShipping * 100);
-                $vnp_Locale = 'vn';
-                $vnp_BankCode = 'NCB';
-                $vnp_IpAddr = $_SERVER['REMOTE_ADDR'];
-
-                $inputData = [
-                    "vnp_Version" => "2.1.0",
-                    "vnp_TmnCode" => $vnp_TmnCode,
-                    "vnp_Amount" => $vnp_Amount,
-                    "vnp_Command" => "pay",
-                    "vnp_CreateDate" => date('YmdHis'),
-                    "vnp_CurrCode" => "VND",
-                    "vnp_IpAddr" => $vnp_IpAddr,
-                    "vnp_Locale" => $vnp_Locale,
-                    "vnp_OrderInfo" => $vnp_OrderInfo,
-                    "vnp_OrderType" => $vnp_OrderType,
-                    "vnp_ReturnUrl" => $vnp_Returnurl,
-                    "vnp_TxnRef" => $txnRef,
-                ];
-
-                if (!empty($vnp_BankCode)) {
-                    $inputData['vnp_BankCode'] = $vnp_BankCode;
-                }
-
-                ksort($inputData);
-                $query = "";
-                $i = 0;
-                $hashdata = "";
-                foreach ($inputData as $key => $value) {
-                    $hashdata .= ($i ? '&' : '') . urlencode($key) . "=" . urlencode($value);
-                    $query .= urlencode($key) . "=" . urlencode($value) . '&';
-                    $i++;
-                }
-
-                $vnp_Url .= "?" . $query;
-                if ($vnp_HashSecret) {
-                    $vnpSecureHash = hash_hmac('sha512', $hashdata, $vnp_HashSecret);
-                    $vnp_Url .= 'vnp_SecureHash=' . $vnpSecureHash;
-                }
-
-
-                DB::commit();
-                return redirect()->to($vnp_Url);
-            }
-
-            //         dd([
-            //     '$shippingFee' => $shippingFee,
-            //     '$finalTotal' => $finalTotal,
-            //     '$finalTotalWithShipping' => $finalTotalWithShipping
-
-            // ]);
-
-            // Lấy thông tin người nhận từ form
-            $name = $request->input('name');
-            $email = $request->input('email');
-            $phone = $request->input('phone');
-            $address = $request->input('address');
-            $note = $request->input('c_order_notes');
-
-            if ($request->has('ship_to_different')) {
-                $name = $request->input('shipping_name');
-                $email = $request->input('shipping_email');
-                $phone = $request->input('shipping_phone');
-                $address = $request->input('shipping_address');
-                $note = $request->input('shipping_note');
-            }
-            $orderCode = 'DH' . now()->format('HidmY') . strtoupper(Str::random(4));
-            $order = Order::create([
-                'user_id'        => $userId,
-                'order_code'     => $orderCode,
-                'total_price'    => $finalTotalWithShipping,
-                'shipping_fee'   => $shippingFee,
-                'discount'       => $discount,
-                'coupon_id'      => optional(Coupon::where('code', session('coupon.code'))->first())->id,
-                'status'         => 'pending',
-                'note' => $note,
-                'payment_method' => 'cod',
-                'payment_status' => 'unpaid'
-            ]);
-
-            if (!$request->has('ship_to_different')) {
-                $user->update([
-                    'name'    => $request->input('name'),
-                    'email'   => $request->input('email'),
-                    'phone'   => $request->input('phone'),
-                    'address' => $request->input('address'),
-                ]);
-            }
-
-            if ($request->has('ship_to_different')) {
-                ShippingAddress::create([
-                    'order_id' => $order->id,
-                    'name'     => $request->input('shipping_name'),
-                    'phone'    => $request->input('shipping_phone'),
-                    'email'    => $request->input('shipping_email'),
-                    'address'  => $request->input('shipping_address'),
-                    'note'     => $request->input('shipping_note'),
-                ]);
-                // dd($shipping);
-            }
-
-            foreach ($cart->items as $item) {
-                OrderItem::create([
-                    'order_id'           => $order->id,
-                    'product_variant_id' => $item->product_variant_id,
-                    'quantity'           => $item->quantity,
-                    'price'              => $item->variant->product->price,
-                ]);
-
-                // Trừ tồn kho
-                $variant = $item->variant;
-                $variant->stock -= $item->quantity;
-                if ($variant->stock < 0) {
-                    throw new \Exception('Sản phẩm "' . $variant->product->name . '" không đủ hàng trong kho.');
-                }
-                $variant->save();
-            }
-
-
-            $this->saveUsedCoupon($userId);
-            $cart->items()->delete();
-            $cart->delete();
-            session()->forget('coupon');
-
-            DB::commit();
-            return redirect()->route('client.checkout.thankyou')->with('success', 'Đặt hàng thành công!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Đã xảy ra lỗi: ' . $e->getMessage());
+    foreach ($cart->items as $item) {
+        // Kiểm tra tồn kho
+        $variant = $item->variant;
+        if ($variant->stock < $item->quantity) {
+            throw new \Exception('Sản phẩm "' . $variant->product->name . '" không đủ hàng trong kho.');
         }
+
+        OrderItem::create([
+            'order_id'           => $order->id,
+            'product_variant_id' => $item->product_variant_id,
+            'product_name'       => $variant->product->name ?? '',
+            'variant_name'       => ($variant->color->name ?? '-') . ' / ' . ($variant->size->name ?? '-'),
+            'quantity'           => $item->quantity,
+            'price'              => $variant->product->price,
+        ]);
+
+        // Trừ tồn kho
+        $variant->stock -= $item->quantity;
+        $variant->save();
+    }
+
+    $this->saveUsedCoupon($userId);
+    $cart->items()->delete();
+    $cart->delete();
+    session()->forget('coupon');
+
+    DB::commit();
+    return redirect()->route('client.checkout.thankyou')->with('success', 'Đặt hàng thành công!');
+} catch (\Exception $e) {
+    DB::rollBack();
+    return back()->with('error', 'Đã xảy ra lỗi: ' . $e->getMessage());
+}
+
     }
 
 

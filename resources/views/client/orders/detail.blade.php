@@ -10,22 +10,23 @@
             <i class="bi bi-geo-alt-fill me-2"></i>Địa Chỉ Nhận Hàng
         </div>
         <div class="card-body">
-            <h5 class="mb-2 fw-semibold">{{ $order->shippingAddress->name ?? $order->user->name }}</h5>
-            <p class="mb-1">{{ $order->shippingAddress->phone ?? $order->user->phone }}</p>
-            <p class="mb-0">{{ $order->shippingAddress->address ?? $order->user->address }}</p>
+            <h5 class="mb-2 fw-semibold">{{ $order->shippingAddress->name ?? $order->customer_name }}</h5>
+            <p class="mb-1">{{ $order->shippingAddress->phone ?? $order->customer_phone }}</p>
+            <p class="mb-0">{{ $order->shippingAddress->address ?? $order->customer_address }}</p>
+
 
             <hr>
             <h6 class="fw-semibold text-muted">Trạng thái vận chuyển</h6>
             <ul class="timeline">
                 @if ($order->status === 'completed')
                 <li class="timeline-item completed">
-                    <span class="time">{{ $order->updated_at->format('H:i d/m/Y') }}</span>
+                    <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
                     <span class="desc fw-bold text-success">Đã hoàn thành</span>
                     <small class="text-muted">Giao hàng thành công</small>
                 </li>
                 @elseif ($order->status === 'cancelled')
                 <li class="timeline-item completed">
-                    <span class="time">{{ $order->updated_at->format('H:i d/m/Y') }}</span>
+                    <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
                     <span class="desc fw-bold text-danger">Đã hủy</span>
                     <small class="text-muted">Đơn hàng đã bị hủy</small>
                 </li>
@@ -33,7 +34,7 @@
 
                 @if (in_array($order->status, ['shipping', 'completed']))
                 <li class="timeline-item completed">
-                    <span class="time">{{ $order->updated_at->format('H:i d/m/Y') }}</span>
+                    <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
                     <span class="desc fw-bold text-warning">Đang giao</span>
                     <small class="text-muted">Đơn hàng đang được vận chuyển</small>
                 </li>
@@ -41,14 +42,14 @@
 
                 @if (in_array($order->status, ['confirmed', 'shipping', 'completed']))
                 <li class="timeline-item completed">
-                    <span class="time">{{ $order->updated_at->format('H:i d/m/Y') }}</span>
+                    <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
                     <span class="desc fw-bold text-primary">Đã xác nhận</span>
                     <small class="text-muted">Đơn hàng đã được xác nhận</small>
                 </li>
                 @endif
 
                 <li class="timeline-item completed">
-                    <span class="time">{{ $order->created_at->format('H:i d/m/Y') }}</span>
+                    <span class="time">{{ $order->created_at->format('d/m/Y') }}</span>
                     <span class="desc fw-bold">Đã đặt hàng</span>
                     <small class="text-muted">Chờ xác nhận</small>
                 </li>
@@ -66,29 +67,38 @@
         <div class="card-body">
             @foreach ($order->orderItems as $item)
             <div class="d-flex border-bottom py-3">
+                @if ($item->productVariant && $item->productVariant->product)
                 <a href="{{ route('client.products.detail', $item->productVariant->product->id) }}">
                     <img src="{{ asset('storage/' . $item->productVariant->product->image) }}" alt="Ảnh SP" width="80"
                         class="rounded border me-3">
                 </a>
+                @else
+                <div style="width: 80px; height: 80px;"
+                    class="rounded border me-3 bg-light d-flex align-items-center justify-content-center text-muted">
+                    Không có ảnh
+                </div>
+                @endif
+
                 <div class="flex-grow-1">
                     <div class="fw-semibold">
-                        <a href="{{ route('client.products.detail', $item->productVariant->product->id) }}"
-                            class="text-decoration-none text-dark">
-                            {{ $item->productVariant->product->name }}
-                        </a>
+                        {{ $item->product_name ?? ($item->productVariant->product->name ?? 'Sản phẩm đã bị xóa') }}
                     </div>
+
                     <div class="text-muted">
-                        Phân loại: {{ $item->productVariant->color->name ?? '-' }} /
-                        {{ $item->productVariant->size->name ?? '-' }}
+                        Phân loại:
+                        {{ $item->variant_name ?? (($item->productVariant->color->name ?? '-') . ' / ' . ($item->productVariant->size->name ?? '-')) }}
                     </div>
+
                     <div>Số lượng: x{{ $item->quantity }}</div>
                 </div>
+
                 <div class="text-end fw-bold text-danger">
                     {{ number_format($item->price * $item->quantity, 0, ',', '.') }}đ
                 </div>
             </div>
             @endforeach
         </div>
+
 
     </div>
 
