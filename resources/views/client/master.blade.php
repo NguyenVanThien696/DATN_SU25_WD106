@@ -40,6 +40,8 @@
 	<link rel="stylesheet" href="{{ asset('assets/css1/ion.rangeSlider.skinFlat.css') }}" />
 	<link rel="stylesheet" href="{{ asset('assets/css1/magnific-popup.css') }}">
 	<link rel="stylesheet" href="{{ asset('assets/css1/main.css') }}"> -->
+    @stack('styles')
+    @yield('scripts')
     <title>ModaVie - Trang chu</title>
 </head>
 
@@ -66,18 +68,18 @@
     <script src="{{ asset('assets/js/custom.js') }}"></script>
 
     <script src="{{ asset('assets/js1/vendor/jquery-2.2.4.min.js') }}"></script>
-	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4"
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4"
 	 crossorigin="anonymous"></script> -->
-	<!-- <script src="{{ asset('assets/js1/vendor/bootstrap.min.js') }}"></script> -->
-	<!-- <script src="{{ asset('assets/js1/jquery.ajaxchimp.min.js') }}"></script> -->
-	<script src="{{ asset('assets/js1/jquery.nice-select.min.js') }}"></script>
-	<!-- <script src="{{ asset('assets/js1/jquery.sticky.js') }}"></script> -->
-	<!-- <script src="{{ asset('assets/js1/nouislider.min.js') }}"></script> -->
-	<!-- <script src="{{ asset('assets/js1/countdown.js') }}"></script> -->
-	<script src="{{ asset('assets/js1/jquery.magnific-popup.min.js') }}"></script>
-	<!-- <script src="{{ asset('assets/js1/owl.carousel.min.js') }}"></script> -->
+    <!-- <script src="{{ asset('assets/js1/vendor/bootstrap.min.js') }}"></script> -->
+    <!-- <script src="{{ asset('assets/js1/jquery.ajaxchimp.min.js') }}"></script> -->
+    <script src="{{ asset('assets/js1/jquery.nice-select.min.js') }}"></script>
+    <!-- <script src="{{ asset('assets/js1/jquery.sticky.js') }}"></script> -->
+    <!-- <script src="{{ asset('assets/js1/nouislider.min.js') }}"></script> -->
+    <!-- <script src="{{ asset('assets/js1/countdown.js') }}"></script> -->
+    <script src="{{ asset('assets/js1/jquery.magnific-popup.min.js') }}"></script>
+    <!-- <script src="{{ asset('assets/js1/owl.carousel.min.js') }}"></script> -->
 
-	<script src="{{ asset('assets/js1/main.js') }}"></script>
+    <script src="{{ asset('assets/js1/main.js') }}"></script>
     <script src="{{ asset('assets/js/products.js')}}"></script>
     <script src="{{ asset('assets/js/search.js')}}"></script>
 </body>

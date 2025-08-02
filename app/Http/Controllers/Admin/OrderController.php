@@ -74,55 +74,63 @@ class OrderController extends Controller
         return view('admin.orders.detail', compact('order'));
     }
 
-public function updateStatus(Request $request, $id)
-{
-    $allStatuses = [
-        'pending', 'confirmed', 'processing', 'shipping', 'delivered',
-        'completed', 'cancelled', 'cancelled_paid', 'refunded', 'delivery_failed'
-    ];
-
-    $request->validate([
-        'status' => 'required|in:' . implode(',', $allStatuses),
-    ]);
-
-    return DB::transaction(function () use ($request, $id) {
-        $order = Order::with('orderItems')->lockForUpdate()->findOrFail($id);
-
-        $currentStatus = $order->status;
-        $newStatus = $request->status;
-
-        if (in_array($currentStatus, ['cancelled', 'completed', 'refunded'])) {
-            return back()->with('error', 'Không thể thay đổi trạng thái đơn hàng đã hoàn tất hoặc bị hủy.');
-        }
-
-        $validTransitions = [
-            'pending' => ['confirmed', 'cancelled'],
-            'confirmed' => ['processing', 'cancelled'],
-            'processing' => ['shipping', 'cancelled'],
-            'shipping' => ['delivered', 'delivery_failed'],
-            'delivered' => ['completed'],
+    public function updateStatus(Request $request, $id)
+    {
+        $allStatuses = [
+            'pending',
+            'confirmed',
+            'processing',
+            'shipping',
+            'delivered',
+            'completed',
+            'cancelled',
+            'cancelled_paid',
+            'refunded',
+            'delivery_failed'
         ];
 
-        if (!in_array($newStatus, $validTransitions[$currentStatus] ?? [])) {
-            return back()->with('error', 'Chuyển trạng thái không hợp lệ.');
-        }
+        $request->validate([
+            'status' => 'required|in:' . implode(',', $allStatuses),
+        ]);
 
-        if (in_array($newStatus, ['cancelled', 'cancelled_paid'])) {
-            foreach ($order->orderItems as $item) {
-                if ($item->product_variant_id && $item->quantity > 0) {
-                    DB::table('product_variants')
-                        ->where('id', $item->product_variant_id)
-                        ->increment('stock', $item->quantity);
+        return DB::transaction(function () use ($request, $id) {
+            $order = Order::with('orderItems')->lockForUpdate()->findOrFail($id);
+
+            $currentStatus = $order->status;
+            $newStatus = $request->status;
+
+            if (in_array($currentStatus, ['cancelled', 'completed', 'refunded'])) {
+                return back()->with('error', 'Không thể thay đổi trạng thái đơn hàng đã hoàn tất hoặc bị hủy.');
+            }
+
+            $validTransitions = [
+                'pending' => ['confirmed', 'cancelled'],
+                'confirmed' => ['processing', 'cancelled'],
+                'processing' => ['shipping', 'cancelled'],
+                'shipping' => ['delivered', 'delivery_failed'],
+                'delivered' => ['completed'],
+            ];
+
+            if (!in_array($newStatus, $validTransitions[$currentStatus] ?? [])) {
+                return back()->with('error', 'Chuyển trạng thái không hợp lệ.');
+            }
+
+            if (in_array($newStatus, ['cancelled', 'cancelled_paid'])) {
+                foreach ($order->orderItems as $item) {
+                    if ($item->product_variant_id && $item->quantity > 0) {
+                        DB::table('product_variants')
+                            ->where('id', $item->product_variant_id)
+                            ->increment('stock', $item->quantity);
+                    }
                 }
             }
-        }
 
-        $order->status = $newStatus;
-        $order->save();
+            $order->status = $newStatus;
+            $order->save();
 
-        return back()->with('success', 'Cập nhật trạng thái đơn hàng thành công!');
-    });
-}
+            return back()->with('success', 'Cập nhật trạng thái đơn hàng thành công!');
+        });
+    }
 
 
     public function refund($id)
@@ -145,5 +153,18 @@ public function updateStatus(Request $request, $id)
 
 
         return back()->with('success', 'Đã hoàn tiền cho đơn hàng #' . $order->id);
+    }
+
+    public function getStatuses($id)
+    {
+        $order = Order::find($id);
+
+        if (!$order) {
+            return response()->json(['error' => 'Không tìm thấy đơn hàng'], 404);
+        }
+
+        return response()->json([
+            'status' => $order->status,
+        ]);
     }
 }
