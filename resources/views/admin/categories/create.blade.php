@@ -21,7 +21,7 @@
                 <textarea class="form-control" name="description" rows="3" value="{{ old('description') }}"></textarea>
             </div>
 
-            <button type="submit" class="btn btn-primary">Thêm danh mục</button>
+            <button class="btn btn-success mt-3"><i class="fas fa-save me-1"></i> Thêm danh mục</button>
         </form>
     </div>
 

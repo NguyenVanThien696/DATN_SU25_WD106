@@ -281,7 +281,7 @@
                     const orderId = tr.dataset.orderId;
                     const currentStatus = tr.dataset.orderStatus;
 
-                    fetch(`{{ route('client.order.getStatus', ['id' => $order->id]) }}`)
+                    fetch(`/client/order/order-status/${orderId}`)
                         .then(res => res.json())
                         .then(data => {
                             if (data.status && data.status !== currentStatus) {

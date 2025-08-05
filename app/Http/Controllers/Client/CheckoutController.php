@@ -20,9 +20,18 @@ use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
+
+        //Danh sách id sản phẩm được chọn từ giỏ hàng
+        $selectedIdsString = $request->query('selected_items');
+
+        if(!$selectedIdsString){
+            return redirect()->route('client.cart.index')->with('error', 'Vui lòng chọn sản phẩm để thanh toán');
+        }
+
+        $selectedIds = explode(',', $selectedIdsString);
 
         $cart = Cart::with([
             'items.variant.product',
@@ -34,7 +43,7 @@ class CheckoutController extends Controller
             return back()->with('error', 'Giỏ hàng của bạn đang trống.');
         }
 
-        $products = $cart->items;
+        $products = $cart->items->whereIn('id', $selectedIds);
 
         // Tính tổng tiền hàng
         $total = 0;

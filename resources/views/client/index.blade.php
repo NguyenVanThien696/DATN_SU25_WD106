@@ -135,7 +135,7 @@
     </div>
 
     <!-- Start Product Section -->
-    <div class="product-section">
+    <div class="product-section" id="hot">
         <div class="container">
             <div class="row">
 
@@ -177,7 +177,7 @@
     <!-- End Product Section -->
 
     <!-- Start Why Choose Us Section -->
-    <div class="why-choose-section">
+    <div class="why-choose-section" id="about-us">
         <div class="container">
             <div class="row justify-content-between">
                 <div class="col-lg-6">
@@ -275,7 +275,7 @@
                         <li>Form dáng chuẩn đẹp</li>
                         <li>Thoải mái vận động</li>
                     </ul>
-                    <p><a herf="#" class="btn">Khám phá </a></p>
+                    <p><a href="{{ route('client.products.index') }}" class="btn">Khám phá </a></p>
                 </div>
             </div>
         </div>

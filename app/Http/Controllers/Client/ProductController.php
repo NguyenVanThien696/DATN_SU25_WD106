@@ -84,7 +84,7 @@ class ProductController extends Controller
 
         $keywords = explode(' ', $keyword);
 
-        $products = Product::query();
+        $products = Product::with('tag');
 
         foreach ($keywords as $word) {
             $products->where(function ($query) use ($word) {

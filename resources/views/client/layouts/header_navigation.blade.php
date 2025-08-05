@@ -24,11 +24,11 @@
 		                        @endforeach
 		                    </ul>
 		                </li>
-		                <li class="nav-item {{ request()->routeIs('client.contact.index') ? 'active' : '' }}">
-		                    <a class="nav-link" href="{{ route('client.contact.index') }}">Về chúng tôi </a>
+						<li class="nav-item {{ request()->routeIs('client.blog.index') ? 'active' : '' }}">
+		                    <a class="nav-link" href="{{ url('/#hot') }}">Sản phẩm HOT</a>
 		                </li>
-		                <li class="nav-item {{ request()->routeIs('client.blog.index') ? 'active' : '' }}">
-		                    <a class="nav-link" href="{{ route('client.blog.index') }}">Blog</a>
+		                <li class="nav-item {{ request()->routeIs('client.contact.index') ? 'active' : '' }}">
+		                    <a class="nav-link" href="{{ url('/#about-us') }}">Về chúng tôi </a>
 		                </li>
 		                <li class="nav-item {{ request()->routeIs('client.about.index') ? 'active' : '' }}">
 		                    <a class="nav-link" href="{{ route('client.about.index') }}">Liên hệ với chúng tôi </a>
