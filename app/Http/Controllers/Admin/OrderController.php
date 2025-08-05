@@ -64,7 +64,7 @@ class OrderController extends Controller
         ])->findOrFail($id);
 
         if (
-            ($order->status === 'completed' || $order->payment_method === 'momo')
+             (in_array($order->status, ['delivered', 'completed']) || $order->payment_method === 'momo')
             && $order->payment_status !== 'paid'
         ) {
             $order->payment_status = 'paid';
@@ -77,8 +77,19 @@ class OrderController extends Controller
 public function updateStatus(Request $request, $id)
 {
     $allStatuses = [
-        'pending', 'confirmed', 'processing', 'shipping', 'delivered',
-        'completed', 'cancelled', 'cancelled_paid', 'refunded', 'delivery_failed'
+        'pending',
+        'confirmed',
+        'processing',
+        'shipping',
+        'delivered',
+        'completed',
+        'cancelled',
+        'cancelled_paid',
+        'refunded',
+        'delivery_failed',
+        'refund_pending', 
+        'refund_rejected', 
+        'refund_approved'
     ];
 
     $request->validate([
@@ -91,11 +102,14 @@ public function updateStatus(Request $request, $id)
         $currentStatus = $order->status;
         $newStatus = $request->status;
 
-        if (in_array($currentStatus, ['cancelled', 'completed', 'refunded'])) {
+        if (in_array($currentStatus, ['cancelled', 'completed', 'refunded','refund_pending', 'refund_rejected', 'refund_approved'])) {
             return back()->with('error', 'Không thể thay đổi trạng thái đơn hàng đã hoàn tất hoặc bị hủy.');
         }
 
         $validTransitions = [
+                'refund_pending' => [],
+                'refund_rejected' => [],
+            'refund_approved' => [],
             'pending' => ['confirmed', 'cancelled'],
             'confirmed' => ['processing', 'cancelled'],
             'processing' => ['shipping', 'cancelled'],
@@ -107,6 +121,7 @@ public function updateStatus(Request $request, $id)
             return back()->with('error', 'Chuyển trạng thái không hợp lệ.');
         }
 
+        // Hoàn trả tồn kho nếu đơn bị hủy
         if (in_array($newStatus, ['cancelled', 'cancelled_paid'])) {
             foreach ($order->orderItems as $item) {
                 if ($item->product_variant_id && $item->quantity > 0) {
@@ -117,12 +132,27 @@ public function updateStatus(Request $request, $id)
             }
         }
 
+        // Nếu đơn COD và chuyển sang trạng thái "delivered", đánh dấu đã thanh toán
+        if (
+            $newStatus === 'delivered' &&
+            $order->payment_method === 'cod' &&
+            $order->payment_status !== 'paid'
+        ) {
+            $order->payment_status = 'paid';
+        }
+
+
+        if ($newStatus === 'refund_approved') {
+        $order->payment_status = 'refunded';
+        }
+        
         $order->status = $newStatus;
         $order->save();
 
         return back()->with('success', 'Cập nhật trạng thái đơn hàng thành công!');
     });
 }
+
 
 
     public function refund($id)
@@ -145,5 +175,18 @@ public function updateStatus(Request $request, $id)
 
 
         return back()->with('success', 'Đã hoàn tiền cho đơn hàng #' . $order->id);
+    }
+
+    public function getStatuses($id)
+    {
+        $order = Order::find($id);
+
+        if (!$order) {
+            return response()->json(['error' => 'Không tìm thấy đơn hàng'], 404);
+        }
+
+        return response()->json([
+            'status' => $order->status,
+        ]);
     }
 }

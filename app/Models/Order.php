@@ -22,6 +22,10 @@ class Order extends Model
         'discount',  
         'order_code',  
         'coupon_id',
+        'customer_name',
+        'customer_phone',
+        'customer_email',
+        'customer_address',
     ];
 
     // Quan hệ với User
@@ -46,5 +50,9 @@ class Order extends Model
         return $this->belongsTo(Coupon::class, 'coupon_id');
     }
 
+    public function refundRequest()
+    {
+        return $this->hasOne(RefundRequest::class);
+    }
 
 }

@@ -4,61 +4,116 @@
 <div class="container my-5">
     <h2 class="text-center mb-4">Chi tiết đơn hàng</h2>
 
-    {{-- Địa chỉ nhận hàng + trạng thái giao hàng --}}
     <div class="card shadow mb-4">
         <div class="card-header bg-primary text-white fw-semibold">
             <i class="bi bi-geo-alt-fill me-2"></i>Địa Chỉ Nhận Hàng
         </div>
         <div class="card-body">
-            <h5 class="mb-2 fw-semibold">{{ $order->shippingAddress->name ?? $order->user->name }}</h5>
-            <p class="mb-1">{{ $order->shippingAddress->phone ?? $order->user->phone }}</p>
-            <p class="mb-0">{{ $order->shippingAddress->address ?? $order->user->address }}</p>
+            <h5 class="mb-2 fw-semibold">{{ $order->shippingAddress->name ?? $order->customer_name }}</h5>
+            <p class="mb-1">{{ $order->shippingAddress->phone ?? $order->customer_phone }}</p>
+            <p class="mb-0">{{ $order->shippingAddress->address ?? $order->customer_address }}</p>
+
 
             <hr>
             <h6 class="fw-semibold text-muted">Trạng thái vận chuyển</h6>
+            @php
+            // Lấy trạng thái chính xác của đơn hàng, có xét đến refund
+            $status = $order->status;
+
+            if ($order->refundRequest) {
+            switch ($order->refundRequest->status) {
+            case 'pending':
+            $status = 'refund_pending';
+            break;
+            case 'approved':
+            $status = 'refund_approved';
+            break;
+            case 'rejected':
+            $status = 'refund_rejected';
+            break;
+            }
+            }
+
+            // Thứ tự các bước trạng thái
+            $statusSteps = [
+            'pending' => 1,
+            'confirmed' => 2,
+            'shipping' => 3,
+            'completed' => 4,
+            'refund_pending' => 5,
+            'refund_rejected' => 6,
+            'refund_approved' => 7,
+            'cancelled' => 99,
+            ];
+
+            $currentStep = $statusSteps[$status] ?? 0;
+            @endphp
+
             <ul class="timeline">
-                @if ($order->status === 'completed')
+
+                @if ($status === 'cancelled')
                 <li class="timeline-item completed">
-                    <span class="time">{{ $order->updated_at->format('H:i d/m/Y') }}</span>
-                    <span class="desc fw-bold text-success">Đã hoàn thành</span>
-                    <small class="text-muted">Giao hàng thành công</small>
-                </li>
-                @elseif ($order->status === 'cancelled')
-                <li class="timeline-item completed">
-                    <span class="time">{{ $order->updated_at->format('H:i d/m/Y') }}</span>
+                    <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
                     <span class="desc fw-bold text-danger">Đã hủy</span>
                     <small class="text-muted">Đơn hàng đã bị hủy</small>
                 </li>
                 @endif
 
-                @if (in_array($order->status, ['shipping', 'completed']))
+                @if ($status === 'refund_approved')
                 <li class="timeline-item completed">
-                    <span class="time">{{ $order->updated_at->format('H:i d/m/Y') }}</span>
+                    <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
+                    <span class="desc fw-bold text-success">Đã hoàn tiền</span>
+                    <small class="text-muted">Tiền đã được chuyển vào ví</small>
+                </li>
+                @endif
+
+                @if ($status === 'refund_rejected')
+                <li class="timeline-item completed">
+                    <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
+                    <span class="desc fw-bold text-danger">Từ chối hoàn tiền</span>
+                    <small class="text-muted">Yêu cầu bị từ chối</small>
+                </li>
+                @endif
+
+                @if (in_array($status, ['refund_pending', 'refund_rejected', 'refund_approved']))
+                <li class="timeline-item {{ $currentStep >= 5 ? 'completed' : '' }}">
+                    <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
+                    <span class="desc fw-bold text-info">Chờ xét duyệt hoàn tiền</span>
+                    <small class="text-muted">Yêu cầu đang được xử lý</small>
+                </li>
+                @endif
+
+                <li class="timeline-item {{ $currentStep >= 4 ? 'completed' : '' }}">
+                    <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
+                    <span class="desc fw-bold text-success">Đã hoàn thành</span>
+                    <small class="text-muted">Giao hàng thành công</small>
+                </li>
+
+                <li class="timeline-item {{ $currentStep >= 3 ? 'completed' : '' }}">
+                    <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
                     <span class="desc fw-bold text-warning">Đang giao</span>
                     <small class="text-muted">Đơn hàng đang được vận chuyển</small>
                 </li>
-                @endif
 
-                @if (in_array($order->status, ['confirmed', 'shipping', 'completed']))
-                <li class="timeline-item completed">
-                    <span class="time">{{ $order->updated_at->format('H:i d/m/Y') }}</span>
+                <li class="timeline-item {{ $currentStep >= 2 ? 'completed' : '' }}">
+                    <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
                     <span class="desc fw-bold text-primary">Đã xác nhận</span>
                     <small class="text-muted">Đơn hàng đã được xác nhận</small>
                 </li>
-                @endif
 
-                <li class="timeline-item completed">
-                    <span class="time">{{ $order->created_at->format('H:i d/m/Y') }}</span>
+                <li class="timeline-item {{ $currentStep >= 1 ? 'completed' : '' }}">
+                    <span class="time">{{ $order->created_at->format('d/m/Y') }}</span>
                     <span class="desc fw-bold">Đã đặt hàng</span>
                     <small class="text-muted">Chờ xác nhận</small>
                 </li>
+
             </ul>
+
 
 
         </div>
     </div>
 
-    {{-- Sản phẩm --}}
     <div class="card shadow mb-4">
         <div class="card-header bg-info text-white fw-semibold">
             <i class="bi bi-box-seam me-2"></i> Sản phẩm trong đơn hàng
@@ -66,23 +121,31 @@
         <div class="card-body">
             @foreach ($order->orderItems as $item)
             <div class="d-flex border-bottom py-3">
+                @if ($item->productVariant && $item->productVariant->product)
                 <a href="{{ route('client.products.detail', $item->productVariant->product->id) }}">
                     <img src="{{ asset('storage/' . $item->productVariant->product->image) }}" alt="Ảnh SP" width="80"
                         class="rounded border me-3">
                 </a>
+                @else
+                <div style="width: 80px; height: 80px;"
+                    class="rounded border me-3 bg-light d-flex align-items-center justify-content-center text-muted">
+                    Không có ảnh
+                </div>
+                @endif
+
                 <div class="flex-grow-1">
                     <div class="fw-semibold">
-                        <a href="{{ route('client.products.detail', $item->productVariant->product->id) }}"
-                            class="text-decoration-none text-dark">
-                            {{ $item->productVariant->product->name }}
-                        </a>
+                        {{ $item->product_name ?? ($item->productVariant->product->name ?? 'Sản phẩm đã bị xóa') }}
                     </div>
+
                     <div class="text-muted">
-                        Phân loại: {{ $item->productVariant->color->name ?? '-' }} /
-                        {{ $item->productVariant->size->name ?? '-' }}
+                        Phân loại:
+                        {{ $item->variant_name ?? (($item->productVariant->color->name ?? '-') . ' / ' . ($item->productVariant->size->name ?? '-')) }}
                     </div>
+
                     <div>Số lượng: x{{ $item->quantity }}</div>
                 </div>
+
                 <div class="text-end fw-bold text-danger">
                     {{ number_format($item->price * $item->quantity, 0, ',', '.') }}đ
                 </div>
@@ -90,9 +153,9 @@
             @endforeach
         </div>
 
+
     </div>
 
-    {{-- Thanh toán --}}
     @php
     $paymentClass = match($order->payment_method) {
     'cod' => 'bg-warning',
@@ -141,7 +204,7 @@
                     <td class="text-end text-danger">{{ number_format($order->total_price, 0, ',', '.') }}đ</td>
                 </tr>
                 <tr>
-                    <td class="text-end">Phương thức thanh toán:</td>
+                    <td class="text-end">Trạng thái thanh toán:</td>
                     <td class="text-end">
                         <span class="badge {{ $paymentClass }}">{{ $paymentText }}</span>
                     </td>

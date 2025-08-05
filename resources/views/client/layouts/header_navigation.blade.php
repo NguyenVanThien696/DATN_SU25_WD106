@@ -83,6 +83,12 @@
 		                            </a>
 		                        </li>
 		                        <li>
+		                            <a class="dropdown-item d-flex align-items-center gap-2"
+		                                href="{{ route('client.wallet.index') }}">
+		                                <i class="fas fa-wallet text-success"></i> Ví ModaVie
+		                            </a>
+		                        </li>
+		                        <li>
 		                            <form method="POST" action="{{ route('logout') }}">
 		                                @csrf
 		                                <button class="dropdown-item d-flex align-items-center gap-2" type="submit">
@@ -91,6 +97,7 @@
 		                            </form>
 		                        </li>
 		                    </ul>
+
 		                </li>
 		                @else
 		                <li class="nav-item">
@@ -105,17 +112,7 @@
 		    </div>
 
 		</nav>
-		<div class="search_input" id="search_input_box">
-		    <div class="container">
-		        <form class="d-flex justify-content-between">
-		            <input type="text" class="form-control" id="search_input" placeholder="Search Here">
-		            <button type="button" class="btn" id="close_search">
-		                <i class="fas fa-times"><span class="lnr lnr-cross" id="close_search" title="Close Search"></span></i>
-		            </button>
 
-		        </form>
-		    </div>
-		</div>
 
 		<style>
 .nav-item.dropdown1:hover .dropdown-menu {

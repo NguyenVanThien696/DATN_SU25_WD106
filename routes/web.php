@@ -13,6 +13,8 @@ use App\Http\Controllers\Client\CheckoutController;
 use App\Http\Controllers\Client\OrderController;
 use App\Http\Controllers\Client\CategoriesController;
 use App\Http\Controllers\Client\ProductReviewController;
+use App\Http\Controllers\Client\RefundRequestController;
+use App\Http\Controllers\Client\WalletController;
 
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
@@ -20,9 +22,9 @@ use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\BannerController as AdminBannerController;
+use App\Http\Controllers\Admin\RefundRequestController as AdminRefundRequestController;
 use App\Http\Controllers\Admin\ReviewController;
-
-
+use App\Http\Controllers\Admin\WalletTransactionController as AdminWalletTransactionController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Models\ProductReview;
 
@@ -88,6 +90,23 @@ Route::middleware(['auth'])->group(function () {
 
     Route::prefix('client')->name('client.')->group(function () {
 
+        // Ví
+        Route::prefix('client/wallet')->name('wallet.')->group(function () {
+            Route::get('refund/create/{orderId}', [RefundRequestController::class, 'create'])->name('refund.create');
+            Route::post('refund/store', [RefundRequestController::class, 'store'])->name('refund.store');
+
+            Route::get('/', [WalletController::class, 'index'])->name('index');
+
+            // Nạp tiền
+            Route::get('deposit', [WalletController::class, 'showDepositForm'])->name('deposit');
+            Route::post('deposit', [WalletController::class, 'deposit'])->name('deposit.store');
+
+            // Rút tiền
+            Route::get('withdraw', [WalletController::class, 'showWithdrawForm'])->name('withdraw');
+            Route::post('withdraw', [WalletController::class, 'withdraw'])->name('withdraw.store');
+        });
+
+
 
         // Trang cart phía user 
         Route::prefix('cart')->name('cart.')->group(function () {
@@ -115,6 +134,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/detail/{id}', [OrderController::class, 'detail'])->name('detail');
             Route::post('/cancel/{id}/', [OrderController::class, 'cancel'])->name('cancel');
             Route::patch('/confirm-received/{id}', [OrderController::class, 'confirmReceived'])->name('confirmReceived');
+            Route::get('/order-status/{id}', [OrderController::class, 'getStatus'])->name('getStatus');
         });
 
         //Reviews
@@ -134,7 +154,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('changePassword');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/user', [UserController::class, 'index'])->name('users');
-    
 });
 
 
@@ -147,6 +166,29 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+
+
+    // Ví 
+    Route::prefix('admin/wallet')->name('wallet.')->group(function () {
+    // Quản lý giao dịch ví
+        Route::get('transactions', [AdminWalletTransactionController::class, 'index'])->name('transactions.index');
+        Route::get('transactions/{user}', [AdminWalletTransactionController::class, 'show'])->name('transactions.user');
+
+    // Form nạp tiền cho chính admin
+        Route::get('deposit', [AdminWalletTransactionController::class, 'adminDepositForm'])->name('deposit.admin.form');
+
+    // Gửi dữ liệu nạp tiền → redirect đến VNPAY giả lập
+        Route::post('deposit', [AdminWalletTransactionController::class, 'adminDepositRedirect'])->name('deposit.admin.redirect');
+
+    // Callback sau khi thanh toán VNPAY (giả lập)
+        Route::get('deposit/callback', [AdminWalletTransactionController::class, 'adminDepositCallback'])->name('deposit.admin.callback');
+
+    // Quản lý yêu cầu hoàn tiền
+        Route::get('refund-requests', [AdminRefundRequestController::class, 'index'])->name('refund-requests.index');
+        Route::get('refund-requests/{id}', [AdminRefundRequestController::class, 'show'])->name('refund-requests.show');
+        Route::put('refund-requests/{id}', [AdminRefundRequestController::class, 'update'])->name('refund-requests.update');
+    });
+
 
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('users');
@@ -168,7 +210,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/detail/{id}', [AdminProductController::class, 'show'])->name('products.show');
 
         Route::get('/indexVariant', [AdminProductController::class, 'indexVariant'])->name('products.indexVariant');
-        
+
         Route::get('/create/size', [AdminProductController::class, 'createSize'])->name('products.createSize');
         Route::post('/store/size', [AdminProductController::class, 'storeSize'])->name('products.storeSize');
         Route::get('/edit/size/{id}', [AdminProductController::class, 'editSize'])->name('products.editSize');
@@ -201,6 +243,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('status/{id}', [AdminOrderController::class, 'updateStatus'])->name('updateStatus');
         Route::get('/detail/{id}', [AdminOrderController::class, 'detail'])->name('detail');
         Route::post('/refund/{id}', [AdminOrderController::class, 'refund'])->name('refund');
+        Route::get('/statuses/{id}', [AdminOrderController::class, 'getStatuses'])->name('getStatuses');
     });
 
     // Vouchers admin
@@ -212,10 +255,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/update/{id}', [AdminVoucherController::class, 'update'])->name('update');
         Route::delete('/delete/{id}', [AdminVoucherController::class, 'destroy'])->name('delete');
         Route::patch('/toggle-status/{id}', [AdminVoucherController::class, 'toggleStatus'])->name('toggleStatus');
-
     });
 
-    
+
     // Reviews admin
     Route::prefix('reviews')->name('reviews.')->group(function () {
         Route::get('/', [ReviewController::class, 'index'])->name('index');
@@ -224,7 +266,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
 
     // Banner admin
-        Route::prefix('banners')->name('banners.')->group(function () {
+    Route::prefix('banners')->name('banners.')->group(function () {
         Route::get('/', [AdminBannerController::class, 'index'])->name('index');
         Route::get('/create', [AdminBannerController::class, 'create'])->name('create');
         Route::post('/store', [AdminBannerController::class, 'store'])->name('store');
@@ -233,8 +275,5 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::delete('/delete/{id}', [AdminBannerController::class, 'destroy'])->name('destroy');
         Route::get('/detail/{id}', [AdminBannerController::class, 'show'])->name('show');
         Route::patch('/toggle-status/{id}', [AdminBannerController::class, 'toggleStatus'])->name('toggleStatus');
-
     });
-
 });
-

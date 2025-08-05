@@ -155,19 +155,19 @@
                                 @php
                                     $statusColors = [
                                         'Chờ xử lý' => '#ffc107',
+                                        'Đã xác nhận' => '#17a2b8',
+                                        'Đang chuẩn bị' => '#17a2b8',
                                         'Đang giao' => '#17a2b8',
                                         'Đã giao' => '#28a745',
-                                        'Đã huỷ' => '#dc3545',
-                                        'Chờ hoàn tiền' => '#6c757d',
-                                        'Đã hoàn tiền' => '#0d6efd',
+                                        'Đã huỷ' => '#dc3545'
                                     ];
                                     $statusRoutes = [
                                         'Chờ xử lý' => 'pending',
-                                        'Đang giao' => 'processing',
+                                        'Đã xác nhận' => 'confirmed',
+                                        'Đang chuẩn bị' => 'processing',
+                                        'Đang giao' => 'shipping',
                                         'Đã giao' => 'completed',
                                         'Đã huỷ' => 'cancelled',
-                                        'Chờ hoàn tiền' => 'cancelled_paid',
-                                        'Đã hoàn tiền' => 'refunded',
                                     ];
                                 @endphp
 
@@ -219,7 +219,17 @@
                                                     'class' => 'warning',
                                                     'icon' => 'fas fa-clock',
                                                 ],
+                                                'confirmed' => [
+                                                    'label' => 'Đã xác nhận',
+                                                    'class' => 'primary',
+                                                    'icon' => 'fas fa-check',
+                                                ],
                                                 'processing' => [
+                                                    'label' => 'Đang chuẩn bị',
+                                                    'class' => 'info',
+                                                    'icon' => 'fas fa-shipping-fast',
+                                                ],
+                                                'shipping' => [
                                                     'label' => 'Đang giao',
                                                     'class' => 'info',
                                                     'icon' => 'fas fa-shipping-fast',

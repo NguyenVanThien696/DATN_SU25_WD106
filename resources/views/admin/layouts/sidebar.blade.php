@@ -194,6 +194,29 @@
                             </li>
                         </ul>
                     </li>
+                    <li class="menu-collapse">
+                        <div class="menu-collapse-item">
+                            <i class="fa-solid fa-wallet fa-lg"></i>
+                            <span class="menu-item-text">Quản Lý Ví</span>
+                        </div>
+                        <ul>
+                            <li data-menu-item="wallet-transactions" class="menu-item">
+                                <i class="fa-solid fa-list-ul fa-sm"></i>
+                                <a class="h-full w-full flex items-center"
+                                    href="{{ route('admin.wallet.transactions.index') }}">
+                                    <span>Giao Dịch Ví</span>
+                                </a>
+                            </li>
+                            <li data-menu-item="refund-requests" class="menu-item">
+                                <i class="fa-solid fa-rotate-left fa-sm"></i>
+                                <a class="h-full w-full flex items-center"
+                                    href="{{ route('admin.wallet.refund-requests.index') }}">
+                                    <span>Yêu Cầu Hoàn Tiền</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
 
                     <li class="menu-collapse">
                         <div class="menu-collapse-item">
