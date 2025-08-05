@@ -50,5 +50,9 @@ class Order extends Model
         return $this->belongsTo(Coupon::class, 'coupon_id');
     }
 
+    public function refundRequest()
+    {
+        return $this->hasOne(RefundRequest::class);
+    }
 
 }

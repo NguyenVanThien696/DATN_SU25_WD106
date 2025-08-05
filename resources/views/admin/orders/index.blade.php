@@ -63,17 +63,15 @@
                 </h1>
             </div>
             <div class="card-body">
-                @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @if(session('success'))
+                <div class="alert alert-success">
                     {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
                 @endif
 
-                @if (session('error'))
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @if(session('error'))
+                <div class="alert alert-danger">
                     {{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
                 @endif
 
@@ -101,6 +99,24 @@
                         <tbody>
                             @foreach ($orders as $order)
                             @php
+                            // Ưu tiên trạng thái hoàn tiền nếu có yêu cầu
+                            $status = $order->status;
+
+                            if ($order->refundRequest) {
+                            switch ($order->refundRequest->status) {
+                            case 'pending':
+                            $status = 'refund_pending';
+                            break;
+                            case 'approved':
+                            $status = 'refund_approved';
+                            break;
+                            case 'rejected':
+                            $status = 'refund_rejected';
+                            break;
+                            }
+                            }
+
+                            // Danh sách hiển thị tên trạng thái
                             $statusList = [
                             'pending' => 'Chờ xử lý',
                             'confirmed' => 'Đã xác nhận',
@@ -112,7 +128,12 @@
                             'cancelled_paid' => 'Đã hủy (chờ hoàn tiền)',
                             'refunded' => 'Đã hoàn tiền',
                             'delivery_failed' => 'Giao thất bại',
+                            'refund_pending' => 'Chờ xét duyệt trả hàng / hoàn tiền',
+                            'refund_rejected' => 'Từ chối trả hàng / hoàn tiền',
+                            'refund_approved' => 'Đã hoàn tiền',
                             ];
+
+                            // Badge màu sắc tương ứng
                             $statusClass = [
                             'pending' => 'bg-warning text-dark',
                             'confirmed' => 'bg-primary text-white',
@@ -124,25 +145,34 @@
                             'cancelled_paid' => 'bg-warning text-dark',
                             'refunded' => 'bg-success text-white',
                             'delivery_failed' => 'bg-dark text-white',
-                            ][$order->status] ?? 'bg-secondary text-white';
+                            'refund_pending' => 'bg-info text-white',
+                            'refund_rejected' => 'bg-danger text-white',
+                            'refund_approved' => 'bg-success text-white',
+                            ][$status] ?? 'bg-secondary text-white';
 
+                            // Phương thức thanh toán
                             $method = $order->payment_method;
                             $methodLabel = $method === 'cod' ? 'COD' : ($method === 'vnpay' ? 'VNPay' : '---');
                             $methodClass = $method === 'cod' ? 'bg-secondary' : ($method === 'vnpay' ? 'bg-primary' :
                             'bg-light');
 
-                            $paymentStatusHtml = $method === 'vnpay'
+                            // Trạng thái thanh toán
+                            $paymentStatusHtml = $order->payment_status === 'paid'
                             ? '<span class="badge bg-success">Đã thanh toán</span>'
                             : '<span class="badge bg-warning text-dark">Thanh toán khi nhận hàng</span>';
 
+                            if (in_array($order->status, ['refund_pending', 'refund_rejected', 'refund_approved'])) {
+                            $availableTransitions = [];
+                            } else {
+                            // Các trạng thái có thể chuyển tiếp
                             $availableTransitions = match ($order->status) {
                             'pending' => ['confirmed', 'cancelled'],
                             'confirmed' => ['processing', 'cancelled'],
                             'processing' => ['shipping', 'cancelled'],
                             'shipping' => ['delivered', 'delivery_failed'],
-                            'delivered' => ['completed'],
                             default => [],
                             };
+                            }
                             @endphp
                             <tr data-order-id="{{ $order->id }}">
                                 <td>#{{ $order->order_code }}</td>
@@ -156,14 +186,13 @@
                                 <td>{{ $order->customer_phone }}</td>
                                 <td><strong>{{ number_format($order->total_price, 0, ',', '.') }} đ</strong></td>
                                 <td><span class="badge {{ $methodClass }} text-white">{{ $methodLabel }}</span></td>
-                                <td class="order-status" data-order-id="{{ $order->id }}"
-                                    data-status="{{ $order->status }}">
+
+                                <td class="order-status" data-order-id="{{ $order->id }}" data-status="{{ $status }}">
                                     @if (!empty($availableTransitions))
                                     <div class="dropdown">
-                                        <button
-                                            class="btn btn-sm dropdown-toggle badge {{ 'badge-' . strtolower($order->status) }}"
+                                        <button class="btn btn-sm dropdown-toggle badge {{ $statusClass }}"
                                             data-bs-toggle="dropdown">
-                                            {{ $statusList[$order->status] ?? $order->status }}
+                                            {{ $statusList[$status] ?? $status }}
                                         </button>
                                         <ul class="dropdown-menu">
                                             @foreach ($availableTransitions as $key)
@@ -173,16 +202,17 @@
                                                     @csrf
                                                     @method('PUT')
                                                     <input type="hidden" name="status" value="{{ $key }}">
-                                                    <button type="submit"
-                                                        class="dropdown-item">{{ $statusList[$key] }}</button>
+                                                    <button type="submit" class="dropdown-item">
+                                                        {{ $statusList[$key] ?? $key }}
+                                                    </button>
                                                 </form>
                                             </li>
                                             @endforeach
                                         </ul>
                                     </div>
                                     @else
-                                    <span class="badge {{ 'badge-' . strtolower($order->status) }}">
-                                        {{ $statusList[$order->status] ?? $order->status }}
+                                    <span class="badge {{ $statusClass }}">
+                                        {{ $statusList[$status] ?? $status }}
                                     </span>
                                     @endif
                                 </td>
@@ -197,6 +227,7 @@
                             </tr>
                             @endforeach
                         </tbody>
+
                     </table>
                     <div class="d-flex justify-content-end mt-3">
                         {{ $orders->links('pagination::bootstrap-5') }}
@@ -208,67 +239,4 @@
     </div>
 </main>
 
-@push('scripts')
-<script>
-const statusText = (code) => ({
-    'pending': 'Chờ xử lý',
-    'confirmed': 'Đã xác nhận',
-    'processing': 'Đang chuẩn bị',
-    'shipping': 'Đang giao hàng',
-    'delivered': 'Đã giao (chờ khách xác nhận)',
-    'completed': 'Đã hoàn tất',
-    'cancelled': 'Đã huỷ',
-    'cancelled_paid': 'Đã hủy (chờ hoàn tiền)',
-    'refunded': 'Đã hoàn tiền',
-    'delivery_failed': 'Giao thất bại'
-} [code] || code);
-
-const statusClass = (code) => ({
-    'pending': 'badge bg-warning text-dark',
-    'confirmed': 'badge bg-primary text-white',
-    'processing': 'badge bg-info text-white',
-    'shipping': 'badge bg-warning text-dark',
-    'delivered': 'badge bg-secondary text-white',
-    'completed': 'badge bg-success text-white',
-    'cancelled': 'badge bg-danger text-white',
-    'cancelled_paid': 'badge bg-warning text-dark',
-    'refunded': 'badge bg-success text-white',
-    'delivery_failed': 'badge bg-dark text-white'
-} [code] || 'badge bg-secondary text-white');
-
-const checkStatuses = () => {
-    document.querySelectorAll('.order-status').forEach(cell => {
-        const id = cell.dataset.orderId;
-        const current = cell.dataset.status;
-        const url = "{{ route('admin.order.getStatuses', ':id') }}".replace(':id', id);
-
-        fetch(url)
-            .then(res => res.json())
-            .then(data => {
-                if (data.status && data.status !== current) {
-                    cell.dataset.status = data.status;
-
-                    const area = cell.querySelector('.status-area');
-                    if (area) {
-                        area.innerHTML = `
-                                                        <span class="status-badge ${statusClass(data.status)}">
-                                                            ${statusText(data.status)}
-                                                        </span>
-                                                    `;
-                    }
-                    const dropdownBtn = cell.querySelector('.dropdown-toggle');
-                    if (dropdownBtn) {
-                        dropdownBtn.className =
-                        `btn btn-sm dropdown-toggle ${statusClass(data.status)}`;
-                        dropdownBtn.textContent = statusText(data.status);
-                    }
-                }
-            })
-            .catch(error => console.error(`Lỗi khi kiểm tra đơn hàng #${id}:`, error));
-    });
-};
-
-setInterval(checkStatuses, 3000);
-</script>
-@endpush
 @endsection

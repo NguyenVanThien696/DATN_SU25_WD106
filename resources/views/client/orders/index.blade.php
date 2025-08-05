@@ -38,6 +38,22 @@
             $goc = $order->orderItems->sum(fn($i) => $i->price * $i->quantity);
             $giam = $goc - $order->total_price + $order->shipping_fee;
 
+            // Xác định status dựa trên refundRequest nếu có
+            $status = $order->status;
+            if ($order->refundRequest) {
+            switch ($order->refundRequest->status) {
+            case 'pending':
+            $status = 'refund_pending';
+            break;
+            case 'approved':
+            $status = 'refund_approved';
+            break;
+            case 'rejected':
+            $status = 'refund_rejected';
+            break;
+            }
+            }
+
             $statusClass = [
             'pending' => 'badge bg-warning',
             'confirmed' => 'badge bg-primary',
@@ -49,7 +65,11 @@
             'cancelled_paid' => 'badge bg-warning text-dark',
             'refunded' => 'badge bg-success',
             'delivery_failed' => 'badge bg-dark',
-            ][$order->status] ?? 'badge bg-secondary';
+
+            'refund_pending' => 'badge bg-warning text-dark',
+            'refund_rejected' => 'badge bg-danger',
+            'refund_approved' => 'badge bg-success',
+            ][$status] ?? 'badge bg-secondary';
 
             $statusList = [
             'pending' => 'Chờ xác nhận',
@@ -62,8 +82,13 @@
             'cancelled_paid' => 'Chờ hoàn tiền',
             'refunded' => 'Đã hoàn tiền',
             'delivery_failed' => 'Giao thất bại',
+
+            'refund_pending' => 'Chờ xét duyệt trả hàng / hoàn tiền',
+            'refund_rejected' => 'Từ chối trả hàng / hoàn tiền',
+            'refund_approved' => 'Đã hoàn tiền',
             ];
 
+            // payment info như cũ
             $paymentText = [
             'cod' => 'COD',
             'vnpay' => 'VNPay',
@@ -83,13 +108,16 @@
             : ($order->payment_method === 'cod' ? 'bg-secondary' : 'bg-warning text-dark');
             @endphp
 
+
+
             <div class="border rounded mb-4 shadow-sm p-3 bg-white" style="max-width: 900px; margin: 0 auto;">
                 <div class="d-flex justify-content-between mb-2">
                     <div>
                         <span class="fw-semibold text-dark">Mã đơn:</span> #{{ $order->order_code }}
                         <span class="ms-3 text-muted small">{{ $order->created_at->format('H:i d/m/Y') }}</span>
                     </div>
-                    <span class="{{ $statusClass }}">{{ $statusList[$order->status] ?? 'Không xác định' }}</span>
+                    <span class="{{ $statusClass }}">{{ $statusList[$status] ?? 'Không xác định' }}</span>
+
                 </div>
 
                 <div class="d-flex flex-wrap">
@@ -170,7 +198,20 @@
                         </form>
                         @endif
 
-                        @if ($order->status === 'delivered')
+
+                        @if (
+                        $order->status === 'delivered' &&
+                        empty($order->refundRequest)
+                        )
+                        <a href="{{ route('client.wallet.refund.create', $order->id) }}"
+                            class="btn btn-sm btn-warning d-inline-block"
+                            onclick="return confirm('Bạn chắc chắn muốn yêu cầu trả hàng cho đơn này?')">
+                            Trả hàng / Hoàn tiền
+                        </a>
+                        @endif
+
+
+                        @if ($order->status === 'delivered' && !$order->refundRequest)
                         <form action="{{ route('client.order.confirmReceived', $order->id) }}" method="POST"
                             onsubmit="return confirm('Bạn đã nhận được hàng?')">
                             @csrf
@@ -193,6 +234,7 @@
                         <a href="{{ route('client.products.detail', $firstItem->productVariant->product_id) }}#review"
                             class="btn btn-sm btn-success d-inline-block">Đánh giá</a>
                         @endif
+
                     </div>
                 </div>
             </div>

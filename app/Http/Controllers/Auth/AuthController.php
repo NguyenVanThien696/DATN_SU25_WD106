@@ -55,27 +55,25 @@ class AuthController extends Controller
 
 
 
-    public function register(Request $request)
-    {
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email:max:255|unique:users',
-            'password' => 'required|string|min:6|confirmed',
-        ]);
+public function register(Request $request)
+{
+    $validatedData = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|string|email|max:255|unique:users',
+        'password' => 'required|string|min:6|confirmed',
+    ]);
 
-        User::create([
-            'name' => $validatedData['name'],
-            'email' => $validatedData['email'],
-            'password' => Hash::make($validatedData['password']),
-        ]);
+    $user = User::create([
+        'name' => $validatedData['name'],
+        'email' => $validatedData['email'],
+        'password' => Hash::make($validatedData['password']),
+    ]);
 
-        Auth::attempt([
-            'email' => $validatedData['email'],
-            'password' => $validatedData['password'],
-        ]);
+    Auth::login($user);
 
-        return redirect()->route('dashboard.form');
-    }
+    return redirect()->route('dashboard.form');
+}
+
 
     public function changePassword(Request $request)
     {
@@ -115,21 +113,34 @@ public function adminIndex()
         return redirect()->route('login.form');
     }
 
+    // Lấy đơn mới
     $newOrders = Order::where('status', 'pending')
         ->where('is_seen_by_admin', false)
         ->orderByDesc('created_at')
         ->get();
 
-    $totalNotifications = $newOrders->count();
+    // Lấy đơn hoàn chưa xem
+    $refundOrders = Order::where('status', 'refunded')
+        ->where('is_seen_by_admin', false)
+        ->orderByDesc('created_at')
+        ->get();
 
-    Order::whereIn('id', $newOrders->pluck('id'))->update(['is_seen_by_admin' => true]);
+    // Gộp lại
+    $allNewOrders = $newOrders->merge($refundOrders);
+
+    // Tổng số thông báo
+    $totalNotifications = $allNewOrders->count();
+
+    // Cập nhật đã xem
+    Order::whereIn('id', $allNewOrders->pluck('id'))->update(['is_seen_by_admin' => true]);
 
     return view('admin.index', [
         'user' => $user,
-        'newOrders' => $newOrders,
+        'newOrders' => $allNewOrders,
         'totalNotifications' => $totalNotifications
     ]);
 }
+
 
 
     public function adminDashboard()

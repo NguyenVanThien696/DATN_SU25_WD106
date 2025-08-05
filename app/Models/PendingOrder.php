@@ -16,6 +16,10 @@ class PendingOrder extends Model
         'discount',
         'shipping_fee',
         'order_code',
+        'customer_name',
+        'customer_email',
+        'customer_phone',
+        'customer_address',
     ];
 
     protected $casts = [

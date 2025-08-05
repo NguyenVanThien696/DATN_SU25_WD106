@@ -4,7 +4,6 @@
 <div class="container my-5">
     <h2 class="text-center mb-4">Chi tiết đơn hàng</h2>
 
-    {{-- Địa chỉ nhận hàng + trạng thái giao hàng --}}
     <div class="card shadow mb-4">
         <div class="card-header bg-primary text-white fw-semibold">
             <i class="bi bi-geo-alt-fill me-2"></i>Địa Chỉ Nhận Hàng
@@ -17,14 +16,42 @@
 
             <hr>
             <h6 class="fw-semibold text-muted">Trạng thái vận chuyển</h6>
+            @php
+            // Lấy trạng thái chính xác của đơn hàng, có xét đến refund
+            $status = $order->status;
+
+            if ($order->refundRequest) {
+            switch ($order->refundRequest->status) {
+            case 'pending':
+            $status = 'refund_pending';
+            break;
+            case 'approved':
+            $status = 'refund_approved';
+            break;
+            case 'rejected':
+            $status = 'refund_rejected';
+            break;
+            }
+            }
+
+            // Thứ tự các bước trạng thái
+            $statusSteps = [
+            'pending' => 1,
+            'confirmed' => 2,
+            'shipping' => 3,
+            'completed' => 4,
+            'refund_pending' => 5,
+            'refund_rejected' => 6,
+            'refund_approved' => 7,
+            'cancelled' => 99,
+            ];
+
+            $currentStep = $statusSteps[$status] ?? 0;
+            @endphp
+
             <ul class="timeline">
-                @if ($order->status === 'completed')
-                <li class="timeline-item completed">
-                    <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
-                    <span class="desc fw-bold text-success">Đã hoàn thành</span>
-                    <small class="text-muted">Giao hàng thành công</small>
-                </li>
-                @elseif ($order->status === 'cancelled')
+
+                @if ($status === 'cancelled')
                 <li class="timeline-item completed">
                     <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
                     <span class="desc fw-bold text-danger">Đã hủy</span>
@@ -32,34 +59,61 @@
                 </li>
                 @endif
 
-                @if (in_array($order->status, ['shipping', 'completed']))
+                @if ($status === 'refund_approved')
                 <li class="timeline-item completed">
+                    <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
+                    <span class="desc fw-bold text-success">Đã hoàn tiền</span>
+                    <small class="text-muted">Tiền đã được chuyển vào ví</small>
+                </li>
+                @endif
+
+                @if ($status === 'refund_rejected')
+                <li class="timeline-item completed">
+                    <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
+                    <span class="desc fw-bold text-danger">Từ chối hoàn tiền</span>
+                    <small class="text-muted">Yêu cầu bị từ chối</small>
+                </li>
+                @endif
+
+                @if (in_array($status, ['refund_pending', 'refund_rejected', 'refund_approved']))
+                <li class="timeline-item {{ $currentStep >= 5 ? 'completed' : '' }}">
+                    <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
+                    <span class="desc fw-bold text-info">Chờ xét duyệt hoàn tiền</span>
+                    <small class="text-muted">Yêu cầu đang được xử lý</small>
+                </li>
+                @endif
+
+                <li class="timeline-item {{ $currentStep >= 4 ? 'completed' : '' }}">
+                    <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
+                    <span class="desc fw-bold text-success">Đã hoàn thành</span>
+                    <small class="text-muted">Giao hàng thành công</small>
+                </li>
+
+                <li class="timeline-item {{ $currentStep >= 3 ? 'completed' : '' }}">
                     <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
                     <span class="desc fw-bold text-warning">Đang giao</span>
                     <small class="text-muted">Đơn hàng đang được vận chuyển</small>
                 </li>
-                @endif
 
-                @if (in_array($order->status, ['confirmed', 'shipping', 'completed']))
-                <li class="timeline-item completed">
+                <li class="timeline-item {{ $currentStep >= 2 ? 'completed' : '' }}">
                     <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
                     <span class="desc fw-bold text-primary">Đã xác nhận</span>
                     <small class="text-muted">Đơn hàng đã được xác nhận</small>
                 </li>
-                @endif
 
-                <li class="timeline-item completed">
+                <li class="timeline-item {{ $currentStep >= 1 ? 'completed' : '' }}">
                     <span class="time">{{ $order->created_at->format('d/m/Y') }}</span>
                     <span class="desc fw-bold">Đã đặt hàng</span>
                     <small class="text-muted">Chờ xác nhận</small>
                 </li>
+
             </ul>
+
 
 
         </div>
     </div>
 
-    {{-- Sản phẩm --}}
     <div class="card shadow mb-4">
         <div class="card-header bg-info text-white fw-semibold">
             <i class="bi bi-box-seam me-2"></i> Sản phẩm trong đơn hàng
@@ -102,7 +156,6 @@
 
     </div>
 
-    {{-- Thanh toán --}}
     @php
     $paymentClass = match($order->payment_method) {
     'cod' => 'bg-warning',
@@ -151,7 +204,7 @@
                     <td class="text-end text-danger">{{ number_format($order->total_price, 0, ',', '.') }}đ</td>
                 </tr>
                 <tr>
-                    <td class="text-end">Phương thức thanh toán:</td>
+                    <td class="text-end">Trạng thái thanh toán:</td>
                     <td class="text-end">
                         <span class="badge {{ $paymentClass }}">{{ $paymentText }}</span>
                     </td>

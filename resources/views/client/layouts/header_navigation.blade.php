@@ -83,6 +83,12 @@
 		                            </a>
 		                        </li>
 		                        <li>
+		                            <a class="dropdown-item d-flex align-items-center gap-2"
+		                                href="{{ route('client.wallet.index') }}">
+		                                <i class="fas fa-wallet text-success"></i> Ví ModaVie
+		                            </a>
+		                        </li>
+		                        <li>
 		                            <form method="POST" action="{{ route('logout') }}">
 		                                @csrf
 		                                <button class="dropdown-item d-flex align-items-center gap-2" type="submit">
@@ -91,6 +97,7 @@
 		                            </form>
 		                        </li>
 		                    </ul>
+
 		                </li>
 		                @else
 		                <li class="nav-item">

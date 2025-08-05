@@ -13,6 +13,8 @@ use App\Http\Controllers\Client\CheckoutController;
 use App\Http\Controllers\Client\OrderController;
 use App\Http\Controllers\Client\CategoriesController;
 use App\Http\Controllers\Client\ProductReviewController;
+use App\Http\Controllers\Client\RefundRequestController;
+use App\Http\Controllers\Client\WalletController;
 
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
@@ -20,9 +22,9 @@ use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\BannerController as AdminBannerController;
+use App\Http\Controllers\Admin\RefundRequestController as AdminRefundRequestController;
 use App\Http\Controllers\Admin\ReviewController;
-
-
+use App\Http\Controllers\Admin\WalletTransactionController as AdminWalletTransactionController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Models\ProductReview;
 
@@ -88,6 +90,23 @@ Route::middleware(['auth'])->group(function () {
 
     Route::prefix('client')->name('client.')->group(function () {
 
+        // Ví
+        Route::prefix('client/wallet')->name('wallet.')->group(function () {
+            Route::get('refund/create/{orderId}', [RefundRequestController::class, 'create'])->name('refund.create');
+            Route::post('refund/store', [RefundRequestController::class, 'store'])->name('refund.store');
+
+            Route::get('/', [WalletController::class, 'index'])->name('index');
+
+            // Nạp tiền
+            Route::get('deposit', [WalletController::class, 'showDepositForm'])->name('deposit');
+            Route::post('deposit', [WalletController::class, 'deposit'])->name('deposit.store');
+
+            // Rút tiền
+            Route::get('withdraw', [WalletController::class, 'showWithdrawForm'])->name('withdraw');
+            Route::post('withdraw', [WalletController::class, 'withdraw'])->name('withdraw.store');
+        });
+
+
 
         // Trang cart phía user 
         Route::prefix('cart')->name('cart.')->group(function () {
@@ -147,6 +166,29 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+
+
+    // Ví 
+    Route::prefix('admin/wallet')->name('wallet.')->group(function () {
+    // Quản lý giao dịch ví
+        Route::get('transactions', [AdminWalletTransactionController::class, 'index'])->name('transactions.index');
+        Route::get('transactions/{user}', [AdminWalletTransactionController::class, 'show'])->name('transactions.user');
+
+    // Form nạp tiền cho chính admin
+        Route::get('deposit', [AdminWalletTransactionController::class, 'adminDepositForm'])->name('deposit.admin.form');
+
+    // Gửi dữ liệu nạp tiền → redirect đến VNPAY giả lập
+        Route::post('deposit', [AdminWalletTransactionController::class, 'adminDepositRedirect'])->name('deposit.admin.redirect');
+
+    // Callback sau khi thanh toán VNPAY (giả lập)
+        Route::get('deposit/callback', [AdminWalletTransactionController::class, 'adminDepositCallback'])->name('deposit.admin.callback');
+
+    // Quản lý yêu cầu hoàn tiền
+        Route::get('refund-requests', [AdminRefundRequestController::class, 'index'])->name('refund-requests.index');
+        Route::get('refund-requests/{id}', [AdminRefundRequestController::class, 'show'])->name('refund-requests.show');
+        Route::put('refund-requests/{id}', [AdminRefundRequestController::class, 'update'])->name('refund-requests.update');
+    });
+
 
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('users');

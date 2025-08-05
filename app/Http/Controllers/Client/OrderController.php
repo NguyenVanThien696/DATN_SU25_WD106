@@ -20,7 +20,8 @@ class OrderController extends Controller
             'shippingAddress',
             'orderItems.productVariant.product',
             'orderItems.productVariant.size',
-            'orderItems.productVariant.color'
+            'orderItems.productVariant.color',
+            'refundRequest'
         ])
             ->where('user_id', $user->id)
             ->orderByDesc('created_at')
