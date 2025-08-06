@@ -15,7 +15,7 @@
         
     @endphp
 
-    @if (!empty($stockErrors))
+    {{-- @if (!empty($stockErrors))
         <div class="alert alert-danger">
             <ul class="mb-0">
                 @foreach ($stockErrors as $error)
@@ -23,7 +23,7 @@
                 @endforeach
             </ul>
         </div>
-    @endif
+    @endif --}}
     
     @php $hasStockError = !empty($stockErrors); @endphp
 
@@ -241,7 +241,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             let hasError = false;
             checkedItems.forEach(function (cb) {
-                const item = cb.closest('.cart-item');
+                const item = cb.closest('.cart-item-row');
                 const quantity = parseInt(item.getAttribute('data-quantity')) || 0;
                 const inventory = parseInt(item.getAttribute('data-stock')) || 0;
                 const errorBox = item.querySelector('.error-msg');
