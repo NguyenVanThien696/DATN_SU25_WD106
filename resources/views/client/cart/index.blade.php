@@ -15,6 +15,17 @@
         
     @endphp
 
+    @if (!empty($stockErrors))
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($stockErrors as $error)
+                    <li>{{$error}}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+    
+    @php $hasStockError = !empty($stockErrors); @endphp
 
     @if (session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -48,11 +59,11 @@
                                         $subtotal = $product->price * $item->quantity;
                                         $total += $subtotal;
                                     @endphp
-                                        <div class="d-flex border-bottom py-3 cart-item-row">
+                                        <div class="d-flex border-bottom py-3 cart-item-row" data-quantity = "{{$item->quantity}}" data-stock="{{$variant->stock}}">
                                             <input type="checkbox" name="selected_items[]" value="{{$item->id}}" class="me-3 product-checkbox" data-price="{{$product->price}}" data-quantity="{{$item->quantity}}">
                                             <img src="{{asset('storage/' . $variant->image)}}" width="200px" class="me-3" alt="">
                                             <div class="flex-grow-1">
-                                                
+                                                <div class="error-msg" style="color: red; display:none;"></div>
                                                 <h6>{{$product->name}}</h6>
                                                 <p class="mb-1">Kích cỡ: {{$variant->size->name ?? '_'}}</p>
                                                 <p class="mb-1">Màu: {{$variant->color->name ?? '_'}}</p>
@@ -120,6 +131,9 @@
                                         @csrf
                                         <button type="button" id="checkout-btn" class="btn btn-black btn-checkout-cart w-100 py-2">Đặt hàng -></button>
                                     </form>
+
+
+
                                 @else
                                     <a href="{{ route('login') }}" class="btn btn-danger btn-lg py-3 btn-block">
                                         Đăng nhập để thanh toán
@@ -173,7 +187,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // Khi chọn tất cả
+    // Chọn tất cả
     if (selectAll) {
         selectAll.addEventListener('change', function () {
             itemCheckboxes.forEach(cb => cb.checked = this.checked);
@@ -181,7 +195,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Cập nhật số lượng không reload
+    // Cập nhật số lượng bằng Ajax
     document.querySelectorAll(".quantity-input").forEach(input => {
         input.addEventListener("input", function () {
             if (parseInt(this.value) < 1) this.value = 1;
@@ -189,7 +203,6 @@ document.addEventListener("DOMContentLoaded", function () {
             const cartItemId = this.dataset.itemId;
             const quantity = this.value;
 
-            // Gửi Ajax để cập nhật
             fetch("{{ route('client.cart.updateQuantity') }}", {
                 method: 'POST',
                 headers: {
@@ -218,10 +231,34 @@ document.addEventListener("DOMContentLoaded", function () {
     // Nút checkout
     const checkoutBtn = document.getElementById('checkout-btn');
     if (checkoutBtn) {
-        checkoutBtn.addEventListener('click', function () {
+        checkoutBtn.addEventListener('click', function (e) {
             const checkedItems = document.querySelectorAll('.product-checkbox:checked');
             if (checkedItems.length === 0) {
                 alert('Vui lòng chọn ít nhất một sản phẩm để đặt hàng.');
+                e.preventDefault();
+                return;
+            }
+
+            let hasError = false;
+            checkedItems.forEach(function (cb) {
+                const item = cb.closest('.cart-item');
+                const quantity = parseInt(item.getAttribute('data-quantity')) || 0;
+                const inventory = parseInt(item.getAttribute('data-stock')) || 0;
+                const errorBox = item.querySelector('.error-msg');
+
+                if (errorBox) errorBox.style.display = 'none';
+
+                if (quantity > inventory) {
+                    hasError = true;
+                    if (errorBox) {
+                        errorBox.textContent = 'Sản phẩm không đủ tồn kho!';
+                        errorBox.style.display = 'block';
+                    }
+                }
+            });
+
+            if (hasError) {
+                e.preventDefault(); // chặn chuyển trang
                 return;
             }
 
@@ -233,7 +270,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Gọi lúc đầu
     updateCartTotal();
 });
 </script>
