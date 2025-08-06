@@ -19,9 +19,21 @@ class CartController extends Controller
                 ->with('items.variant.product', 'items.variant.size', 'items.variant.color')
                 ->first();
 
+            $stockErrors = [];
+
+            if($cart && $cart->items){
+                foreach ($cart->items as $item) {
+                    $variant = $item->variant;
+                    if($variant && $variant->stock < $item->quantity){
+                        $stockErrors[] = "Sản phẩm '{$variant->product->name}' - kích cỡ {$variant->size->name}, màu {$variant->color->name} đã hết hàng";
+                    }
+                }
+            }
+
             return view('client.cart.index', [
                 'cart' => $cart,
-                'sessionCart' => null
+                'sessionCart' => null,
+                'stockErrors' => $stockErrors
             ]);
         } else {
             $sessionCart = session()->get('cart', []);
@@ -194,4 +206,20 @@ class CartController extends Controller
 
         return redirect()->route('client.cart.index')->with('success', 'Đã xóa toàn bộ giỏ hàng.');
     }
+
+    public function updateQuantity(Request $request)
+{
+    $cartItemId = $request->input('cart_item_id');
+    $quantity = $request->input('quantity');
+
+    $cartItem = CartItem::find($cartItemId);
+    if (!$cartItem) {
+        return response()->json(['success' => false, 'message' => 'Sản phẩm không tồn tại trong giỏ hàng.']);
+    }
+
+    $cartItem->quantity = $quantity;
+    $cartItem->save();
+
+    return response()->json(['success' => true]);
+}
 }

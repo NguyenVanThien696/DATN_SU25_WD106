@@ -96,6 +96,7 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/update', [CartController::class, 'update'])->name('update');
             Route::get('/delete/{variant_id}', [CartController::class, 'delete'])->name('delete');
             Route::get('/clear', [CartController::class, 'clear'])->name('clear');
+            Route::post('/update-quantity', [CartController::class, 'updateQuantity'])->name('updateQuantity');
         });
 
         // Checkout user

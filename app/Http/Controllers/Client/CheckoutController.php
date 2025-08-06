@@ -10,6 +10,7 @@ use App\Models\Coupon;
 use App\Models\UserCoupon;
 
 use App\Http\Controllers\Controller;
+use App\Models\CartItem;
 use App\Models\PendingOrder;
 use App\Models\ShippingAddress;
 use Illuminate\Support\Facades\DB;
@@ -65,6 +66,7 @@ class CheckoutController extends Controller
         $finalWithShipping = $finalTotal + $shippingFee;
 
         session([
+            'selected_items' => $products->pluck('id')->toArray(),
             'cart_total' => $total,
             'shipping_fee' => $shippingFee,
             'final_total' => $finalTotal,
@@ -153,8 +155,14 @@ class CheckoutController extends Controller
                 return back()->with('error', 'Giỏ hàng của bạn đang trống.');
             }
 
+            $selectedIdsString = $request->input('selected_items');
+            if(!$selectedIdsString){
+            return redirect()->route('client.cart.index')->with('error', 'Vui lòng chọn sản phẩm để thanh toán');
+            }
+            $selectedIds = explode(',', $selectedIdsString);
+            $cartItems = $cart->items->whereIn('id', $selectedIds);
 
-            $total = $cart->items->sum(function ($item) {
+            $total = $cartItems->sum(function ($item) {
                 return $item->variant->product->price * $item->quantity;
             });
 
@@ -304,7 +312,7 @@ class CheckoutController extends Controller
                 // dd($shipping);
             }
 
-            foreach ($cart->items as $item) {
+            foreach ($cartItems as $item) {
                 OrderItem::create([
                     'order_id'           => $order->id,
                     'product_variant_id' => $item->product_variant_id,
@@ -323,8 +331,8 @@ class CheckoutController extends Controller
 
 
             $this->saveUsedCoupon($userId);
-            $cart->items()->delete();
-            $cart->delete();
+            CartItem::whereIn('id', $selectedIds)->delete();
+            // $cart->delete();
             session()->forget('coupon');
 
             DB::commit();

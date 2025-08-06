@@ -30,10 +30,11 @@
                 <h2 class="mb-4">Giỏ hàng</h2>
                 <form method="POST" action="{{ route('client.cart.update') }}">
                     @csrf
+                    <input type="checkbox" id="select-all" class="me-1"> Chọn tất cả
                     <div class="row">
 
                         <div class="col-lg-8">
-                            <input type="checkbox" id="select-all" class="me-1"> Chọn tất cả
+                            
                             <div class="card p-3">
                             
                             @php $total = 0; @endphp
@@ -55,9 +56,10 @@
                                                 <h6>{{$product->name}}</h6>
                                                 <p class="mb-1">Kích cỡ: {{$variant->size->name ?? '_'}}</p>
                                                 <p class="mb-1">Màu: {{$variant->color->name ?? '_'}}</p>
+                                                <p class="mb-1">Số lượng: {{$variant->stock ?? '_'}}</p>
                                                 <p class="mb-1">Giá: {{number_format($product->price)}} VNĐ</p>
                                                 <div class="d-flex align-items-center gap-2 mt-1">
-                                                    <input type="number" name="quantity[{{$variant->id}}]" value="{{$item->quantity}}" min="1" class="form-control me-2 quantity-input" style="width: 80px;">
+                                                    <input type="number" name="quantity[{{$variant->id}}]" value="{{$item->quantity}}" data-item-id="{{$item->id}}" min="1" class="form-control me-2 quantity-input" style="width: 80px;">
                                                     <span class="me-2"><Strong>{{number_format($subtotal)}} VNĐ</Strong></span>
                                                     <a href="{{ route('client.cart.delete', $variant->id) }}"
                                                 class="btn btn-sm btn-danger">X</a>
@@ -93,7 +95,7 @@
                                 @endforeach
                             @endif
                             <div class="d-flex justify-content-end gap-2 mt-4">
-                                <button type="submit" class="btn btn-primary btn-update-cart">Cập nhật giỏ hàng</button>
+                                {{-- <button type="submit" class="btn btn-primary btn-update-cart">Cập nhật giỏ hàng</button> --}}
                                 <a href="{{ route('client.cart.clear') }}" class="btn btn-danger btn-delete-all">Xoá toàn bộ</a>
                             </div>
 
@@ -136,7 +138,7 @@
         </div>
     @endif
 
-    <script>
+ <script>
 document.addEventListener("DOMContentLoaded", function () {
     const selectAll = document.getElementById('select-all');
     const itemCheckboxes = document.querySelectorAll('.product-checkbox');
@@ -162,7 +164,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Khi chọn checkbox từng sản phẩm
+    // Khi chọn từng checkbox
     itemCheckboxes.forEach(cb => {
         cb.addEventListener('change', () => {
             const allChecked = Array.from(itemCheckboxes).every(cb => cb.checked);
@@ -171,30 +173,53 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // Khi click "chọn tất cả"
-    selectAll.addEventListener('change', function () {
-        itemCheckboxes.forEach(cb => cb.checked = this.checked);
-        updateCartTotal();
-    });
-
-    // Khi thay đổi số lượng
-    document.querySelectorAll(".quantity-input").forEach(input => {
-        input.addEventListener("input", () => {
-            if (parseInt(input.value) < 1) input.value = 1;
+    // Khi chọn tất cả
+    if (selectAll) {
+        selectAll.addEventListener('change', function () {
+            itemCheckboxes.forEach(cb => cb.checked = this.checked);
             updateCartTotal();
+        });
+    }
+
+    // Cập nhật số lượng không reload
+    document.querySelectorAll(".quantity-input").forEach(input => {
+        input.addEventListener("input", function () {
+            if (parseInt(this.value) < 1) this.value = 1;
+
+            const cartItemId = this.dataset.itemId;
+            const quantity = this.value;
+
+            // Gửi Ajax để cập nhật
+            fetch("{{ route('client.cart.updateQuantity') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    cart_item_id: cartItemId,
+                    quantity: quantity
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateCartTotal();
+                } else {
+                    alert(data.message || 'Lỗi cập nhật.');
+                }
+            })
+            .catch(() => {
+                alert('Có lỗi xảy ra khi cập nhật số lượng.');
+            });
         });
     });
 
-    // Gọi lúc đầu
-    updateCartTotal();
-});
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const checkoutBtn = document.getElementById('checkout-btn');
-        checkoutBtn.addEventListener('click', function (e) {
-            // Không cần preventDefault nếu type="button"
+    // Nút checkout
+    const checkoutBtn = document.getElementById('checkout-btn');
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', function () {
             const checkedItems = document.querySelectorAll('.product-checkbox:checked');
-
             if (checkedItems.length === 0) {
                 alert('Vui lòng chọn ít nhất một sản phẩm để đặt hàng.');
                 return;
@@ -206,8 +231,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
             window.location.href = url.toString();
         });
-    });
+    }
 
+    // Gọi lúc đầu
+    updateCartTotal();
+});
 </script>
 
     <style>
