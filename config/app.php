@@ -12,8 +12,8 @@ return [
     | other UI elements where an application name needs to be displayed.
     |
     */
-
-    'name' => env('APP_NAME', 'Laravel'),
+    'website_name' => env('WEBSITE_NAME', ''),
+    'name' => env('APP_NAME', 'ModaVie'),
 
     /*
     |--------------------------------------------------------------------------

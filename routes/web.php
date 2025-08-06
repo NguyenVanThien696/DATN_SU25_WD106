@@ -22,10 +22,11 @@
     use App\Http\Controllers\Admin\BannerController as AdminBannerController;
     use App\Http\Controllers\Admin\ReviewController;
 
-
+    use Illuminate\Support\Facades\Mail;
+    use App\Mail\OrderConfirmationMail;
     use App\Http\Controllers\Auth\AuthController;
     use App\Models\ProductReview;
-
+    use App\Models\Order;
     // Trang chu
     Route::get('/', [ClientController::class, 'index'])->name('client.index');
     // Route::get('/', [ClientController::class, 'index'])->name('client.index');
@@ -120,7 +121,6 @@
                 Route::post('/momo-ipn', [CheckoutController::class, 'momoIPN'])->name('momoIPN');
                 Route::get('/thankyou', [CheckoutController::class, 'thankyou'])->name('thankyou');
             });
-
             // Order user
             Route::prefix('order')->name('order.')->group(function () {
                 Route::get('/', [OrderController::class, 'listOrder'])->name('index');
@@ -136,7 +136,6 @@
             });
         });
     });
-
 
 
     // Admin Routes (yêu cầu đăng nhập + admin)

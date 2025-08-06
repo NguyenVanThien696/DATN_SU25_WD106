@@ -13,19 +13,19 @@ class OrderItem extends Model
 
     protected $fillable = [
         'order_id',
-        'product_variant_id',
+        'product_variant_id', // <-- đúng tên cột của bạn
         'quantity',
         'price',
-        'note', 
+        'note',
     ];
 
     public function order()
     {
-        return $this->belongsTo(Order::class);
+        return $this->belongsTo(Order::class, 'order_id');
     }
 
     public function productVariant()
     {
-        return $this->belongsTo(ProductVariant::class);
+        return $this->belongsTo(ProductVariant::class, 'product_variant_id'); // <-- chỉ rõ FK
     }
 }

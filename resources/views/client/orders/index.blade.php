@@ -71,34 +71,63 @@
                                             </td>
 
                                             <td class="text-start">
-                                                <div>
-                                                    <strong>
-                                                        <a href="{{ route('client.products.detail', $firstItem->productVariant->product->id) }}"
-                                                            class="text-decoration-none text-dark">
-                                                            {{ $firstItem->productVariant->product->name }}
-                                                        </a>
-                                                    </strong> x {{ $firstItem->quantity }}
+                                                @php
+                                                    $variant = $firstItem?->productVariant;
+                                                    $product = $variant?->product;
+                                                    $quantity = $firstItem?->quantity ?? 1;
+                                                @endphp
 
-                                                    @if ($firstItem->productVariant)
+                                                @if ($firstItem && $product)
+                                                    <div>
+                                                        <strong>
+                                                            <a href="{{ route('client.products.detail', $product->id) }}"
+                                                                class="text-decoration-none text-dark">
+                                                                {{ $product->name }}
+                                                            </a>
+                                                        </strong>
+                                                        x {{ $quantity }}
+
                                                         <br>
                                                         <small class="text-muted">
-                                                            {{ $firstItem->productVariant->color->name ?? '-' }} /
-                                                            {{ $firstItem->productVariant->size->name ?? '-' }}
+                                                            {{ $variant?->color?->name ?? '-' }} /
+                                                            {{ $variant?->size?->name ?? '-' }}
                                                         </small>
+
+                                                        <br>
+                                                        <small class="text-muted">
+                                                            {{ number_format($firstItem->price ?? 0, 0, ',', '.') }} đ
+                                                        </small>
+                                                    </div>
+
+                                                    @if ($order->orderItems->count() > 1)
+                                                        <a href="{{ route('client.order.detail', $order->id) }}" class="text-primary">
+                                                            +{{ $order->orderItems->count() - 1 }} sản phẩm
+                                                        </a>
                                                     @endif
+                                                @elseif ($firstItem)
+                                                    {{-- Có item nhưng thiếu variant/product --}}
+                                                    <div>
+                                                        <strong>Sản phẩm không còn tồn tại</strong>
+                                                        x {{ $quantity }}
+                                                        <br>
+                                                        <small class="text-muted">- / -</small>
+                                                        <br>
+                                                        <small class="text-muted">
+                                                            {{ number_format($firstItem->price ?? 0, 0, ',', '.') }} đ
+                                                        </small>
+                                                    </div>
 
-                                                    <br>
-                                                    <small class="text-muted">
-                                                        {{ number_format($firstItem->price, 0, ',', '.') }} đ
-                                                    </small>
-                                                </div>
-
-                                                @if ($order->orderItems->count() > 1)
-                                                    <a href="{{ route('client.order.detail', $order->id) }}" class="text-primary">
-                                                        +{{ $order->orderItems->count() - 1 }} sản phẩm
-                                                    </a>
+                                                    @if ($order->orderItems->count() > 1)
+                                                        <a href="{{ route('client.order.detail', $order->id) }}" class="text-primary">
+                                                            +{{ $order->orderItems->count() - 1 }} sản phẩm
+                                                        </a>
+                                                    @endif
+                                                @else
+                                                    {{-- Đơn không có item --}}
+                                                    <em>Đơn hàng chưa có sản phẩm.</em>
                                                 @endif
                                             </td>
+
 
 
                                             <td class="text-start">
@@ -283,33 +312,33 @@
 
                 if (status === 'pending') {
                     html += `
-                                                            <form action="/client/order/cancel/${orderId}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')">
-                                                                <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                                                <button type="submit" class="btn btn-sm btn-danger px-2 py-1">Hủy</button>
-                                                            </form>
-                                                        `;
+                                                                    <form action="/client/order/cancel/${orderId}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')">
+                                                                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                                                        <button type="submit" class="btn btn-sm btn-danger px-2 py-1">Hủy</button>
+                                                                    </form>
+                                                                `;
                 }
 
                 if (status === 'delivered') {
                     html += `
-                                                            <form action="/client/order/confirm-received/${orderId}" method="POST" onsubmit="return confirm('Bạn đã nhận được hàng?')">
-                                                                <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                                                <input type="hidden" name="_method" value="PATCH">
-                                                                <button type="submit" class="btn btn-sm btn-success px-2 py-1">Đã nhận</button>
-                                                            </form>
-                                                        `;
+                                                                    <form action="/client/order/confirm-received/${orderId}" method="POST" onsubmit="return confirm('Bạn đã nhận được hàng?')">
+                                                                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                                                        <input type="hidden" name="_method" value="PATCH">
+                                                                        <button type="submit" class="btn btn-sm btn-success px-2 py-1">Đã nhận</button>
+                                                                    </form>
+                                                                `;
                 }
 
                 html += `
-                                                        <form action="/client/order/detail/${orderId}" method="GET">
-                                                            <button type="submit" class="btn btn-sm btn-outline-dark px-2 py-1">Xem</button>
-                                                        </form>
-                                                    `;
+                                                                <form action="/client/order/detail/${orderId}" method="GET">
+                                                                    <button type="submit" class="btn btn-sm btn-outline-dark px-2 py-1">Xem</button>
+                                                                </form>
+                                                            `;
 
                 if (status === 'completed' && reviewedOrderIds && !reviewedOrderIds.includes(Number(orderId))) {
                     html += `
-                                                            <a href="/client/products/${orderId}#review" class="btn btn-sm btn-success px-2 py-1 d-inline-block">Đánh giá</a>
-                                                        `;
+                                                                    <a href="/client/products/${orderId}#review" class="btn btn-sm btn-success px-2 py-1 d-inline-block">Đánh giá</a>
+                                                                `;
                 }
 
                 html += `</div>`;

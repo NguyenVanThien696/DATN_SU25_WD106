@@ -13,14 +13,15 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
+        'email',
         'total_price',
         'shipping_fee',
         'status',
-        'note',  
+        'note',
         'payment_method',
-        'payment_status',       
-        'discount',  
-        'order_code',  
+        'payment_status',
+        'discount',
+        'order_code',
         'coupon_id',
     ];
 
@@ -38,13 +39,11 @@ class Order extends Model
 
     public function shippingAddress()
     {
-    return $this->hasOne(ShippingAddress::class);
+        return $this->hasOne(ShippingAddress::class);
     }
 
     public function coupons()
     {
         return $this->belongsTo(Coupon::class, 'coupon_id');
     }
-
-
 }
