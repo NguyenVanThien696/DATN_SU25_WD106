@@ -15,6 +15,17 @@
         
     @endphp
 
+    @if (!empty($stockErrors))
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($stockErrors as $error)
+                    <li>{{$error}}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+    
+    @php $hasStockError = !empty($stockErrors); @endphp
 
     @if (session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -46,9 +57,10 @@
                                         $subtotal = $product->price * $item->quantity;
                                         $total += $subtotal;
                                     @endphp
-                                        <div class="d-flex border-bottom py-3">
+                                        <div class="d-flex border-bottom py-3 cart-item" data-quantity = "{{$item->quantity}}" data-stock="{{$variant->stock}}">
                                             <img src="{{asset('storage/' . $variant->image)}}" width="200px" class="me-3" alt="">
                                             <div class="flex-grow-1">
+                                                <div class="error-msg" style="color: red; display:none;"></div>
                                                 <h6>{{$product->name}}</h6>
                                                 <p class="mb-1">Kích cỡ: {{$variant->size->name ?? '_'}}</p>
                                                 <p class="mb-1">Màu: {{$variant->color->name ?? '_'}}</p>
@@ -110,7 +122,7 @@
                             </div>
                             <div class="d-grip gap-2">
                                 @auth
-                                    <a href="{{ route('client.checkout.index') }}" class="btn btn-black btn-checkout-cart w-100 py-2" style="font-size: 16px;">
+                                    <a href="{{ route('client.checkout.index') }}" id="btn-checkout" class="btn btn-black btn-checkout-cart w-100 py-2" style="font-size: 16px;">
                                         Đặt hàng ->
                                     </a>
                                 @else
@@ -173,6 +185,36 @@
 
             updateCartTotal();
         });
+        document.addEventListener('DOMContentLoaded', function () {
+        const checkoutBtn = document.getElementById('btn-checkout');
+
+        if (checkoutBtn) {
+            checkoutBtn.addEventListener('click', function (e) {
+                const cartItems = document.querySelectorAll('.cart-item');
+                let hasError = false;
+
+                cartItems.forEach(function (item) {
+                    const quantity = parseInt(item.getAttribute('data-quantity')) || 0;
+                    const inventory = parseInt(item.getAttribute('data-stock')) || 0;
+
+                    const errorBox = item.querySelector('.error-msg');
+                    if (errorBox) errorBox.style.display = 'none';
+
+                    if (quantity > inventory) {
+                        hasError = true;
+                        if (errorBox) {
+                            errorBox.textContent = 'Sản phẩm không đủ tồn kho!';
+                            errorBox.style.display = 'block';
+                        }
+                    }
+                });
+
+                if (hasError) {
+                    e.preventDefault(); // chặn chuyển sang trang checkout
+                }
+            });
+        }
+    });
     </script>
 
     <style>
