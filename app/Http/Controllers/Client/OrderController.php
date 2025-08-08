@@ -52,7 +52,14 @@ class OrderController extends Controller
             $order->save();
         }
 
-        return view('client.orders.detail', compact('order'));
+        $orderItemIds = $order->orderItems->pluck('id')->toArray();
+
+        $reviewedOrderItemIds = ProductReview::where('user_id', $order->user_id)
+            ->whereIn('order_item_id', $orderItemIds)
+            ->pluck('order_item_id')
+            ->toArray();
+
+        return view('client.orders.detail', compact('order', 'reviewedOrderItemIds'));
     }
 
     public function cancel($id)
