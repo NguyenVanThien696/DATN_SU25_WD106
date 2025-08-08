@@ -15,6 +15,17 @@
         
     @endphp
 
+    {{-- @if (!empty($stockErrors))
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($stockErrors as $error)
+                    <li>{{$error}}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif --}}
+    
+    @php $hasStockError = !empty($stockErrors); @endphp
 
     @if (session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -30,9 +41,11 @@
                 <h2 class="mb-4">Giỏ hàng</h2>
                 <form method="POST" action="{{ route('client.cart.update') }}">
                     @csrf
+                    <input type="checkbox" id="select-all" class="me-1"> Chọn tất cả
                     <div class="row">
 
                         <div class="col-lg-8">
+                            
                             <div class="card p-3">
                             
                             @php $total = 0; @endphp
@@ -46,15 +59,18 @@
                                         $subtotal = $product->price * $item->quantity;
                                         $total += $subtotal;
                                     @endphp
-                                        <div class="d-flex border-bottom py-3">
+                                        <div class="d-flex border-bottom py-3 cart-item-row" data-quantity = "{{$item->quantity}}" data-stock="{{$variant->stock}}">
+                                            <input type="checkbox" name="selected_items[]" value="{{$item->id}}" class="me-3 product-checkbox" data-price="{{$product->price}}" data-quantity="{{$item->quantity}}">
                                             <img src="{{asset('storage/' . $variant->image)}}" width="200px" class="me-3" alt="">
                                             <div class="flex-grow-1">
+                                                <div class="error-msg" style="color: red; display:none;"></div>
                                                 <h6>{{$product->name}}</h6>
                                                 <p class="mb-1">Kích cỡ: {{$variant->size->name ?? '_'}}</p>
                                                 <p class="mb-1">Màu: {{$variant->color->name ?? '_'}}</p>
+                                                <p class="mb-1">Số lượng: {{$variant->stock ?? '_'}}</p>
                                                 <p class="mb-1">Giá: {{number_format($product->price)}} VNĐ</p>
                                                 <div class="d-flex align-items-center gap-2 mt-1">
-                                                    <input type="number" name="quantity[{{$variant->id}}]" value="{{$item->quantity}}" min="1" class="form-control me-2" style="width: 80px;">
+                                                    <input type="number" name="quantity[{{$variant->id}}]" value="{{$item->quantity}}" data-item-id="{{$item->id}}" min="1" class="form-control me-2 quantity-input" style="width: 80px;">
                                                     <span class="me-2"><Strong>{{number_format($subtotal)}} VNĐ</Strong></span>
                                                     <a href="{{ route('client.cart.delete', $variant->id) }}"
                                                 class="btn btn-sm btn-danger">X</a>
@@ -90,7 +106,7 @@
                                 @endforeach
                             @endif
                             <div class="d-flex justify-content-end gap-2 mt-4">
-                                <button type="submit" class="btn btn-primary btn-update-cart">Cập nhật giỏ hàng</button>
+                                {{-- <button type="submit" class="btn btn-primary btn-update-cart">Cập nhật giỏ hàng</button> --}}
                                 <a href="{{ route('client.cart.clear') }}" class="btn btn-danger btn-delete-all">Xoá toàn bộ</a>
                             </div>
 
@@ -110,9 +126,14 @@
                             </div>
                             <div class="d-grip gap-2">
                                 @auth
-                                    <a href="{{ route('client.checkout.index') }}" class="btn btn-black btn-checkout-cart w-100 py-2" style="font-size: 16px;">
-                                        Đặt hàng ->
-                                    </a>
+                                    
+                                    <form id="checkout-form" action="{{route('client.checkout.index')}}" method="post">
+                                        @csrf
+                                        <button type="button" id="checkout-btn" class="btn btn-black btn-checkout-cart w-100 py-2">Đặt hàng -></button>
+                                    </form>
+
+
+
                                 @else
                                     <a href="{{ route('login') }}" class="btn btn-danger btn-lg py-3 btn-block">
                                         Đăng nhập để thanh toán
@@ -131,49 +152,152 @@
         </div>
     @endif
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const formatCurrency = (num) => {
-                return num.toLocaleString('vi-VN') + ' VNĐ';
-            };
+ <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const selectAll = document.getElementById('select-all');
+    const itemCheckboxes = document.querySelectorAll('.product-checkbox');
+    const cartTotalElement = document.getElementById('cart-total');
 
-            const updateRowSubtotal = (row) => {
-                const priceCell = row.querySelector("td:nth-child(5)");
-                const quantityInput = row.querySelector(".quantity-input");
-                const subtotalCell = row.querySelector(".item-subtotal");
+    function formatCurrency(number) {
+        return number.toLocaleString('vi-VN') + ' VNĐ';
+    }
 
-                if (!priceCell || !quantityInput || !subtotalCell) return 0;
+    function updateCartTotal() {
+        let total = 0;
 
-                const price = parseInt(priceCell.textContent.replace(/[^\d]/g, '')) || 0;
-                const quantity = parseInt(quantityInput.value) || 1;
-                const subtotal = price * quantity;
+        itemCheckboxes.forEach(cb => {
+            if (cb.checked) {
+                const price = parseInt(cb.dataset.price);
+                const quantity = parseInt(cb.closest('.cart-item-row').querySelector('.quantity-input').value);
+                total += price * quantity;
+            }
+        });
 
-                subtotalCell.textContent = formatCurrency(subtotal);
-                return subtotal;
-            };
+        if (cartTotalElement) {
+            cartTotalElement.textContent = formatCurrency(total);
+        }
+    }
 
-            // const updateCartTotal = () => {
-            //     let total = 0;
-            //     document.querySelectorAll("tbody tr").forEach(row => {
-            //         total += updateRowSubtotal(row);
-            //     });
-
-            //     const totalDisplay = document.getElementById("cart-total");
-            //     if (totalDisplay) {
-            //         totalDisplay.textContent = formatCurrency(total);
-            //     }
-            // };
-
-            document.querySelectorAll(".quantity-input").forEach(input => {
-                input.addEventListener("change", () => {
-                    if (parseInt(input.value) < 1) input.value = 1;
-                    updateCartTotal();
-                });
-            });
-
+    // Khi chọn từng checkbox
+    itemCheckboxes.forEach(cb => {
+        cb.addEventListener('change', () => {
+            const allChecked = Array.from(itemCheckboxes).every(cb => cb.checked);
+            selectAll.checked = allChecked;
             updateCartTotal();
         });
-    </script>
+    });
+
+    // Chọn tất cả
+    if (selectAll) {
+        selectAll.addEventListener('change', function () {
+            itemCheckboxes.forEach(cb => cb.checked = this.checked);
+            updateCartTotal();
+        });
+    }
+
+    // Cập nhật số lượng bằng Ajax
+    document.querySelectorAll(".quantity-input").forEach(input => {
+        input.addEventListener("input", function () {
+            if (parseInt(this.value) < 1) this.value = 1;
+
+            const cartItemId = this.dataset.itemId;
+            const quantity = this.value;
+
+            fetch("{{ route('client.cart.updateQuantity') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    cart_item_id: cartItemId,
+                    quantity: quantity
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateCartTotal();
+                } else {
+                    alert(data.message || 'Lỗi cập nhật.');
+                }
+            })
+            .catch(() => {
+                alert('Có lỗi xảy ra khi cập nhật số lượng.');
+            });
+        });
+    });
+
+    // Nút checkout
+    const checkoutBtn = document.getElementById('checkout-btn');
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', function (e) {
+            const checkedItems = document.querySelectorAll('.product-checkbox:checked');
+            if (checkedItems.length === 0) {
+                alert('Vui lòng chọn ít nhất một sản phẩm để đặt hàng.');
+                e.preventDefault();
+                return;
+            }
+
+            let hasError = false;
+            checkedItems.forEach(function (cb) {
+                const item = cb.closest('.cart-item-row');
+                const quantity = parseInt(item.getAttribute('data-quantity')) || 0;
+                const inventory = parseInt(item.getAttribute('data-stock')) || 0;
+                const errorBox = item.querySelector('.error-msg');
+
+                if (errorBox) errorBox.style.display = 'none';
+
+                if (quantity > inventory) {
+                    hasError = true;
+                    if (errorBox) {
+                        errorBox.textContent = 'Sản phẩm không đủ tồn kho!';
+                        errorBox.style.display = 'block';
+                    }
+                }
+            });
+
+            if (hasError) {
+                e.preventDefault(); // chặn chuyển trang
+                return;
+            }
+
+            const selectedIds = Array.from(checkedItems).map(cb => cb.value);
+            const url = new URL('{{ route("client.checkout.index") }}', window.location.origin);
+            url.searchParams.set('selected_items', selectedIds.join(','));
+
+            window.location.href = url.toString();
+        });
+    }
+
+    updateCartTotal();
+});
+
+    // setInterval(() => {
+    //     fetch('/cart/check-stock')
+    //         .then(res => res.json())
+    //         .then(data => {
+    //             data.forEach(item => {
+    //                 const row = document.querySelector(`[data-variant-id="${item.variant_id}"]`);
+    //                 if (row) {
+    //                     if (item.current_stock === 0) {
+    //                         row.querySelector('.stock-status').innerText = 'Hết hàng';
+    //                         row.querySelector('.quantity').value = 0;
+    //                         row.classList.add('out-of-stock');
+    //                         row.querySelector('.quantity').disabled = true;
+    //                     } else {
+    //                         row.querySelector('.stock-status').innerText = `Còn ${item.current_stock}`;
+    //                         row.querySelector('.quantity').disabled = false;
+    //                     }
+    //                 }
+    //             });
+
+    //             // Kiểm tra nếu có bất kỳ sản phẩm nào hết hàng thì disable nút đặt hàng
+    //             const anyOutOfStock = data.some(item => item.current_stock === 0);
+    //             document.querySelector('#checkout-button').disabled = anyOutOfStock;
+    //         });
+    // }, 5000); // 5 giây/lần
+</script>
 
     <style>
         .btn-update-cart{

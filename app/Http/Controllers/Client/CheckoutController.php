@@ -10,6 +10,7 @@ use App\Models\Coupon;
 use App\Models\UserCoupon;
 
 use App\Http\Controllers\Controller;
+use App\Models\CartItem;
 use App\Models\PendingOrder;
 use App\Models\ShippingAddress;
 use Illuminate\Support\Facades\DB;
@@ -20,9 +21,18 @@ use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
 {
-public function index()
+public function index(Request $request)
 {
     $user = Auth::user();
+
+    //Danh sách id sản phẩm được chọn từ giỏ hàng
+        $selectedIdsString = $request->query('selected_items');
+
+        if(!$selectedIdsString){
+            return redirect()->route('client.cart.index')->with('error', 'Vui lòng chọn sản phẩm để thanh toán');
+        }
+
+        $selectedIds = explode(',', $selectedIdsString);
 
     $cart = Cart::with([
         'items.variant.product',
@@ -34,7 +44,14 @@ public function index()
         return back()->with('error', 'Giỏ hàng của bạn đang trống.');
     }
 
-    $products = $cart->items;
+    $products = $cart->items->whereIn('id', $selectedIds);
+
+    foreach ($products as $item) {
+        $availableStock = $item->variant->stock ?? 0;
+        if($item->quantity > $availableStock){
+            return redirect()->route('client.cart.index')->with('error', 'Sản phẩm "' . $item->variant->product->name .'" không còn đủ số lượng tồn kho!');
+        }
+    }
 
     // Tính tổng tiền hàng
     $total = 0;
@@ -81,6 +98,7 @@ public function thankyou(){
 
 public function process(Request $request)
 {
+    // dd($request->all());
     if ($request->has('apply_coupon')) {
         return $this->apply($request);
     }
@@ -137,11 +155,21 @@ public function process(Request $request)
 
     try {
         $userId = Auth::id();
-        $cart = Cart::with('items.variant.product')->where('user_id', $userId)->first();
+        $user = Auth::user();
 
+        $cart = Cart::with('items.variant.product')->where('user_id', $userId)->first();
+        // dd(Auth::id());
+        // dd($cart);
         if (!$cart || $cart->items->isEmpty()) {
             return back()->with('error', 'Giỏ hàng của bạn đang trống.');
         }
+
+        $selectedIdsString = $request->input('selected_items');
+            if(!$selectedIdsString){
+            return redirect()->route('client.cart.index')->with('error', 'Vui lòng chọn sản phẩm để thanh toán');
+            }
+            $selectedIds = explode(',', $selectedIdsString);
+            $cartItems = $cart->items->whereIn('id', $selectedIds);
 
         $total = $cart->items->sum(function ($item) {
             return $item->variant->product->price * $item->quantity;
@@ -273,7 +301,7 @@ public function process(Request $request)
             ]);
         }
 
-        foreach ($cart->items as $item) {
+        foreach ($cartItems as $item) {
             $variant = $item->variant;
 
             OrderItem::create([
@@ -293,8 +321,7 @@ public function process(Request $request)
         }
 
         $this->saveUsedCoupon($userId);
-        $cart->items()->delete();
-        $cart->delete();
+        CartItem::whereIn('id', $selectedIds)->delete();
         session()->forget('coupon');
 
         DB::commit();
