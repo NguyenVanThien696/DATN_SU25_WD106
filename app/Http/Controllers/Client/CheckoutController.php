@@ -211,7 +211,7 @@ public function process(Request $request)
                     'phone'   => $phone,
                     'address' => $address,
                 ],
-                'cart_items'  => $cart->items->map(function ($item) {
+                'cart_items'  => $cartItems->map(function ($item) {
                     return [
                         'product_variant_id' => $item->product_variant_id,
                         'quantity'           => $item->quantity,
@@ -421,6 +421,7 @@ public function apply(Request $request)
 
 public function vnpayReturn(Request $request)
 {
+    // dd($request->all());
     $vnp_HashSecret = config('services.vnpay.hash_secret');
     $inputData = $request->all();
     $vnp_SecureHash = $inputData['vnp_SecureHash'] ?? '';
@@ -502,10 +503,18 @@ public function vnpayReturn(Request $request)
 
             // ✅ Áp dụng coupon và xóa giỏ hàng
             $this->saveUsedCoupon($pendingOrder->user_id);
-            $cart = Cart::where('user_id', $pendingOrder->user_id)->first();
+            $cart = Cart::where('user_id', $pendingOrder->user_id)->with('items')->first();
             if ($cart) {
-                $cart->items()->delete();
-                $cart->delete();
+                // Lấy danh sách variant ID đã mua
+                $purchasedVariantIds = collect($pendingOrder->cart_items)->pluck('product_variant_id')->all();
+
+                // Xoá những cart item trùng với sản phẩm đã mua
+                $cart->items()->whereIn('product_variant_id', $purchasedVariantIds)->delete();
+
+                // Nếu không còn item nào thì xoá giỏ
+                if ($cart->items()->count() === 0) {
+                    $cart->delete();
+                }
             }
 
             session()->forget('coupon');
