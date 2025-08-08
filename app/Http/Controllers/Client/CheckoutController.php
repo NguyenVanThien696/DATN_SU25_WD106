@@ -171,7 +171,7 @@ public function process(Request $request)
             $selectedIds = explode(',', $selectedIdsString);
             $cartItems = $cart->items->whereIn('id', $selectedIds);
 
-        $total = $cart->items->sum(function ($item) {
+        $total = $cartItems->sum(function ($item) {
             return $item->variant->product->price * $item->quantity;
         });
 
