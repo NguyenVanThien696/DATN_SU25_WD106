@@ -1,6 +1,13 @@
 @extends('client.master')
 
 @section('content')
+@if (session('success'))
+<div class="alert alert-success">{{ session('success') }}</div>
+@endif
+
+@if (session('error'))
+<div class="alert alert-danger">{{ session('error') }}</div>
+@endif
 <div class="container py-5" style="max-width: 700px;">
     <h3 class="mb-4">Ví cá nhân của bạn</h3>
 
@@ -31,7 +38,25 @@
             @foreach ($transactions as $txn)
             <tr>
                 <td>{{ $txn->created_at->format('d/m/Y H:i') }}</td>
-                <td>{{ ucfirst($txn->type) }}</td>
+                <td>
+                    @php
+                    $type = $txn->type;
+                    $badge = [
+                    'deposit' => 'success',
+                    'withdraw' => 'danger',
+                    'refund_out' => 'info',
+                    'refund_in' => 'info',
+                    ][$type] ?? 'secondary';
+
+                    $label = [
+                    'deposit' => 'Nạp tiền',
+                    'withdraw' => 'Rút tiền',
+                    'refund_out' => 'Hoàn tiền',
+                    'refund_in' => 'Hoàn tiền',
+                    ][$type] ?? ucfirst($type);
+                    @endphp
+                    <span class="badge bg-{{ $badge }}">{{ $label }}</span>
+                </td>
                 <td class="{{ $txn->amount > 0 ? 'text-success' : 'text-danger' }}">
                     {{ number_format($txn->amount, 0, ',', '.') }} đ
                 </td>

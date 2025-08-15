@@ -31,7 +31,7 @@
                                         <th>ID</th>
                                         <th>Name</th>
                                         <th>Description</th>
-                                        <th>#</th>
+                                        <th>Hành động</th>
                                     </tr>
                                 <tbody>
                                     @foreach ($categories as $cate)
@@ -39,17 +39,25 @@
                                         <td>{{ $cate->id }}</td>
                                         <td>{{ $cate->name }}</td>
                                         <td>{{ $cate->description }}</td>
-                                        <td>
+                                        <td
+                                            style="text-align: center; vertical-align: middle; padding: 10px; border: 1px solid #dee2e6;">
                                             <a href="{{ route('admin.categories.show', $cate->id) }}"
-                                                class="btn btn-secondary">Detail </a>
+                                                class="btn btn-sm btn-outline-secondary" title="Xem"
+                                                style="margin: 2px;">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
                                             <a href="{{ route('admin.categories.edit', $cate->id) }}"
-                                                class="btn btn-warning">Edit</a>
-                                            <form action="{{ route('admin.categories.delete', $cate->id) }} "
-                                                class="d-inline" method="POST">
+                                                class="btn btn-sm btn-outline-warning" title="Sửa" style="margin: 2px;">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form action="{{ route('admin.categories.delete', $cate->id) }}"
+                                                method="POST" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button class="btn btn-danger" 
-                                                    onclick="return confirm('Bạn có chắc chắn xóa không? ')" type="submit">Delete
+                                                <button class="btn btn-sm btn-outline-danger" title="Xóa"
+                                                    style="margin: 2px;"
+                                                    onclick="return confirm('Bạn có chắc chắn muốn xóa danh mục này không?')">
+                                                    <i class="fas fa-trash-alt"></i>
                                                 </button>
                                             </form>
                                         </td>
@@ -60,11 +68,11 @@
                             </table>
                             {{-- <div class="mt-5">
                                 {{ $categories ->links('pagination::bootstrap-5') }}
-                            </div> --}}
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             </div>
+        </div>
         </div>
     </main>
     <!-- Content end -->

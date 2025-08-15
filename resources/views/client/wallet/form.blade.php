@@ -8,7 +8,6 @@
     @csrf
     <input type="hidden" name="order_id" value="{{ $order->id }}">
 
-    {{-- Lý do trả hàng --}}
     <div class="mb-3">
         <label for="reason" class="form-label">Lý do trả hàng <span class="text-danger">*</span></label>
         <textarea name="reason" id="reason" rows="4" class="form-control" required>{{ old('reason') }}</textarea>
@@ -17,7 +16,6 @@
         @enderror
     </div>
 
-    {{-- Hình ảnh minh chứng --}}
     <div class="mb-3">
         <label for="image" class="form-label">Hình ảnh minh chứng <span class="text-danger">*</span></label>
         <input type="file" name="image" id="image" accept="image/*" class="form-control" required>
@@ -26,7 +24,6 @@
         @enderror
     </div>
 
-    {{-- Thông tin tài khoản hoàn tiền --}}
     <h5 class="mt-4">Thông tin tài khoản nhận hoàn tiền</h5>
 
     <div class="row">
@@ -55,7 +52,6 @@
         </div>
     </div>
 
-    {{-- Submit --}}
     <div class="mt-3">
         <button type="submit" class="btn btn-primary">Gửi yêu cầu</button>
         <a href="{{ route('client.order.detail', $order->id) }}" class="btn btn-secondary">Quay lại đơn hàng</a>

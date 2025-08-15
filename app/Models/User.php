@@ -26,13 +26,12 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-public function wallet()
-{
-    return $this->hasOne(\App\Models\Wallet::class)->withDefault([
-        'balance' => 0,
-    ]);
-}
-
+    public function wallet()
+    {
+        return $this->hasOne(\App\Models\Wallet::class)->withDefault([
+            'balance' => 0,
+        ]);
+    }
 
     public function walletTransactions()
     {
@@ -47,4 +46,9 @@ public function wallet()
             ]);
         });
     }
+
+    public function bankAccount()
+{
+    return $this->hasOne(BankAccount::class);
+}
 }
