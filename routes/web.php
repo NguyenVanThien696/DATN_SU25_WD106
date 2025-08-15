@@ -91,16 +91,14 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('client')->name('client.')->group(function () {
 
         // Ví
-        Route::prefix('client/wallet')->name('wallet.')->group(function () {
+        Route::prefix('wallet')->name('wallet.')->group(function () {
             Route::get('refund/create/{orderId}', [RefundRequestController::class, 'create'])->name('refund.create');
             Route::post('refund/store', [RefundRequestController::class, 'store'])->name('refund.store');
-
             Route::get('/', [WalletController::class, 'index'])->name('index');
-
             // Nạp tiền
             Route::get('deposit', [WalletController::class, 'showDepositForm'])->name('deposit');
-            Route::post('deposit', [WalletController::class, 'deposit'])->name('deposit.store');
-
+            Route::post('deposit', [WalletController::class, 'DepositRedirect'])->name('deposit.redirect');
+            Route::get('deposit/callback', [WalletController::class, 'DepositCallback'])->name('deposit.callback');
             // Rút tiền
             Route::get('withdraw', [WalletController::class, 'showWithdrawForm'])->name('withdraw');
             Route::post('withdraw', [WalletController::class, 'withdraw'])->name('withdraw.store');
@@ -115,6 +113,8 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/update', [CartController::class, 'update'])->name('update');
             Route::get('/delete/{variant_id}', [CartController::class, 'delete'])->name('delete');
             Route::get('/clear', [CartController::class, 'clear'])->name('clear');
+            Route::post('/update-quantity', [CartController::class, 'updateQuantity'])->name('updateQuantity');
+            Route::get('/check-stock', [CartController::class, 'checkStock'])->name('checkStock');
         });
 
         // Checkout user
@@ -169,20 +169,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
 
     // Ví 
-    Route::prefix('admin/wallet')->name('wallet.')->group(function () {
-    // Quản lý giao dịch ví
+    Route::prefix('wallet')->name('wallet.')->group(function () {
+    // Giao dịch ví
         Route::get('transactions', [AdminWalletTransactionController::class, 'index'])->name('transactions.index');
         Route::get('transactions/{user}', [AdminWalletTransactionController::class, 'show'])->name('transactions.user');
-
-    // Form nạp tiền cho chính admin
+    // Nạp tiền admin
         Route::get('deposit', [AdminWalletTransactionController::class, 'adminDepositForm'])->name('deposit.admin.form');
-
-    // Gửi dữ liệu nạp tiền → redirect đến VNPAY giả lập
         Route::post('deposit', [AdminWalletTransactionController::class, 'adminDepositRedirect'])->name('deposit.admin.redirect');
-
-    // Callback sau khi thanh toán VNPAY (giả lập)
         Route::get('deposit/callback', [AdminWalletTransactionController::class, 'adminDepositCallback'])->name('deposit.admin.callback');
-
     // Quản lý yêu cầu hoàn tiền
         Route::get('refund-requests', [AdminRefundRequestController::class, 'index'])->name('refund-requests.index');
         Route::get('refund-requests/{id}', [AdminRefundRequestController::class, 'show'])->name('refund-requests.show');

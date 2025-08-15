@@ -42,13 +42,15 @@
                                     $badge = [
                                         'deposit' => 'success',
                                         'withdraw' => 'danger',
-                                        'refund' => 'info',
+                                        'refund_out' => 'info',
+                                        'refund_in' => 'info',
                                     ][$type] ?? 'secondary';
 
                                     $label = [
                                         'deposit' => 'Nạp tiền',
                                         'withdraw' => 'Rút tiền',
-                                        'refund' => 'Hoàn tiền',
+                                        'refund_out' => 'Hoàn tiền',
+                                        'refund_in' => 'Hoàn tiền',
                                     ][$type] ?? ucfirst($type);
                                 @endphp
                                 <span class="badge bg-{{ $badge }}">{{ $label }}</span>

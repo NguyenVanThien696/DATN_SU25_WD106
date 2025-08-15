@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -194,4 +195,40 @@ class CartController extends Controller
 
         return redirect()->route('client.cart.index')->with('success', 'Đã xóa toàn bộ giỏ hàng.');
     }
+
+    public function updateQuantity(Request $request)
+{
+    $cartItemId = $request->input('cart_item_id');
+    $quantity = $request->input('quantity');
+
+    $cartItem = CartItem::find($cartItemId);
+    if (!$cartItem) {
+        return response()->json(['success' => false, 'message' => 'Sản phẩm không tồn tại trong giỏ hàng.']);
+    }
+
+    $cartItem->quantity = $quantity;
+    $cartItem->save();
+
+    return response()->json(['success' => true]);
+}
+
+// CartController.php
+
+public function checkStock(Request $request)
+{
+    $user = Auth::user();
+    $cart = Cart::where('user_id', $user->id)->first();
+
+    foreach ($cart->cartItems as $item) {
+        $product = Product::find($item->product_id);
+        if ($product->quantity < $item->quantity) {
+            return redirect()->back()->withErrors([
+                'message' => "Sản phẩm {$product->name} chỉ còn {$product->quantity} cái, bạn cần cập nhật giỏ hàng."
+            ]);
+        }
+    }
+
+    // Nếu đủ số lượng → chuyển sang trang thanh toán
+    return redirect()->route('client.checkout.index');
+}
 }

@@ -12,6 +12,7 @@
 
 <form action="{{ route('client.checkout.process', $user->id) }}" method="POST">
     @csrf
+    <input type="hidden" name="selected_items" value="{{request()->query('selected_items')}}">
     <div class="untree_co-section">
         <div class="container">
             <div class="row">

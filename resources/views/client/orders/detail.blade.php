@@ -17,7 +17,6 @@
             <hr>
             <h6 class="fw-semibold text-muted">Trạng thái vận chuyển</h6>
             @php
-            // Lấy trạng thái chính xác của đơn hàng, có xét đến refund
             $status = $order->status;
 
             if ($order->refundRequest) {
@@ -34,7 +33,7 @@
             }
             }
 
-            // Thứ tự các bước trạng thái
+            // Bảng thứ tự bước
             $statusSteps = [
             'pending' => 1,
             'confirmed' => 2,
@@ -50,66 +49,62 @@
             @endphp
 
             <ul class="timeline">
-
-                @if ($status === 'cancelled')
+                @if($status === 'cancelled')
                 <li class="timeline-item completed">
                     <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
                     <span class="desc fw-bold text-danger">Đã hủy</span>
                     <small class="text-muted">Đơn hàng đã bị hủy</small>
                 </li>
                 @endif
-
-                @if ($status === 'refund_approved')
+                @if($status === 'refund_approved')
                 <li class="timeline-item completed">
                     <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
                     <span class="desc fw-bold text-success">Đã hoàn tiền</span>
                     <small class="text-muted">Tiền đã được chuyển vào ví</small>
                 </li>
                 @endif
-
-                @if ($status === 'refund_rejected')
+                @if($status === 'refund_rejected')
                 <li class="timeline-item completed">
                     <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
                     <span class="desc fw-bold text-danger">Từ chối hoàn tiền</span>
                     <small class="text-muted">Yêu cầu bị từ chối</small>
                 </li>
                 @endif
-
-                @if (in_array($status, ['refund_pending', 'refund_rejected', 'refund_approved']))
-                <li class="timeline-item {{ $currentStep >= 5 ? 'completed' : '' }}">
+                @if($status === 'refund_pending')
+                <li class="timeline-item completed">
                     <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
                     <span class="desc fw-bold text-info">Chờ xét duyệt hoàn tiền</span>
                     <small class="text-muted">Yêu cầu đang được xử lý</small>
                 </li>
                 @endif
-
+                @if(in_array($status, ['completed','refund_pending','refund_rejected','refund_approved']))
                 <li class="timeline-item {{ $currentStep >= 4 ? 'completed' : '' }}">
                     <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
                     <span class="desc fw-bold text-success">Đã hoàn thành</span>
                     <small class="text-muted">Giao hàng thành công</small>
                 </li>
-
+                @endif
+                @if(in_array($status, ['shipping','completed','refund_pending','refund_rejected','refund_approved']))
                 <li class="timeline-item {{ $currentStep >= 3 ? 'completed' : '' }}">
                     <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
                     <span class="desc fw-bold text-warning">Đang giao</span>
                     <small class="text-muted">Đơn hàng đang được vận chuyển</small>
                 </li>
-
+                @endif
+                @if($status !== 'cancelled')
                 <li class="timeline-item {{ $currentStep >= 2 ? 'completed' : '' }}">
                     <span class="time">{{ $order->updated_at->format('d/m/Y') }}</span>
                     <span class="desc fw-bold text-primary">Đã xác nhận</span>
                     <small class="text-muted">Đơn hàng đã được xác nhận</small>
                 </li>
+                @endif
 
                 <li class="timeline-item {{ $currentStep >= 1 ? 'completed' : '' }}">
                     <span class="time">{{ $order->created_at->format('d/m/Y') }}</span>
                     <span class="desc fw-bold">Đã đặt hàng</span>
                     <small class="text-muted">Chờ xác nhận</small>
                 </li>
-
             </ul>
-
-
 
         </div>
     </div>

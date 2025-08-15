@@ -76,15 +76,23 @@
                     <tr>
                         <td>{{ $trx->id }}</td>
                         <td>
-                            @if ($trx->type === 'refund')
-                            <span class="text-info">Hoàn tiền</span>
-                            @elseif ($trx->type === 'deposit')
-                            <span class="text-success">Nạp</span>
-                            @elseif ($trx->type === 'withdraw')
-                            <span class="text-danger">Rút</span>
-                            @else
-                            {{ ucfirst($trx->type) }}
-                            @endif
+                            @php
+                            $type = $trx->type;
+                            $badge = [
+                            'deposit' => 'success',
+                            'withdraw' => 'danger',
+                            'refund_out' => 'info',
+                            'refund_in' => 'info',
+                            ][$type] ?? 'secondary';
+
+                            $label = [
+                            'deposit' => 'Nạp tiền',
+                            'withdraw' => 'Rút tiền',
+                            'refund_out' => 'Hoàn tiền',
+                            'refund_in' => 'Hoàn tiền',
+                            ][$type] ?? ucfirst($type);
+                            @endphp
+                            <span class="badge bg-{{ $badge }}">{{ $label }}</span>
                         </td>
                         <td>{{ number_format($trx->amount) }} đ</td>
                         <td>{{ $trx->description }}</td>

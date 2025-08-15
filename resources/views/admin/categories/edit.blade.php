@@ -8,7 +8,8 @@
         <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
-        <form action="{{ route('admin.categories.update', $category->id) }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('admin.categories.update', $category->id) }}" method="POST"
+            enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
@@ -22,7 +23,9 @@
                 <textarea class="form-control" name="description" rows="3"
                     value="{{ old('description') }}">{{ old('description', $category->description) }}</textarea>
             </div>
-            <button type="submit" class="btn btn-primary">Cập nhật danh mục</button>
+            <button class="btn btn-success px-4 mt-3">
+                <i class="fas fa-save me-1"></i> Cập nhật
+            </button>
         </form>
     </div>
 

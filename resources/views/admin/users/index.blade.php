@@ -53,7 +53,6 @@
                         <th>SĐT</th>
                         <th>Vai trò</th>
                         <th>Ngày tạo</th>
-                        <th>Hành động</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -72,11 +71,6 @@
                                 @endif
                             </td>
                             <td class="text-center">{{ $user->created_at->format('d/m/Y H:i') }}</td>
-                            <td class="text-center">
-                                <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-sm btn-warning px-3">
-                                    <i class="fas fa-edit me-1"></i> Sửa
-                                </a>
-                            </td>
                         </tr>
                     @empty
                         <tr>
