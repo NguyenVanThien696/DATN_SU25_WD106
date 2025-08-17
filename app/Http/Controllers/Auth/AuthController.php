@@ -21,11 +21,29 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+        // Validate dữ liệu đầu vào
+        $request->validate(
+            [
+                'email'    => 'required|email',
+                'password' => 'required|min:6',
+            ],
+            [
+                // Email
+                'email.required' => 'Vui lòng nhập email.',
+                'email.email'    => 'Email không hợp lệ.',
+
+                // Password
+                'password.required' => 'Vui lòng nhập mật khẩu.',
+                'password.min'      => 'Mật khẩu phải có ít nhất 6 ký tự.',
+            ]
+        );
+
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
             $user = Auth::user();
+
             switch ((int)$user->role) {
                 case 1: // Admin
                     return redirect()->route('admin.dashboard');
@@ -34,10 +52,11 @@ class AuthController extends Controller
                     return redirect()->route('dashboard.form');
             }
         }
-        return redirect()->back()->withErrors([
-            'email' => 'Thông tin đăng nhập không chính xác.',
-        ]);
+
+        // Nếu sai email hoặc mật khẩu
+        return redirect()->back()->with('error', 'Thông tin đăng nhập không chính xác.');
     }
+
 
     public function showRegisterForm()
     {
@@ -57,11 +76,29 @@ class AuthController extends Controller
 
 public function register(Request $request)
 {
-    $validatedData = $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|string|email|max:255|unique:users',
-        'password' => 'required|string|min:6|confirmed',
-    ]);
+    $validatedData = $request->validate(
+        [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:6|confirmed',
+        ],
+        [
+            'name.required' => 'Vui lòng nhập họ và tên.',
+            'name.string'   => 'Họ và tên phải là chuỗi ký tự.',
+            'name.max'      => 'Họ và tên không được vượt quá 255 ký tự.',
+
+            'email.required' => 'Vui lòng nhập email.',
+            'email.string'   => 'Email phải là chuỗi hợp lệ.',
+            'email.email'    => 'Địa chỉ email không hợp lệ.',
+            'email.max'      => 'Email không được vượt quá 255 ký tự.',
+            'email.unique'   => 'Email này đã được đăng ký.',
+
+            'password.required'  => 'Vui lòng nhập mật khẩu.',
+            'password.string'    => 'Mật khẩu phải là chuỗi ký tự.',
+            'password.min'       => 'Mật khẩu phải có ít nhất 6 ký tự.',
+            'password.confirmed' => 'Xác nhận mật khẩu không khớp.',
+        ]
+    );
 
     $user = User::create([
         'name' => $validatedData['name'],

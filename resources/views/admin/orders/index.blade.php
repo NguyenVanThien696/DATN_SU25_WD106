@@ -125,10 +125,12 @@
                             'delivered' => 'Đã giao (chờ khách xác nhận)',
                             'completed' => 'Đã hoàn tất',
                             'cancelled' => 'Đã huỷ',
-                            'cancelled_paid' => 'Đã hủy (chờ hoàn tiền)',
+                            'cancelled_paid' => 'Đã hoàn tiền',
                             'refunded' => 'Đã hoàn tiền',
                             'delivery_failed' => 'Giao thất bại',
-                            'refund_pending' => 'Chờ xét duyệt trả hàng / hoàn tiền',
+
+                            // Hoàn tiền
+                            'refund_pending' => 'Chờ hoàn tiền',
                             'refund_rejected' => 'Từ chối trả hàng / hoàn tiền',
                             'refund_approved' => 'Đã hoàn tiền',
                             ];
@@ -142,9 +144,11 @@
                             'delivered' => 'bg-secondary text-white',
                             'completed' => 'bg-success text-white',
                             'cancelled' => 'bg-danger text-white',
-                            'cancelled_paid' => 'bg-warning text-dark',
+                            'cancelled_paid' => 'bg-success text-white',
                             'refunded' => 'bg-success text-white',
                             'delivery_failed' => 'bg-dark text-white',
+
+                            // Hoàn tiền
                             'refund_pending' => 'bg-info text-white',
                             'refund_rejected' => 'bg-danger text-white',
                             'refund_approved' => 'bg-success text-white',
@@ -159,12 +163,18 @@
                             // Trạng thái thanh toán
                             $paymentStatusHtml = $order->payment_status === 'paid'
                             ? '<span class="badge bg-success">Đã thanh toán</span>'
-                            : '<span class="badge bg-warning text-dark">Thanh toán khi nhận hàng</span>';
+                            : ($method === 'cod'
+                            ? '<span class="badge bg-warning text-dark">Chưa thanh toán</span>'
+                            : '<span class="badge bg-danger text-white">Chưa thanh toán</span>'
+                            );
 
-                            if (in_array($order->status, ['refund_pending', 'refund_rejected', 'refund_approved'])) {
+                            // Các trạng thái có thể chuyển tiếp
+                            if (in_array($order->status, [
+                            'refund_pending', 'refund_rejected', 'refund_approved',
+                            'cancelled_paid', 'refunded'
+                            ])) {
                             $availableTransitions = [];
                             } else {
-                            // Các trạng thái có thể chuyển tiếp
                             $availableTransitions = match ($order->status) {
                             'pending' => ['confirmed', 'cancelled'],
                             'confirmed' => ['processing', 'cancelled'],
@@ -174,6 +184,7 @@
                             };
                             }
                             @endphp
+
                             <tr data-order-id="{{ $order->id }}">
                                 <td>#{{ $order->order_code }}</td>
                                 <td>
