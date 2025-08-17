@@ -62,7 +62,7 @@
             'delivered' => 'badge bg-secondary',
             'completed' => 'badge bg-success',
             'cancelled' => 'badge bg-danger',
-            'cancelled_paid' => 'badge bg-warning text-dark',
+            'cancelled_paid' => 'badge bg-success',
             'refunded' => 'badge bg-success',
             'delivery_failed' => 'badge bg-dark',
 
@@ -79,11 +79,11 @@
             'delivered' => 'Đã giao (chờ xác nhận)',
             'completed' => 'Đã hoàn tất',
             'cancelled' => 'Đã huỷ',
-            'cancelled_paid' => 'Chờ hoàn tiền',
+            'cancelled_paid' => 'Đã hoàn tiền',
             'refunded' => 'Đã hoàn tiền',
             'delivery_failed' => 'Giao thất bại',
 
-            'refund_pending' => 'Chờ xét duyệt trả hàng / hoàn tiền',
+            'refund_pending' => 'Chờ hoàn tiền',
             'refund_rejected' => 'Từ chối trả hàng / hoàn tiền',
             'refund_approved' => 'Đã hoàn tiền',
             ];

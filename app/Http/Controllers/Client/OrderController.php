@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderStatusLog;
 use App\Models\ProductReview;
+use App\Models\User;
+use App\Models\Wallet;
+use App\Models\WalletTransaction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -52,11 +55,11 @@ class OrderController extends Controller
 
         return view('client.orders.detail', compact('order'));
     }
-
     public function cancel($id)
     {
         return DB::transaction(function () use ($id) {
-            $order = Order::with('coupons')->where('id', $id)
+            $order = Order::with(['coupons', 'orderItems.productVariant'])
+                ->where('id', $id)
                 ->where('user_id', Auth::id())
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -78,20 +81,77 @@ class OrderController extends Controller
                 $order->coupons->used = max(0, $order->coupons->used - 1);
                 $order->coupons->save();
 
-                // Xóa record người dùng đã dùng mã giảm giá
                 DB::table('user_coupons')
                     ->where('user_id', $order->user_id)
                     ->where('coupon_id', $order->coupons->id)
                     ->delete();
             }
+            // Hoàn ví nếu thanh toán VNPay và đã trả tiền
+            if ($order->payment_method === 'vnpay' && $order->payment_status === 'paid') {
+                // Lấy admin thật (role = 1)
+                $admin = User::where('role', 1)->lockForUpdate()->firstOrFail();
+                $user  = User::with('wallet')->lockForUpdate()->findOrFail($order->user_id);
 
-            // Cập nhật trạng thái
-            $order->status = $order->payment_status === 'paid' ? 'cancelled_paid' : 'cancelled';
+                // Lấy ví admin & user (nếu chưa có thì tạo)
+                $adminWallet = Wallet::where('user_id', $admin->id)
+                    ->lockForUpdate()
+                    ->firstOrCreate(['user_id' => $admin->id], ['balance' => 0]);
+
+                $userWallet = Wallet::where('user_id', $user->id)
+                    ->lockForUpdate()
+                    ->firstOrCreate(['user_id' => $user->id], ['balance' => 0]);
+
+                // Lấy số tiền chính xác
+                $amount = (float) $order->total_price;
+                $amount = round($amount, 0);
+
+                if ($amount <= 0) {
+                    // Không cần hoàn tiền
+                    $order->status = 'cancelled';
+                } elseif ($adminWallet->balance >= $amount) {
+                    // Trừ ví admin
+                    $adminWallet->balance = (float)$adminWallet->balance - $amount;
+                    $adminWallet->save();
+
+                    // Cộng ví user
+                    $userWallet->balance = (float)$userWallet->balance + $amount;
+                    $userWallet->save();
+
+                    // Ghi log giao dịch cho admin
+                    WalletTransaction::create([
+                        'wallet_id'   => $adminWallet->id,
+                        'user_id'     => $admin->id,
+                        'amount'      => -$amount,
+                        'type'        => 'refund_out',
+                        'description' => 'Hoàn tiền đơn hàng #' . $order->id . ' cho user ID ' . $user->id,
+                    ]);
+
+                    // Ghi log giao dịch cho user
+                    WalletTransaction::create([
+                        'wallet_id'   => $userWallet->id,
+                        'user_id'     => $user->id,
+                        'amount'      => $amount,
+                        'type'        => 'refund_in',
+                        'description' => 'Được hoàn tiền khi hủy đơn hàng #' . $order->id,
+                    ]);
+
+                    $order->status = 'cancelled_paid';
+                } else {
+                    // Admin chưa đủ tiền → chờ hoàn
+                    $order->status = 'refund_pending';
+                }
+            } else {
+                // Chưa thanh toán online → chỉ hủy
+                $order->status = 'cancelled';
+            }
             $order->save();
 
-            return redirect()->route('client.order.index')->with('success', 'Đơn hàng đã được hủy.');
+            return redirect()->route('client.order.index')
+                ->with('success', 'Đơn hàng đã được hủy' . ($order->status === 'refund_pending' ? ' và đang chờ hoàn tiền.' : '.'));
         });
     }
+
+
 
     public function confirmReceived($id)
     {
