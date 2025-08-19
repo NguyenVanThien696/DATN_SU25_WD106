@@ -52,7 +52,9 @@ class AuthController extends Controller
             }
         }
 
-        return redirect()->back()->with('error', 'Thông tin đăng nhập không chính xác.');
+        return redirect()->back()->withErrors([
+            'login_error' => 'Thông tin đăng nhập không chính xác.'
+        ])->withInput();
     }
 
 
