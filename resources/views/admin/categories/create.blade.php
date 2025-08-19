@@ -13,12 +13,18 @@
 
             <div class="mb-3">
                 <label class="form-label">Tên danh mục</label>
-                <input type="text" class="form-control" name="name" required value="{{ old('name') }}">
+                <input type="text" class="form-control" name="name" value="{{ old('name') }}">
+                @error('name')
+                <small class="text-danger">{{ $message }}</small>
+                @enderror
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Mô tả</label>
                 <textarea class="form-control" name="description" rows="3" value="{{ old('description') }}"></textarea>
+                @error('name')
+                <small class="text-danger">{{ $message }}</small>
+                @enderror
             </div>
 
             <button type="submit" class="btn btn-primary">Thêm danh mục</button>

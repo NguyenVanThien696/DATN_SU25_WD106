@@ -177,29 +177,22 @@ $request->validate([
         'variants.*.stock' => 'required|integer|min:0',
         'variants.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
     ], [
-        // name
         'name.required' => 'Tên sản phẩm không được để trống.',
         'name.string' => 'Tên sản phẩm phải là chuỗi ký tự.',
         'name.min' => 'Tên sản phẩm không hợp lệ.',
         'name.max' => 'Tên sản phẩm không hợp lệ.',
-        // price
         'price.required' => 'Giá không được để trống.',
         'price.numeric' => 'Giá phải là số.',
         'price.min' => 'Giá không được âm.',
-        // category
         'category_id.required' => 'Vui lòng chọn danh mục.',
         'category_id.exists' => 'Danh mục không hợp lệ.',
-        // brand
         'brand_id.required' => 'Vui lòng chọn thương hiệu.',
         'brand_id.exists' => 'Thương hiệu không hợp lệ.',
-        // tag
         'tag_id.required' => 'Vui lòng chọn tag.',
         'tag_id.exists' => 'Tag không hợp lệ.',
-        // image
         'image.image' => 'File tải lên phải là hình ảnh.',
         'image.mimes' => 'Hình ảnh phải có định dạng jpeg, png, jpg hoặc gif.',
         'image.max' => 'Hình ảnh không được vượt quá 2MB.',
-        // variants
         'variants.required' => 'Phải có ít nhất một biến thể.',
         'variants.array' => 'Biến thể phải là một mảng.',
         'variants.*.size_id.required' => 'Vui lòng chọn size cho từng biến thể.',
@@ -352,6 +345,11 @@ public function storeSize(Request $request)
 {
     $request->validate([
         'name' => 'required|string|min:2|max:100',
+    ], [
+        'name.required' => 'Vui lòng nhập tên.',
+        'name.string'   => 'Tên phải là chuỗi ký tự.',
+        'name.min'      => 'Tên phải có ít nhất 2 ký tự.',
+        'name.max'      => 'Tên không được vượt quá 100 ký tự.',
     ]);
 
     $exists = Size::whereRaw('LOWER(name) = ?', [strtolower($request->name)])->exists();
@@ -414,6 +412,11 @@ public function storeColor(Request $request)
 {
     $request->validate([
         'name' => 'required|string|min:2|max:100',
+    ], [
+        'name.required' => 'Vui lòng nhập tên.',
+        'name.string'   => 'Tên phải là chuỗi ký tự.',
+        'name.min'      => 'Tên phải có ít nhất 2 ký tự.',
+        'name.max'      => 'Tên không được vượt quá 100 ký tự.',
     ]);
 
     $exists = Size::whereRaw('LOWER(name) = ?', [strtolower($request->name)])->exists();

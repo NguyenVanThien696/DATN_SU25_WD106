@@ -8,11 +8,17 @@
         @csrf
         <div class="mb-3">
             <label for="amount" class="form-label">Số tiền cần nạp</label>
-            <input type="number" name="amount" id="amount" class="form-control" min="1000">
+            <input type="number" name="amount" id="amount" class="form-control">
+            @error('amount')
+            <small class="text-danger">{{ $message }}</small>
+            @enderror
         </div>
         <div class="mb-3">
             <label for="description" class="form-label">Mô tả (tuỳ chọn)</label>
             <input type="text" name="description" id="description" class="form-control">
+            @error('description')
+            <small class="text-danger">{{ $message }}</small>
+            @enderror
         </div>
         <button type="submit" class="btn btn-success">Nạp tiền qua VNPay</button>
     </form>

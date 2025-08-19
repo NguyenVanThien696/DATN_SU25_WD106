@@ -448,7 +448,7 @@ public function vnpayReturn(Request $request)
 
         DB::beginTransaction();
         try {
-            // ✅ Sửa lỗi: thiếu thông tin khách hàng
+            // Sửa lỗi: thiếu thông tin khách hàng
             // Kiểm tra lại các giá trị
             if (
                 !$pendingOrder->customer_name ||
@@ -475,13 +475,13 @@ public function vnpayReturn(Request $request)
                 'customer_address'=> $pendingOrder->customer_address,
             ]);
 
-            // ✅ Cập nhật user info nếu có
+            // Cập nhật user info nếu có
             $user = User::find($pendingOrder->user_id);
             if ($user && $pendingOrder->user_info) {
                 $user->update($pendingOrder->user_info);
             }
 
-            // ✅ Sửa lỗi: dùng $variant trước khi gọi find
+            // Sửa lỗi: dùng $variant trước khi gọi find
             foreach ($pendingOrder->cart_items as $item) {
                 $variant = \App\Models\ProductVariant::with('product', 'color', 'size')->find($item['product_variant_id']);
 
@@ -501,7 +501,7 @@ public function vnpayReturn(Request $request)
                 $variant->save();
             }
 
-            // ✅ Áp dụng coupon và xóa giỏ hàng
+            // Áp dụng coupon và xóa giỏ hàng
             $this->saveUsedCoupon($pendingOrder->user_id);
             $cart = Cart::where('user_id', $pendingOrder->user_id)->with('items')->first();
             if ($cart) {
