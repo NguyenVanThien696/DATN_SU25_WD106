@@ -38,8 +38,10 @@
 
                         <div class="mb-3">
                             <label for="name" class="form-label">Tên màu sắc</label>
-                            <input type="text" name="name" id="name" class="form-control" value="{{ old('name') }}"
-                                required>
+                            <input type="text" name="name" id="name" class="form-control" value="{{ old('name') }}">
+                            @error('name')
+                            <small class="text-danger">{{ $message }}</small>
+                            @enderror
                         </div>
 
                         <div class="d-flex justify-content-between">

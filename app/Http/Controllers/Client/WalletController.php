@@ -36,6 +36,13 @@ public function DepositRedirect(Request $request)
     $request->validate([
         'amount' => 'required|numeric|min:1000',
         'description' => 'nullable|string|max:255',
+    ], [
+        'amount.required' => 'Vui lòng nhập số tiền.',
+        'amount.numeric'  => 'Số tiền phải là số hợp lệ.',
+        'amount.min'      => 'Số tiền nạp tối thiểu là 1.000 VNĐ.',
+
+        'description.string' => 'Mô tả phải là chuỗi ký tự.',
+        'description.max'    => 'Mô tả không được vượt quá 255 ký tự.',
     ]);
 
     $user = Auth::user();

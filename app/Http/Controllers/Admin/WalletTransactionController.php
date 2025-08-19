@@ -56,6 +56,13 @@ public function adminDepositRedirect(Request $request)
     $request->validate([
         'amount' => 'required|numeric|min:1000',
         'description' => 'nullable|string|max:255',
+    ], [
+        'amount.required' => 'Số tiền là bắt buộc.',
+        'amount.numeric'  => 'Số tiền phải là một số.',
+        'amount.min'      => 'Số tiền tối thiểu là :min đồng.',
+
+        'description.string' => 'Mô tả phải là chuỗi ký tự.',
+        'description.max'    => 'Mô tả không được vượt quá :max ký tự.',
     ]);
 
     $admin = User::where('role', 1)->first();

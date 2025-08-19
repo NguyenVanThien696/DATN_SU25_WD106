@@ -23,7 +23,7 @@
         <div class="mb-3">
             <label for="amount" class="form-label">Số tiền cần nạp <span class="text-danger">*</span></label>
             <input type="number" name="amount" id="amount" class="form-control" placeholder="Nhập số tiền (VND)"
-                min="1000" required value="{{ old('amount') }}">
+                value="{{ old('amount') }}">
             @error('amount')
             <div class="text-danger mt-1">{{ $message }}</div>
             @enderror
@@ -32,15 +32,14 @@
         <div class="mb-3">
             <label for="description" class="form-label">Mô tả giao dịch (không bắt buộc)</label>
             <input type="text" name="description" id="description" class="form-control"
-                placeholder="Ví dụ: Nạp tiền test VNPAY" value="{{ old('description') }}">
+                value="{{ old('description') }}">
             @error('description')
             <div class="text-danger mt-1">{{ $message }}</div>
             @enderror
         </div>
 
-        <button type="submit" class="btn btn-success w-100">
-            <i class="fa-solid fa-wallet me-1"></i> Nạp tiền bằng VNPAY (Demo)
-        </button>
+
+        <button class="btn btn-success mt-3"><i class="fas fa-save me-1"></i> Nạp tiền bằng VNPAY (Demo)</button>
     </form>
 </div>
 @endsection

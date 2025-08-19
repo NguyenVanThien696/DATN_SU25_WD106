@@ -30,10 +30,18 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|min:2|max:100',
-            'description' => 'nullable|string|max:255',
-        ]);
+    $request->validate([
+        'name' => 'required|string|min:2|max:100',
+        'description' => 'nullable|string|max:255',
+    ], [
+        'name.required' => 'Tên là bắt buộc.',
+        'name.string' => 'Tên phải là chuỗi ký tự.',
+        'name.min' => 'Tên phải có ít nhất :min ký tự.',
+        'name.max' => 'Tên không được vượt quá :max ký tự.',
+
+        'description.string' => 'Mô tả phải là chuỗi ký tự.',
+        'description.max' => 'Mô tả không được vượt quá :max ký tự.',
+    ]);
 
         Category::create([
             'name' => $request->name,

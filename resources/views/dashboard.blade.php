@@ -66,17 +66,26 @@
 
                     <div class="mb-3">
                         <label class="form-label">Mật khẩu cũ</label>
-                        <input type="password" name="current_password" class="form-control" required>
+                        <input type="password" name="current_password" class="form-control">
+                        @error('current_password')
+                        <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Mật khẩu mới</label>
-                        <input type="password" name="new_password" class="form-control" required>
+                        <input type="password" name="new_password" class="form-control">
+                        @error('new_password')
+                        <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
 
                     <div class="mb-4">
                         <label class="form-label">Nhập lại mật khẩu mới</label>
-                        <input type="password" name="new_password_confirmation" class="form-control" required>
+                        <input type="password" name="new_password_confirmation" class="form-control">
+                        @error('new_password_confirmation')
+                        <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
 
                     <button type="submit" class="btn btn-primary w-100 py-2" style="border-radius: 30px;">Đổi

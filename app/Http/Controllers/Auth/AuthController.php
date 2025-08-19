@@ -21,18 +21,15 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        // Validate dữ liệu đầu vào
         $request->validate(
             [
                 'email'    => 'required|email',
                 'password' => 'required|min:6',
             ],
             [
-                // Email
                 'email.required' => 'Vui lòng nhập email.',
                 'email.email'    => 'Email không hợp lệ.',
 
-                // Password
                 'password.required' => 'Vui lòng nhập mật khẩu.',
                 'password.min'      => 'Mật khẩu phải có ít nhất 6 ký tự.',
             ]
@@ -53,7 +50,6 @@ class AuthController extends Controller
             }
         }
 
-        // Nếu sai email hoặc mật khẩu
         return redirect()->back()->with('error', 'Thông tin đăng nhập không chính xác.');
     }
 
@@ -114,10 +110,19 @@ public function register(Request $request)
 
     public function changePassword(Request $request)
     {
-        $request->validate([
+    $request->validate(
+        [
             'current_password' => 'required',
-            'new_password' => 'required|min:6|confirmed',
-        ]);
+            'new_password'     => 'required|min:6|confirmed',
+        ],
+        [
+            'current_password.required' => 'Vui lòng nhập mật khẩu hiện tại.',
+
+            'new_password.required'  => 'Vui lòng nhập mật khẩu mới.',
+            'new_password.min'       => 'Mật khẩu mới phải có ít nhất 6 ký tự.',
+            'new_password.confirmed' => 'Xác nhận mật khẩu mới không khớp.',
+        ]
+    );
 
         $user = Auth::user();
 
@@ -201,13 +206,27 @@ public function update(Request $request)
 {
     $user = Auth::user();
 
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|email|max:255|unique:users,email,' . $user->id,
-        'phone' => 'required|numeric',
-        'address' => 'required|string|max:255',
-        'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-    ]);
+    $validated = $request->validate(
+        [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'phone' => 'required|numeric',
+            'address' => 'required|string|max:255',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ],
+        [
+            'name.required' => 'Vui lòng nhập tên.',
+            'email.required' => 'Vui lòng nhập email.',
+            'email.email' => 'Email không hợp lệ.',
+            'email.unique' => 'Email này đã tồn tại.',
+            'phone.required' => 'Vui lòng nhập số điện thoại.',
+            'phone.numeric' => 'Số điện thoại phải là số.',
+            'address.required' => 'Vui lòng nhập địa chỉ.',
+            'avatar.image' => 'Tệp tải lên phải là hình ảnh.',
+            'avatar.mimes' => 'Ảnh phải có định dạng: jpeg, png, jpg, gif hoặc svg.',
+            'avatar.max' => 'Ảnh tải lên không được vượt quá 2MB.',
+        ]
+    );
 
     $user->name = $validated['name'];
     $user->email = $validated['email'];
