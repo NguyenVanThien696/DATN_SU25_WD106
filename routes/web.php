@@ -79,6 +79,17 @@ Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register.form');
 Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
 
+// Quên mật khẩu
+// Giao diện nhập email để đặt lại mật khẩu
+Route::get('/forgot-password', [AuthController::class, 'showForgotForm'])->name('password.request');
+// Gửi mail đặt lại mật khẩu
+Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
+
+// Giao diện đặt lại mật khẩu với token
+Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])->name('password.reset');
+// Gửi mật khẩu mới
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+
 // Routes dành cho người dùng đã đăng nhập
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [AuthController::class, 'showDashboard'])->name('dashboard.form');
@@ -170,14 +181,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Ví 
     Route::prefix('wallet')->name('wallet.')->group(function () {
-    // Giao dịch ví
+        // Giao dịch ví
         Route::get('transactions', [AdminWalletTransactionController::class, 'index'])->name('transactions.index');
         Route::get('transactions/{user}', [AdminWalletTransactionController::class, 'show'])->name('transactions.user');
-    // Nạp tiền admin
+        // Nạp tiền admin
         Route::get('deposit', [AdminWalletTransactionController::class, 'adminDepositForm'])->name('deposit.admin.form');
         Route::post('deposit', [AdminWalletTransactionController::class, 'adminDepositRedirect'])->name('deposit.admin.redirect');
         Route::get('deposit/callback', [AdminWalletTransactionController::class, 'adminDepositCallback'])->name('deposit.admin.callback');
-    // Quản lý yêu cầu hoàn tiền
+        // Quản lý yêu cầu hoàn tiền
         Route::get('refund-requests', [AdminRefundRequestController::class, 'index'])->name('refund-requests.index');
         Route::get('refund-requests/{id}', [AdminRefundRequestController::class, 'show'])->name('refund-requests.show');
         Route::put('refund-requests/{id}', [AdminRefundRequestController::class, 'update'])->name('refund-requests.update');
