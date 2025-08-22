@@ -122,51 +122,55 @@ public function index()
     {
         $voucher = Coupon::findOrFail($id);
         
-    $request->validate([
-        'code' => 'required|unique:coupons,code|max:50',
-        'discount_type' => 'required|in:percent,amount',
-        'discount_percent' => 'nullable|numeric|min:1|max:100|required_if:discount_type,percent',
-        'max_discount_amount' => 'nullable|numeric|min:0',
-        'min_order_amount' => 'nullable|numeric|min:0',
-        'discount_amount' => 'nullable|numeric|min:0|required_if:discount_type,amount',
-        'usage_limit' => 'nullable|integer|min:1',
-        'start_at' => 'nullable|date',
-        'end_at' => 'nullable|date|after_or_equal:start_at',
-        'status' => 'required|in:active,inactive,expired',
-    ], [
-        'code.required' => 'Mã giảm giá không được để trống.',
-        'code.unique' => 'Mã giảm giá đã tồn tại.',
-        'code.max' => 'Mã giảm giá không được vượt quá 50 ký tự.',
+        $request->validate([
+            'code' => 'required|string|max:50|unique:coupons,code,' . $id,
+            'discount_type' => 'required|in:percent,amount',
 
-        'discount_type.required' => 'Vui lòng chọn loại giảm giá.',
-        'discount_type.in' => 'Loại giảm giá không hợp lệ.',
+            'discount_percent' => 'nullable|numeric|min:1|max:100|required_if:discount_type,percent',
+            'discount_amount' => 'nullable|numeric|min:0|required_if:discount_type,amount',
 
-        'discount_percent.required_if' => 'Vui lòng nhập phần trăm giảm giá khi chọn loại phần trăm.',
-        'discount_percent.numeric' => 'Phần trăm giảm giá phải là số.',
-        'discount_percent.min' => 'Phần trăm giảm giá phải lớn hơn 0.',
-        'discount_percent.max' => 'Phần trăm giảm giá tối đa là 100.',
+            'max_discount_amount' => 'nullable|numeric|min:0',
+            'min_order_amount' => 'nullable|numeric|min:0',
+            'usage_limit' => 'nullable|integer|min:1',
 
-        'max_discount_amount.numeric' => 'Số tiền giảm tối đa phải là số.',
-        'max_discount_amount.min' => 'Số tiền giảm tối đa phải lớn hơn hoặc bằng 0.',
+            'start_at' => 'nullable|date',
+            'end_at' => 'nullable|date|after_or_equal:start_at',
 
-        'min_order_amount.numeric' => 'Giá trị đơn hàng tối thiểu phải là số.',
-        'min_order_amount.min' => 'Giá trị đơn hàng tối thiểu phải lớn hơn hoặc bằng 0.',
+            'status' => 'required|in:active,inactive,expired',
+        ], [
+            'code.required' => 'Mã giảm giá không được để trống.',
+            'code.string' => 'Mã giảm giá phải là chuỗi.',
+            'code.max' => 'Mã giảm giá không được vượt quá 50 ký tự.',
+            'code.unique' => 'Mã giảm giá đã tồn tại.',
 
-        'discount_amount.required_if' => 'Vui lòng nhập số tiền giảm khi chọn loại số tiền.',
-        'discount_amount.numeric' => 'Số tiền giảm phải là số.',
-        'discount_amount.min' => 'Số tiền giảm phải lớn hơn hoặc bằng 0.',
+            'discount_type.required' => 'Vui lòng chọn loại giảm giá.',
+            'discount_type.in' => 'Loại giảm giá không hợp lệ.',
 
-        'usage_limit.integer' => 'Số lượt sử dụng phải là số nguyên.',
-        'usage_limit.min' => 'Số lượt sử dụng ít nhất là 1.',
+            'discount_percent.required_if' => 'Vui lòng nhập phần trăm giảm giá khi chọn loại phần trăm.',
+            'discount_percent.numeric' => 'Phần trăm giảm giá phải là số.',
+            'discount_percent.min' => 'Phần trăm giảm giá phải lớn hơn 0.',
+            'discount_percent.max' => 'Phần trăm giảm giá tối đa là 100.',
 
-        'start_at.date' => 'Ngày bắt đầu không hợp lệ.',
-        'end_at.date' => 'Ngày kết thúc không hợp lệ.',
-        'end_at.after_or_equal' => 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.',
+            'discount_amount.required_if' => 'Vui lòng nhập số tiền giảm khi chọn loại số tiền.',
+            'discount_amount.numeric' => 'Số tiền giảm phải là số.',
+            'discount_amount.min' => 'Số tiền giảm phải lớn hơn hoặc bằng 0.',
 
-        'status.required' => 'Vui lòng chọn trạng thái.',
-        'status.in' => 'Trạng thái không hợp lệ.',
-    ]);
+            'max_discount_amount.numeric' => 'Số tiền giảm tối đa phải là số.',
+            'max_discount_amount.min' => 'Số tiền giảm tối đa phải lớn hơn hoặc bằng 0.',
 
+            'min_order_amount.numeric' => 'Giá trị đơn hàng tối thiểu phải là số.',
+            'min_order_amount.min' => 'Giá trị đơn hàng tối thiểu phải lớn hơn hoặc bằng 0.',
+
+            'usage_limit.integer' => 'Số lượt sử dụng phải là số nguyên.',
+            'usage_limit.min' => 'Số lượt sử dụng ít nhất là 1.',
+
+            'start_at.date' => 'Ngày bắt đầu không hợp lệ.',
+            'end_at.date' => 'Ngày kết thúc không hợp lệ.',
+            'end_at.after_or_equal' => 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.',
+
+            'status.required' => 'Vui lòng chọn trạng thái.',
+            'status.in' => 'Trạng thái không hợp lệ.',
+        ]);
 
         $voucher->code = $request->code;
         $voucher->discount_type = $request->discount_type;
