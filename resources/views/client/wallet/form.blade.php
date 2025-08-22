@@ -10,7 +10,7 @@
 
     <div class="mb-3">
         <label for="reason" class="form-label">Lý do trả hàng <span class="text-danger">*</span></label>
-        <textarea name="reason" id="reason" rows="4" class="form-control" required>{{ old('reason') }}</textarea>
+        <textarea name="reason" id="reason" rows="4" class="form-control">{{ old('reason') }}</textarea>
         @error('reason')
             <small class="text-danger">{{ $message }}</small>
         @enderror
@@ -18,7 +18,7 @@
 
     <div class="mb-3">
         <label for="image" class="form-label">Hình ảnh minh chứng <span class="text-danger">*</span></label>
-        <input type="file" name="image" id="image" accept="image/*" class="form-control" required>
+        <input type="file" name="image" id="image" accept="image/*" class="form-control">
         @error('image')
             <small class="text-danger">{{ $message }}</small>
         @enderror
@@ -29,7 +29,7 @@
     <div class="row">
         <div class="col-md-4 mb-3">
             <label for="original_bank_name" class="form-label">Ngân hàng <span class="text-danger">*</span></label>
-            <input type="text" name="original_bank_name" id="original_bank_name" class="form-control" required value="{{ old('original_bank_name') }}">
+            <input type="text" name="original_bank_name" id="original_bank_name" class="form-control" value="{{ old('original_bank_name') }}">
             @error('original_bank_name')
                 <small class="text-danger">{{ $message }}</small>
             @enderror
@@ -37,7 +37,7 @@
 
         <div class="col-md-4 mb-3">
             <label for="original_account_number" class="form-label">Số tài khoản <span class="text-danger">*</span></label>
-            <input type="text" name="original_account_number" id="original_account_number" class="form-control" required value="{{ old('original_account_number') }}">
+            <input type="text" name="original_account_number" id="original_account_number" class="form-control" value="{{ old('original_account_number') }}">
             @error('original_account_number')
                 <small class="text-danger">{{ $message }}</small>
             @enderror
@@ -45,7 +45,7 @@
 
         <div class="col-md-4 mb-3">
             <label for="original_account_name" class="form-label">Tên chủ tài khoản <span class="text-danger">*</span></label>
-            <input type="text" name="original_account_name" id="original_account_name" class="form-control" required value="{{ old('original_account_name') }}">
+            <input type="text" name="original_account_name" id="original_account_name" class="form-control" value="{{ old('original_account_name') }}">
             @error('original_account_name')
                 <small class="text-danger">{{ $message }}</small>
             @enderror

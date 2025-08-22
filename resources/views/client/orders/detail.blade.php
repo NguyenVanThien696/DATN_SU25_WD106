@@ -144,6 +144,14 @@
                 <div class="text-end fw-bold text-danger">
                     {{ number_format($item->price * $item->quantity, 0, ',', '.') }}đ
                 </div>
+                <div style="width: 140px;" class="text-end">
+                    @if ($order->status === 'completed' && !in_array($item->id, $reviewedOrderItemIds ?? []))
+                    <a href="{{ route('client.products.detail', $item->productVariant->product->id) }}#review"
+                        class="btn btn-sm btn-success">
+                        Đánh giá
+                    </a>
+                    @endif
+                </div>
             </div>
             @endforeach
         </div>
@@ -204,6 +212,7 @@
                         <span class="badge {{ $paymentClass }}">{{ $paymentText }}</span>
                     </td>
                 </tr>
+
             </table>
         </div>
     </div>

@@ -140,7 +140,7 @@
             <div class="row mt-5">
                 <div class="col-md-8">
                     <div class="card shadow-sm">
-                        <div class="card-header fw-bold">Biểu đồ doanh thu 7 ngày</div>
+                        <div class="card-header fw-bold">Biểu đồ doanh thu 30 ngày</div>
                         <div class="card-body">
                             <canvas id="revenueChart" height="150"></canvas>
                         </div>
@@ -186,12 +186,49 @@
                                 @endforeach
                             </div>
                         </div>
+                        <div class="card shadow-sm mt-4 rounded-4">
+                            <div class="card-header fw-bold bg-light d-flex align-items-center">
+                                <i class="fas fa-user-tie me-2 text-primary"></i>Top khách hàng mua nhiều nhất
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered m-0 text-center align-middle"
+                                        style="font-size: 13px;">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th style="width: 50px;">Top</th>
+                                                <th>Tên khách hàng</th>
+                                                <th>Số đơn hàng</th>
+                                                <th>Tổng chi tiêu</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse ($topCustomers as $index => $item)
+                                                <tr>
+                                                    <td>Top {{ $index + 1 }}</td>
+                                                    <td>{{ $item->user->name ?? 'Không rõ' }}</td>
+                                                    <td>{{ $item->total_orders }}</td>
+                                                    <td>{{ number_format($item->total_spent, 0, ',', '.') }}₫</td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="4" class="text-muted">Không có dữ liệu khách hàng.</td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+
                     </div>
                 </div>
+
             </div>
 
             <!-- Đơn hàng mới & Top sản phẩm -->
-            <div class="row mt-5">
+            <div class="row row-cols-1 row-cols-md-3 g-4 mt-5">
                 <!-- Đơn hàng mới nhất -->
                 <div class="col-md-6">
                     <div class="card shadow-sm rounded-4 h-100">
