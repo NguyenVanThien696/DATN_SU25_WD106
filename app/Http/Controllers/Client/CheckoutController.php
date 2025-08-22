@@ -10,21 +10,31 @@ use App\Models\Coupon;
 use App\Models\UserCoupon;
 
 use App\Http\Controllers\Controller;
+use App\Mail\OrderConfirmationMail;
+use App\Models\CartItem;
 use App\Models\PendingOrder;
 use App\Models\ShippingAddress;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
-use App\Mail\OrderConfirmationMail;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
+
+        //Danh sách id sản phẩm được chọn từ giỏ hàng
+        $selectedIdsString = $request->query('selected_items');
+
+        if (!$selectedIdsString) {
+            return redirect()->route('client.cart.index')->with('error', 'Vui lòng chọn sản phẩm để thanh toán');
+        }
+
+        $selectedIds = explode(',', $selectedIdsString);
 
         $cart = Cart::with([
             'items.variant.product',
@@ -36,7 +46,14 @@ class CheckoutController extends Controller
             return back()->with('error', 'Giỏ hàng của bạn đang trống.');
         }
 
-        $products = $cart->items;
+        $products = $cart->items->whereIn('id', $selectedIds);
+
+        foreach ($products as $item) {
+            $availableStock = $item->variant->stock ?? 0;
+            if ($item->quantity > $availableStock) {
+                return redirect()->route('client.cart.index')->with('error', 'Sản phẩm "' . $item->variant->product->name . '" không còn đủ số lượng tồn kho!');
+            }
+        }
 
         // Tính tổng tiền hàng
         $total = 0;
@@ -125,124 +142,147 @@ class CheckoutController extends Controller
             ]);
         }
 
+
         DB::beginTransaction();
+
         try {
             $userId = Auth::id();
-            $user   = Auth::user();
+            $user = Auth::user();
 
-            // Lấy giỏ hàng
             $cart = Cart::with('items.variant.product')->where('user_id', $userId)->first();
+            // dd(Auth::id());
+            // dd($cart);
             if (!$cart || $cart->items->isEmpty()) {
                 return back()->with('error', 'Giỏ hàng của bạn đang trống.');
             }
 
-            // Tính tiền
-            $total      = $cart->items->sum(fn($item) => $item->variant->product->price * $item->quantity);
-            $discount   = session('coupon.discount_amount', 0);
-            $finalTotal = $total - $discount;
+            $selectedIdsString = $request->input('selected_items');
+            if (!$selectedIdsString) {
+                return redirect()->route('client.cart.index')->with('error', 'Vui lòng chọn sản phẩm để thanh toán');
+            }
+            $selectedIds = explode(',', $selectedIdsString);
+            $cartItems = $cart->items->whereIn('id', $selectedIds);
+
+            $total = $cartItems->sum(function ($item) {
+                return $item->variant->product->price * $item->quantity;
+            });
+
+            $discount = session('coupon.discount_amount', 0);
             $shippingFee = $total >= 500000 ? 0 : 30000;
-            $finalTotalWithShipping = $finalTotal + $shippingFee;
+            $finalTotalWithShipping = $total - $discount + $shippingFee;
 
             $paymentMethod = $request->input('payment_method', 'cod');
-            $note = $shipFlag == '1' ? $request->input('shipping_note') : $request->input('c_order_notes');
 
-            // 4) VNPAY → giữ nguyên logic redirect
+            // Lấy thông tin người nhận
+            $name    = $request->input($request->has('ship_to_different') ? 'shipping_name' : 'name');
+            $email   = $request->input($request->has('ship_to_different') ? 'shipping_email' : 'email');
+            $phone   = $request->input($request->has('ship_to_different') ? 'shipping_phone' : 'phone');
+            $address = $request->input($request->has('ship_to_different') ? 'shipping_address' : 'address');
+            $note    = $request->input($request->has('ship_to_different') ? 'shipping_note' : 'c_order_notes');
+
             if ($paymentMethod === 'vnpay') {
-                $txnRef    = uniqid($userId . '_');
+                $txnRef = uniqid($userId . '_');
                 $orderCode = 'DH' . now()->format('HidmY') . strtoupper(Str::random(4));
 
                 PendingOrder::create([
-                    'txn_ref'     => $txnRef,
-                    'order_code'  => $orderCode,
-                    'user_id'     => $userId,
-                    'total_price' => $finalTotalWithShipping,
-                    'discount'    => $discount,
-                    'coupon_id'   => optional(Coupon::where('code', session('coupon.code'))->first())->id,
-                    'shipping_fee' => $shippingFee,
-                    'note'        => $note,
-                    'user_info'   => [
-                        'name'    => $request->input('name'),
-                        'email'   => $request->input('email'),
-                        'phone'   => $request->input('phone'),
-                        'address' => $request->input('address'),
+                    'txn_ref'         => $txnRef,
+                    'order_code'      => $orderCode,
+                    'user_id'         => $userId,
+                    'total_price'     => $finalTotalWithShipping,
+                    'discount'        => $discount,
+                    'coupon_id'       => optional(Coupon::where('code', session('coupon.code'))->first())->id,
+                    'shipping_fee'    => $shippingFee,
+                    'note'            => $note,
+                    'customer_name'   => $name,
+                    'customer_email'  => $email,
+                    'customer_phone'  => $phone,
+                    'customer_address' => $address,
+                    'user_info'       => [
+                        'name'    => $name,
+                        'email'   => $email,
+                        'phone'   => $phone,
+                        'address' => $address,
                     ],
-                    'cart_items'  => $cart->items->map(function ($item) {
+                    'cart_items'  => $cartItems->map(function ($item) {
                         return [
                             'product_variant_id' => $item->product_variant_id,
                             'quantity'           => $item->quantity,
                             'price'              => $item->variant->product->price,
                         ];
-                    })->toArray()
+                    })->toArray(),
                 ]);
 
-                $vnp_Url        = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-                $vnp_Returnurl  = route('client.checkout.vnpayReturn');
-                $vnp_TmnCode    = '1615H65S';
+                // Gọi tới VNPay
+                $vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+                $vnp_Returnurl = route('client.checkout.vnpayReturn');
+                $vnp_TmnCode = '1615H65S';
                 $vnp_HashSecret = config('services.vnpay.hash_secret');
-                $vnp_Amount     = (int)round($finalTotalWithShipping * 100);
+                $vnp_OrderInfo = 'payment';
+                $vnp_OrderType = 'billpayment';
+                $vnp_Amount = (int)round($finalTotalWithShipping * 100);
+                $vnp_Locale = 'vn';
+                $vnp_BankCode = 'NCB';
+                $vnp_IpAddr = $_SERVER['REMOTE_ADDR'];
+
                 $inputData = [
-                    "vnp_Version"   => "2.1.0",
-                    "vnp_TmnCode"   => $vnp_TmnCode,
-                    "vnp_Amount"    => $vnp_Amount,
-                    "vnp_Command"   => "pay",
+                    "vnp_Version"    => "2.1.0",
+                    "vnp_TmnCode"    => $vnp_TmnCode,
+                    "vnp_Amount"     => $vnp_Amount,
+                    "vnp_Command"    => "pay",
                     "vnp_CreateDate" => date('YmdHis'),
-                    "vnp_CurrCode"  => "VND",
-                    "vnp_IpAddr"    => $_SERVER['REMOTE_ADDR'] ?? request()->ip(),
-                    "vnp_Locale"    => "vn",
-                    "vnp_OrderInfo" => "payment",
-                    "vnp_OrderType" => "billpayment",
-                    "vnp_ReturnUrl" => $vnp_Returnurl,
-                    "vnp_TxnRef"    => $txnRef,
-                    "vnp_BankCode"  => "NCB",
+                    "vnp_CurrCode"   => "VND",
+                    "vnp_IpAddr"     => $vnp_IpAddr,
+                    "vnp_Locale"     => $vnp_Locale,
+                    "vnp_OrderInfo"  => $vnp_OrderInfo,
+                    "vnp_OrderType"  => $vnp_OrderType,
+                    "vnp_ReturnUrl"  => $vnp_Returnurl,
+                    "vnp_TxnRef"     => $txnRef,
                 ];
+
+                if (!empty($vnp_BankCode)) {
+                    $inputData['vnp_BankCode'] = $vnp_BankCode;
+                }
+
                 ksort($inputData);
                 $query = "";
                 $hashdata = "";
                 $i = 0;
                 foreach ($inputData as $key => $value) {
                     $hashdata .= ($i ? '&' : '') . urlencode($key) . "=" . urlencode($value);
-                    $query    .= urlencode($key) . "=" . urlencode($value) . '&';
+                    $query .= urlencode($key) . "=" . urlencode($value) . '&';
                     $i++;
                 }
+
                 $vnp_Url .= "?" . $query;
                 if ($vnp_HashSecret) {
-                    $vnp_Url .= 'vnp_SecureHash=' . hash_hmac('sha512', $hashdata, $vnp_HashSecret);
+                    $vnpSecureHash = hash_hmac('sha512', $hashdata, $vnp_HashSecret);
+                    $vnp_Url .= 'vnp_SecureHash=' . $vnpSecureHash;
                 }
 
                 DB::commit();
                 return redirect()->to($vnp_Url);
             }
-
             // 5) COD → tạo Order + Items
             $email = $shipFlag === '1'
                 ? $request->input('shipping_email')
                 : $request->input('email');
 
             $orderCode = 'DH' . now()->format('HidmY') . strtoupper(Str::random(4));
-            if ($shipFlag === '1') {
-                $customerName    = $request->input('shipping_name');
-                $customerPhone   = $request->input('shipping_phone');
-                $customerAddress = $request->input('shipping_address');
-            } else {
-                $customerName    = $request->input('name');
-                $customerPhone   = $request->input('phone');
-                $customerAddress = $request->input('address');
-            }
             $order = Order::create([
-                'user_id'        => $userId,
-                'order_code'     => $orderCode,
-                'email'          => $email,
-                'total_price'    => $finalTotalWithShipping,
-                'shipping_fee'   => $shippingFee,
-                'discount'       => $discount,
-                'coupon_id'      => optional(Coupon::where('code', session('coupon.code'))->first())->id,
-                'status'         => 'pending',
-                'note'           => $note,
-                'payment_method' => 'cod',
-                'payment_status' => 'unpaid',
-                'customer_name'    => $customerName,
-                'customer_phone'   => $customerPhone,
-                'customer_address' => $customerAddress,
+                'user_id'         => $userId,
+                'order_code'      => $orderCode,
+                'total_price'     => $finalTotalWithShipping,
+                'shipping_fee'    => $shippingFee,
+                'discount'        => $discount,
+                'coupon_id'       => optional(Coupon::where('code', session('coupon.code'))->first())->id,
+                'status'          => 'pending',
+                'note'            => $note,
+                'payment_method'  => 'cod',
+                'payment_status'  => 'unpaid',
+                'customer_name'   => $name,
+                'customer_email'  => $email,
+                'customer_phone'  => $phone,
+                'customer_address' => $address,
             ]);
 
             $note = $shipFlag === '1' ? $request->input('shipping_note') : $request->input('c_order_notes');
@@ -271,15 +311,18 @@ class CheckoutController extends Controller
                 ]);
             }
 
-            foreach ($cart->items as $item) {
+            foreach ($cartItems as $item) {
+                $variant = $item->variant;
+
                 OrderItem::create([
                     'order_id'           => $order->id,
                     'product_variant_id' => $item->product_variant_id,
+                    'product_name'       => $variant->product->name ?? '',
+                    'variant_name'       => ($variant->color->name ?? '-') . ' / ' . ($variant->size->name ?? '-'),
                     'quantity'           => $item->quantity,
-                    'price'              => $item->variant->product->price,
+                    'price'              => $variant->product->price,
                 ]);
 
-                $variant = $item->variant;
                 $variant->stock -= $item->quantity;
                 if ($variant->stock < 0) {
                     throw new \Exception('Sản phẩm "' . $variant->product->name . '" không đủ hàng trong kho.');
@@ -287,12 +330,9 @@ class CheckoutController extends Controller
                 $variant->save();
             }
 
-            // Coupon + clear cart
             $this->saveUsedCoupon($userId);
-            $cart->items()->delete();
-            $cart->delete();
+            CartItem::whereIn('id', $selectedIds)->delete();
             session()->forget('coupon');
-
             // 6) GỬI EMAIL (COD) sau commit
             // Load đủ quan hệ cho email hiển thị đúng chi tiết SP
             $order->load([
@@ -316,6 +356,7 @@ class CheckoutController extends Controller
             } else {
                 \Log::warning('Skip order mail (COD) due to invalid/empty email', ['email' => $recipientEmail, 'order_id' => $order->id]);
             }
+
 
             DB::commit();
             return redirect()->route('client.checkout.thankyou')->with('success', 'Đặt hàng thành công!');
@@ -414,12 +455,15 @@ class CheckoutController extends Controller
 
     public function vnpayReturn(Request $request)
     {
+        // dd($request->all());
         $vnp_HashSecret = config('services.vnpay.hash_secret');
         $inputData = $request->all();
         $vnp_SecureHash = $inputData['vnp_SecureHash'] ?? '';
 
-        unset($inputData['vnp_SecureHash'], $inputData['vnp_SecureHashType']);
+        unset($inputData['vnp_SecureHash']);
+        unset($inputData['vnp_SecureHashType']);
         ksort($inputData);
+
         $hashDataArr = [];
         foreach ($inputData as $key => $value) {
             $hashDataArr[] = $key . '=' . $value;
@@ -427,58 +471,88 @@ class CheckoutController extends Controller
         $hashData = implode('&', $hashDataArr);
         $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
 
+        // Kiểm tra chữ ký + mã phản hồi thành công
         if ($secureHash === $vnp_SecureHash && $request->vnp_ResponseCode == '00') {
             $txnRef = $request->vnp_TxnRef ?? null;
             $pendingOrder = PendingOrder::where('txn_ref', $txnRef)->first();
+
             if (!$pendingOrder) {
                 return redirect()->route('client.checkout.index')->with('error', 'Không tìm thấy thông tin đơn hàng.');
             }
 
             DB::beginTransaction();
             try {
+                // Sửa lỗi: thiếu thông tin khách hàng
+                // Kiểm tra lại các giá trị
+                if (
+                    !$pendingOrder->customer_name ||
+                    !$pendingOrder->customer_email ||
+                    !$pendingOrder->customer_phone ||
+                    !$pendingOrder->customer_address
+                ) {
+                    throw new \Exception('Thông tin khách hàng trong pending order bị thiếu.');
+                }
+
                 $order = Order::create([
-                    'user_id'        => $pendingOrder['user_id'],
-                    'order_code'     => $pendingOrder->order_code,
-                    'email'          => data_get($pendingOrder->user_info, 'email'), // thêm email
-                    'total_price'    => $pendingOrder['total_price'],
-                    'discount'       => $pendingOrder['discount'] ?? 0,
-                    'shipping_fee'   => $pendingOrder['shipping_fee'] ?? 0,
-                    'status'         => 'pending',
-                    'note'           => $pendingOrder['note'],
-                    'payment_method' => 'vnpay',
-                    'payment_status' => 'paid'
+                    'user_id'         => $pendingOrder->user_id,
+                    'order_code'      => $pendingOrder->order_code,
+                    'total_price'     => $pendingOrder->total_price,
+                    'discount'        => $pendingOrder->discount ?? 0,
+                    'shipping_fee'    => $pendingOrder->shipping_fee ?? 0,
+                    'status'          => 'pending',
+                    'note'            => $pendingOrder->note,
+                    'payment_method'  => 'vnpay',
+                    'payment_status'  => 'paid',
+                    'customer_name'   => $pendingOrder->customer_name,
+                    'customer_email'  => $pendingOrder->customer_email,
+                    'customer_phone'  => $pendingOrder->customer_phone,
+                    'customer_address' => $pendingOrder->customer_address,
                 ]);
 
-                $user = User::find($pendingOrder['user_id']);
-                $user->update($pendingOrder['user_info']);
+                // Cập nhật user info nếu có
+                $user = User::find($pendingOrder->user_id);
+                if ($user && $pendingOrder->user_info) {
+                    $user->update($pendingOrder->user_info);
+                }
 
-                foreach ($pendingOrder['cart_items'] as $item) {
+                // Sửa lỗi: dùng $variant trước khi gọi find
+                foreach ($pendingOrder->cart_items as $item) {
+                    $variant = \App\Models\ProductVariant::with('product', 'color', 'size')->find($item['product_variant_id']);
+
                     OrderItem::create([
                         'order_id'           => $order->id,
                         'product_variant_id' => $item['product_variant_id'],
+                        'product_name'       => $variant->product->name ?? '',
+                        'variant_name'       => ($variant->color->name ?? '-') . ' / ' . ($variant->size->name ?? '-'),
                         'quantity'           => $item['quantity'],
                         'price'              => $item['price'],
                     ]);
 
-                    $variant = \App\Models\ProductVariant::find($item['product_variant_id']);
                     $variant->stock -= $item['quantity'];
                     if ($variant->stock < 0) {
-                        throw new \Exception('Sản phẩm không đủ hàng trong kho.');
+                        throw new \Exception('Sản phẩm "' . $variant->product->name . '" không đủ hàng trong kho.');
                     }
                     $variant->save();
                 }
 
-                $this->saveUsedCoupon($pendingOrder['user_id']);
-
-                // Xoá cart & pending + session coupon
-                $cart = Cart::where('user_id', $pendingOrder['user_id'])->first();
+                // Áp dụng coupon và xóa giỏ hàng
+                $this->saveUsedCoupon($pendingOrder->user_id);
+                $cart = Cart::where('user_id', $pendingOrder->user_id)->with('items')->first();
                 if ($cart) {
-                    $cart->items()->delete();
-                    $cart->delete();
+                    // Lấy danh sách variant ID đã mua
+                    $purchasedVariantIds = collect($pendingOrder->cart_items)->pluck('product_variant_id')->all();
+
+                    // Xoá những cart item trùng với sản phẩm đã mua
+                    $cart->items()->whereIn('product_variant_id', $purchasedVariantIds)->delete();
+
+                    // Nếu không còn item nào thì xoá giỏ
+                    if ($cart->items()->count() === 0) {
+                        $cart->delete();
+                    }
                 }
+
                 session()->forget('coupon');
                 $pendingOrder->delete();
-
                 // ====== GỬI EMAIL (VNPAY) – chỉ thêm phần dưới này ======
                 $recipientEmail = $user->email ?? null;
 
