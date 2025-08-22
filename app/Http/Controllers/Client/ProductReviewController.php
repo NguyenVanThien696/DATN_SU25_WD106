@@ -40,9 +40,7 @@ class ProductReviewController extends Controller
         // Kiểm tra đã đánh giá sản phẩm này trong đơn hàng này chưa
         $alreadyReviewed = ProductReview::where('product_id', $productId)
             ->where('user_id', $userId)
-            ->whereHas('orderItem', function ($query) use ($orderItem) {
-                $query->where('order_id', $orderItem->order_id);
-            })
+            ->where('order_item_id', $orderItemId)
             ->exists();
 
         if ($alreadyReviewed) {

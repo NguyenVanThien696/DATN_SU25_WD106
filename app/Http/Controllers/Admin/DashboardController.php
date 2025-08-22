@@ -30,14 +30,14 @@ class DashboardController extends Controller
 
         // 4. Doanh thu hôm nay
         $revenueToday = Order::whereDate('created_at', today())
-        ->where('status', 'completed') // Chỉ tính doanh thu từ đơn hàng đã hoàn thành
-        ->sum('total_price');
+            ->where('status', 'completed') // Chỉ tính doanh thu từ đơn hàng đã hoàn thành
+            ->sum('total_price');
 
         // 5. Doanh thu tháng hiện tại
         $revenueMonth = Order::whereMonth('created_at', now()->month)
-                     ->whereYear('created_at', now()->year)
-                     ->where('status', 'completed')
-                     ->sum('total_price');
+            ->whereYear('created_at', now()->year)
+            ->where('status', 'completed')
+            ->sum('total_price');
 
         // 6. Tổng khách hàng (role = 2 là khách)
         $totalCustomers = User::where('role', 2)->count();
@@ -54,15 +54,21 @@ class DashboardController extends Controller
         // 10. Đơn hàng mới nhất
         $recentOrders = Order::with('user')->latest()->take(5)->get();
 
-        // 11. Biểu đồ doanh thu 7 ngày
-        $revenueLabels = collect(range(6, 0))->map(function ($i) {
-            return Carbon::today()->subDays($i)->format('d/m');
-        })->toArray();
+        // 11. Biểu đồ doanh thu 30 ngày
+        $revenueLabels = [];
+        $revenueData = [];
 
-        $revenueData = collect(range(6, 0))->map(function ($i) {
-            return Order::whereDate('created_at', Carbon::today()->subDays($i))->sum('total_price');
-        })->toArray();
+        for ($i = 29; $i >= 0; $i--) {
+            $date = Carbon::today()->subDays($i);
+            $label = $date->format('d/m');
+            $revenueLabels[] = $label;
 
+            $revenue = Order::whereDate('created_at', $date)
+                ->where('status', 'completed') // Chỉ tính đơn hoàn thành
+                ->sum('total_price');
+
+            $revenueData[] = $revenue;
+        }
         // 12. Tình trạng đơn hàng theo trạng thái
         $orderStatusChart = Order::select('status', DB::raw('COUNT(*) as count'))
             ->groupBy('status')
@@ -82,6 +88,16 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+        // 15. Top 5 khách hàng mua nhiều nhất (theo tổng tiền đơn hàng đã hoàn thành)
+        $topCustomers = Order::where('status', 'completed')
+            ->select('user_id', DB::raw('SUM(total_price) as total_spent'), DB::raw('COUNT(*) as total_orders'))
+            ->groupBy('user_id')
+            ->orderByDesc('total_spent')
+            ->take(5)
+            ->with('user') // eager load để tránh N+1 query
+            ->get()
+            ->filter(fn($order) => $order->user); // lọc những đơn không có user (phòng trường hợp bị xóa)
+
         // 15. Truyền ra view
         return view('admin.admin-home', compact(
             'totalOrders',
@@ -98,7 +114,8 @@ class DashboardController extends Controller
             'revenueData',
             'orderStatusChart',
             'topProducts',
-            'totalSold'
+            'totalSold',
+            'topCustomers',
         ));
     }
 }

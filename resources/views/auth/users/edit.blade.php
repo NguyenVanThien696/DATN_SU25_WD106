@@ -18,8 +18,7 @@
 
                     <div class="mb-3">
                         <label class="form-label">Họ Tên</label>
-                        <input type="text" name="name" class="form-control" value="{{ old('name', $user->name) }}"
-                            required>
+                        <input type="text" name="name" class="form-control" value="{{ old('name', $user->name) }}">
                         @error('name')
                         <small class="text-danger">{{ $message }}</small>
                         @enderror
@@ -27,8 +26,7 @@
 
                     <div class="mb-3">
                         <label class="form-label">Email</label>
-                        <input type="email" name="email" class="form-control" value="{{ old('email', $user->email) }}"
-                            required>
+                        <input type="email" name="email" class="form-control" value="{{ old('email', $user->email) }}">
                         @error('email')
                         <small class="text-danger">{{ $message }}</small>
                         @enderror
@@ -36,8 +34,7 @@
 
                     <div class="mb-3">
                         <label class="form-label">Số điện thoại</label>
-                        <input type="text" name="phone" class="form-control" value="{{ old('phone', $user->phone) }}"
-                            required>
+                        <input type="text" name="phone" class="form-control" value="{{ old('phone', $user->phone) }}">
                         @error('phone')
                         <small class="text-danger">{{ $message }}</small>
                         @enderror
@@ -46,7 +43,7 @@
                     <div class="mb-3">
                         <label class="form-label">Địa chỉ</label>
                         <input type="text" name="address" class="form-control"
-                            value="{{ old('address', $user->address) }}" required>
+                            value="{{ old('address', $user->address) }}">
                         @error('address')
                         <small class="text-danger">{{ $message }}</small>
                         @enderror

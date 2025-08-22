@@ -3,195 +3,195 @@
 @section('title', 'Admin - Chi tiết đơn hàng')
 
 @section('content')
-<div class="container my-5">
-    <h2 class="mb-4 text-center">Chi tiết đơn hàng số {{ $order->id }}</h2>
+    <div class="container my-5">
+        <h2 class="mb-4 text-center">Chi tiết đơn hàng số {{ $order->id }}</h2>
 
-    <div class="card mb-4 shadow">
-        <div class="card-header bg-primary text-white fw-semibold">
-            <i class="bi bi-person-circle me-2"></i>Thông tin khách hàng
-        </div>
-        <div class="card-body p-0">
-            <table class="table table-bordered table-striped mb-0">
-                <tbody>
-                    <tr>
-                        <th class="w-25">Họ tên:</th>
-                        <td>{{ $order->shippingAddress->name ?? $order->user->name }}</td>
-                    </tr>
-                    <tr>
-                        <th>Email:</th>
-                        <td>{{ $order->user->email }}</td>
-                    </tr>
-                    <tr>
-                        <th>Điện thoại:</th>
-                        <td>{{ $order->shippingAddress->phone ?? $order->user->phone }}</td>
-                    </tr>
-                    <tr>
-                        <th>Địa chỉ:</th>
-                        <td>{{ $order->shippingAddress->address ?? $order->user->address }}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-
-    <div class="card mb-4 shadow">
-        <div class="card-header bg-success text-white fw-semibold">
-            <i class="bi bi-receipt me-2"></i>Thông tin đơn hàng
-        </div>
-        <div class="card-body p-0">
-            @php
-            $statusClass = match($order->status) {
-            'pending' => 'bg-warning',
-            'confirmed' => 'bg-primary text-white',
-            'processing' => 'bg-info',
-            'completed' => 'bg-success',
-            'cancelled' => 'bg-danger',
-            'cancelled_paid' => 'bg-warning text-dark',
-            'refunded' => 'bg-success',
-            'delivery_failed' => 'bg-danger',
-            default => 'bg-secondary',
-            };
-
-
-
-            $statusText = match($order->status) {
-            'pending' => 'Đang chờ xử lí',
-            'confirmed' => 'Đã xác nhận',
-            'processing' => 'Đang chuẩn bị',
-            'shipping' => 'Đang giao hàng',
-            'delivered' => 'Đã giao (chờ khách xác nhận)',
-            'completed' => 'Đã hoàn tất',
-            'cancelled' => 'Đã hủy',
-            'cancelled_paid' => 'Đã hủy (chờ hoàn tiền)',
-            'refunded' => 'Đã hoàn tiền',
-            'delivery_failed' => 'Giao thất bại',
-            default => 'Không xác định',
-            };
-
-            $paymentClass = match($order->payment_method) {
-            'cod' => 'bg-warning',
-            'vnpay' => 'bg-primary',
-            default => 'bg-secondary',
-            };
-
-            $paymentText = match($order->payment_method) {
-            'cod' => 'Thanh toán khi nhận hàng',
-            'vnpay' => 'Thanh toán VNPay',
-            default => 'Không xác định',
-            };
-            $paymentStatusClass = match($order->payment_status) {
-            'paid' => 'bg-success',
-            'unpaid' => 'bg-warning',
-            'refunded' => 'bg-success',
-            default => 'bg-secondary',
-            };
-
-            $paymentStatusText = match($order->payment_status) {
-            'paid' => 'Đã thanh toán',
-            'unpaid' => 'Chưa thanh toán',
-            'refunded' => 'Đã hoàn tiền',
-            default => 'Không xác định',
-            };
-            @endphp
-
-            <table class="table table-bordered table-striped mb-0">
-                <tbody>
-                    <tr>
-                        <th class="w-25">Ngày đặt:</th>
-                        <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
-                    </tr>
-                    <tr>
-                        <th>Trạng thái:</th>
-                        <td><span class="badge {{ $statusClass }}">{{ $statusText }}</span></td>
-                    </tr>
-                    <tr>
-                        <th>Phương thức thanh toán:</th>
-                        <td><span class="badge {{ $paymentClass }}">{{ $paymentText }}</span></td>
-                    </tr>
-                    <tr>
-                        <th>Trạng thái thanh toán:</th>
-                        <td><span class="badge {{ $paymentStatusClass }}">{{ $paymentStatusText }}</span></td>
-                    </tr>
-                    <tr>
-                        <th class="w-25">Ghi chú</th>
-                        <td>{{ $order->shippingAddress->note ?? $order->user->note }}</td>
-                    </tr>
-                    <tr>
-                        <th>Tổng tiền:</th>
-                        <td class="text-danger fw-bold fs-5">{{ number_format($order->total_price, 0, ',', '.') }}đ</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-
-    <div class="card shadow">
-        <div class="card-header bg-info text-white fw-semibold">
-            <i class="bi bi-box-seam me-2"></i>Sản phẩm trong đơn hàng
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover align-middle mb-0">
-                    <thead class="table-light text-center">
+        <div class="card mb-4 shadow">
+            <div class="card-header bg-primary text-white fw-semibold">
+                <i class="bi bi-person-circle me-2"></i>Thông tin khách hàng
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-bordered table-striped mb-0">
+                    <tbody>
                         <tr>
-                            <th>#</th>
-                            <th>Ảnh</th>
-                            <th>Tên sản phẩm</th>
-                            <th>Phân loại</th>
-                            <th>Đơn giá</th>
-                            <th>Số lượng</th>
-                            <th>Thành tiền</th>
+                            <th class="w-25">Họ tên:</th>
+                            <td>{{ $order->shippingAddress->name ?? $order->user->name }}</td>
                         </tr>
-                    </thead>
-                    <tbody class="text-center">
-                        @foreach ($order->orderItems as $index => $item)
                         <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>
-                                <img src="{{ asset('storage/' . $item->productVariant->product->image) }}" alt="Ảnh SP"
-                                    width="70" class="rounded border">
-                            </td>
-                            <td>{{ $item->product_name ?? ($item->productVariant->product->name ?? 'Sản phẩm đã bị xóa') }}
-                            </td>
-                            <td>{{ $item->variant_name ?? (($item->productVariant->color->name ?? '-') . ' / ' . ($item->productVariant->size->name ?? '-')) }}
-                            </td>
-                            <td>{{ number_format($item->price, 0, ',', '.') }}đ</td>
-                            <td>{{ $item->quantity }}</td>
-                            <td class="text-danger fw-semibold">
-                                {{ number_format($item->price * $item->quantity, 0, ',', '.') }}đ
-                            </td>
+                            <th>Email:</th>
+                            <td>{{ $order->user->email }}</td>
                         </tr>
-                        @endforeach
+                        <tr>
+                            <th>Điện thoại:</th>
+                            <td>{{ $order->shippingAddress->phone ?? $order->user->phone }}</td>
+                        </tr>
+                        <tr>
+                            <th>Địa chỉ:</th>
+                            <td>{{ $order->shippingAddress->address ?? $order->user->address }}</td>
+                        </tr>
                     </tbody>
-                    <tfoot class="table-light fw-bold text-center">
-
-                        <tr>
-                            <td colspan="6">Phí vận chuyển</td>
-                            <td>{{ number_format($order->shipping_fee, 0, ',', '.') }}đ</td>
-                        </tr>
-
-                        <tr>
-                            <td colspan="6" class="text-danger fw-semibold">Giảm giá</td>
-                            <td class="text-danger">- {{ number_format($order->discount, 0, ',', '.') }}đ</td>
-                        </tr>
-                        <tr>
-                            <td colspan="6">Tổng cộng</td>
-                            <td class="text-danger">
-                                {{ number_format($order->total_price, 0, ',', '.') }}đ
-                            </td>
-                        </tr>
-                    </tfoot>
                 </table>
             </div>
         </div>
-    </div>
 
-    <div class="text-end mt-4">
-        <a href="{{ route('admin.order.index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
-        </a>
+
+        <div class="card mb-4 shadow">
+            <div class="card-header bg-success text-white fw-semibold">
+                <i class="bi bi-receipt me-2"></i>Thông tin đơn hàng
+            </div>
+            <div class="card-body p-0">
+                @php
+                    $statusClass = match ($order->status) {
+                        'pending' => 'bg-warning',
+                        'confirmed' => 'bg-primary text-white',
+                        'processing' => 'bg-info',
+                        'completed' => 'bg-success',
+                        'cancelled' => 'bg-danger',
+                        'cancelled_paid' => 'bg-warning text-dark',
+                        'refunded' => 'bg-success',
+                        'delivery_failed' => 'bg-danger',
+                        default => 'bg-secondary',
+                    };
+
+
+
+                    $statusText = match ($order->status) {
+                        'pending' => 'Đang chờ xử lí',
+                        'confirmed' => 'Đã xác nhận',
+                        'processing' => 'Đang chuẩn bị',
+                        'shipping' => 'Đang giao hàng',
+                        'delivered' => 'Đã giao (chờ khách xác nhận)',
+                        'completed' => 'Đã hoàn tất',
+                        'cancelled' => 'Đã hủy',
+                        'cancelled_paid' => 'Đã hủy (chờ hoàn tiền)',
+                        'refunded' => 'Đã hoàn tiền',
+                        'delivery_failed' => 'Giao thất bại',
+                        default => 'Không xác định',
+                    };
+
+                    $paymentClass = match ($order->payment_method) {
+                        'cod' => 'bg-warning',
+                        'vnpay' => 'bg-primary',
+                        default => 'bg-secondary',
+                    };
+
+                    $paymentText = match ($order->payment_method) {
+                        'cod' => 'Thanh toán khi nhận hàng',
+                        'vnpay' => 'Thanh toán VNPay',
+                        default => 'Không xác định',
+                    };
+                    $paymentStatusClass = match ($order->payment_status) {
+                        'paid' => 'bg-success',
+                        'unpaid' => 'bg-warning',
+                        'refunded' => 'bg-success',
+                        default => 'bg-secondary',
+                    };
+
+                    $paymentStatusText = match ($order->payment_status) {
+                        'paid' => 'Đã thanh toán',
+                        'unpaid' => 'Chưa thanh toán',
+                        'refunded' => 'Đã hoàn tiền',
+                        default => 'Không xác định',
+                    };
+                @endphp
+
+                <table class="table table-bordered table-striped mb-0">
+                    <tbody>
+                        <tr>
+                            <th class="w-25">Ngày đặt:</th>
+                            <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
+                        </tr>
+                        <tr>
+                            <th>Trạng thái:</th>
+                            <td><span class="badge {{ $statusClass }}">{{ $statusText }}</span></td>
+                        </tr>
+                        <tr>
+                            <th>Phương thức thanh toán:</th>
+                            <td><span class="badge {{ $paymentClass }}">{{ $paymentText }}</span></td>
+                        </tr>
+                        <tr>
+                            <th>Trạng thái thanh toán:</th>
+                            <td><span class="badge {{ $paymentStatusClass }}">{{ $paymentStatusText }}</span></td>
+                        </tr>
+                        <tr>
+                            <th class="w-25">Ghi chú</th>
+                            <td>{{ $order->shippingAddress->note ?? $order->user->note }}</td>
+                        </tr>
+                        <tr>
+                            <th>Tổng tiền:</th>
+                            <td class="text-danger fw-bold fs-5">{{ number_format($order->total_price, 0, ',', '.') }}đ</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <div class="card shadow">
+            <div class="card-header bg-info text-white fw-semibold">
+                <i class="bi bi-box-seam me-2"></i>Sản phẩm trong đơn hàng
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle mb-0">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th>#</th>
+                                <th>Ảnh</th>
+                                <th>Tên sản phẩm</th>
+                                <th>Phân loại</th>
+                                <th>Đơn giá</th>
+                                <th>Số lượng</th>
+                                <th>Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-center">
+                            @foreach ($order->orderItems as $index => $item)
+                                <tr>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>
+                                        <img src="{{ asset('storage/' . $item->productVariant->product->image) }}" alt="Ảnh SP"
+                                            width="70" class="rounded border">
+                                    </td>
+                                    <td>{{ $item->product_name ?? ($item->productVariant->product->name ?? 'Sản phẩm đã bị xóa') }}
+                                    </td>
+                                    <td>{{ $item->variant_name ?? (($item->productVariant->color->name ?? '-') . ' / ' . ($item->productVariant->size->name ?? '-')) }}
+                                    </td>
+                                    <td>{{ number_format($item->price, 0, ',', '.') }}đ</td>
+                                    <td>{{ $item->quantity }}</td>
+                                    <td class="text-danger fw-semibold">
+                                        {{ number_format($item->price * $item->quantity, 0, ',', '.') }}đ
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                        <tfoot class="table-light fw-bold text-center">
+
+                            <tr>
+                                <td colspan="6">Phí vận chuyển</td>
+                                <td>{{ number_format($order->shipping_fee, 0, ',', '.') }}đ</td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="6" class="text-danger fw-semibold">Giảm giá</td>
+                                <td class="text-danger">- {{ number_format($order->discount, 0, ',', '.') }}đ</td>
+                            </tr>
+                            <tr>
+                                <td colspan="6">Tổng cộng</td>
+                                <td class="text-danger">
+                                    {{ number_format($order->total_price, 0, ',', '.') }}đ
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-end mt-4">
+            <a href="{{ route('admin.order.index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+            </a>
+        </div>
     </div>
-</div>
 @endsection
