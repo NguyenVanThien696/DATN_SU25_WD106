@@ -382,15 +382,17 @@ class CheckoutController extends Controller
     public function apply(Request $request)
     {
         $request->validate([
-            'coupon_code' => 'required|string'
+            'coupon_code'    => 'required|string',
+            'selected_items' => ['required', 'string', 'regex:/^\d+(,\d+)*$/'], // CSV id
+        ], [
+            'selected_items.required' => 'Vui lòng chọn sản phẩm để áp dụng mã giảm.',
+            'selected_items.regex'    => 'Danh sách sản phẩm không hợp lệ.',
         ]);
 
         $coupon = Coupon::where('code', $request->coupon_code)->first();
-
         if (!$coupon) {
             return back()->withInput()->with('error', 'Mã giảm giá không hợp lệ.');
         }
-
         if ($coupon->status !== 'active') {
             return back()->withInput()->with('error', 'Mã giảm giá không còn hoạt động.');
         }
@@ -399,7 +401,6 @@ class CheckoutController extends Controller
         if (($coupon->start_at && $now->lt($coupon->start_at)) || ($coupon->end_at && $now->gt($coupon->end_at))) {
             return back()->withInput()->with('error', 'Mã giảm giá hiện không còn hiệu lực.');
         }
-
         if (!is_null($coupon->usage_limit) && $coupon->used >= $coupon->usage_limit) {
             return back()->withInput()->with('error', 'Mã giảm giá đã được sử dụng hết.');
         }
@@ -408,20 +409,34 @@ class CheckoutController extends Controller
         $used = UserCoupon::where('user_id', $user->id)
             ->where('coupon_id', $coupon->id)
             ->exists();
-
         if ($used) {
             return back()->withInput()->with('error', 'Bạn đã sử dụng mã giảm giá này rồi.');
         }
 
         $cart = Cart::with('items.variant.product')->where('user_id', $user->id)->first();
-
         if (!$cart || $cart->items->isEmpty()) {
             return back()->with('error', 'Giỏ hàng của bạn đang trống.');
         }
 
-        $cartTotal = $cart->items->sum(function ($item) {
-            return $item->variant->product->price * $item->quantity;
+        $selectedIds = collect(explode(',', $request->input('selected_items')))
+            ->map(fn($id) => (int) trim($id))
+            ->filter()
+            ->unique()
+            ->values();
+
+        $selectedItems = $cart->items->whereIn('id', $selectedIds->all());
+        if ($selectedItems->isEmpty()) {
+            return back()->withInput()->with('error', 'Vui lòng chọn sản phẩm để áp dụng mã giảm.');
+        }
+
+        $cartTotal = $selectedItems->sum(function ($item) {
+            $unitPrice = $item->variant->product->price;
+            return $unitPrice * $item->quantity;
         });
+
+        if ($cartTotal <= 0) {
+            return back()->withInput()->with('error', 'Tổng tiền sản phẩm được chọn không hợp lệ.');
+        }
 
         if (!is_null($coupon->min_order_amount) && $cartTotal < $coupon->min_order_amount) {
             return back()->withInput()->with('error', 'Đơn hàng cần tối thiểu ' . number_format($coupon->min_order_amount) . 'đ để áp dụng mã giảm giá này.');
@@ -429,28 +444,24 @@ class CheckoutController extends Controller
 
         if ($coupon->discount_type === 'percent') {
             $discount = round($cartTotal * ($coupon->discount_percent / 100));
-
             if (!is_null($coupon->max_discount_amount)) {
                 $discount = min($discount, $coupon->max_discount_amount);
             }
         } else {
             $discount = $coupon->discount_amount;
         }
-
         $discount = min($discount, $cartTotal);
 
-        session()->forget('coupon');
         session()->put('coupon', [
-            'code' => $coupon->code,
-            'type' => $coupon->discount_type,
-            'discount_value' => $coupon->discount_type === 'percent' ? $coupon->discount_percent : $coupon->discount_amount,
-            'discount_amount' => $discount,
+            'code'             => $coupon->code,
+            'type'             => $coupon->discount_type,
+            'discount_value'   => $coupon->discount_type === 'percent' ? $coupon->discount_percent : $coupon->discount_amount,
+            'discount_amount'  => $discount,
+            'applied_item_ids' => $selectedIds->all(),
         ]);
 
         return back()->withInput()->with('success', 'Áp dụng mã giảm giá thành công!');
     }
-
-
 
 
     public function vnpayReturn(Request $request)

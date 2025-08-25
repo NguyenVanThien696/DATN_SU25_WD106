@@ -34,16 +34,18 @@ class OrderController extends Controller
 
         return view('client.orders.index', compact('user', 'orders', 'reviewedOrderItemIds'));
     }
-
-
     public function detail($id)
     {
+        $user = Auth::user();
+
         $order = Order::with([
             'user',
             'shippingAddress',
             'orderItems.productVariant.product',
             'coupons'
-        ])->findOrFail($id);
+        ])
+            ->where('user_id', $user->id)
+            ->findOrFail($id);
 
         if (
             ($order->status === 'completed' || $order->payment_method === 'momo')
@@ -55,6 +57,7 @@ class OrderController extends Controller
 
         return view('client.orders.detail', compact('order'));
     }
+
     public function cancel($id)
     {
         return DB::transaction(function () use ($id) {
